@@ -10,7 +10,7 @@ function Donations() {
     }
     fetchDonations();
   }, []);
-
+  
   return (
     <div>
       <h1>Donations</h1>
