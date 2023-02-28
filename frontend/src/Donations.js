@@ -15,6 +15,7 @@ function Donations() {
     <div>
       <h1>Donations</h1>
       <ul>
+        <img src={donation.src}/>
         {donations.map((donation) => (
           <li key={donation.id}>
             <p>{donation.description}</p>
