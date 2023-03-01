@@ -2,12 +2,12 @@ import Link from "next/link";
 import Image from "next/image";
 import Head from "next/head"
 //.. is move out of folder . is move out of file
-import Layout from "../../components/Layout" 
+
 
 export default function donations({donations}) {
 
     return(
-        <Layout>
+        <>
         <Head> <title>Donations</title></Head>
            <h1>Donations</h1>
         <h2>  <Link href="/">Back to home page</Link></h2>
@@ -20,7 +20,7 @@ export default function donations({donations}) {
 </ul>
   {/* <Image src="/images/profile.jpg" height="144" width="120" alt="profile"/> */}
 
-    </Layout>
+    </>
     ) 
   }
   export async function getProps()//server side 

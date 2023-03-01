@@ -1,14 +1,22 @@
 import Link from "next/link";
 import Image from "next/image";
-import styles from "../..styles/donation.css";
+ import Layout from "../../components/Layout" 
 export default function donation(donation)
 {
 return(
-  <>
-    <div className={styles.container}>
+  <Layout>
+
+  <Link href="/donations">Back to Donations</Link>
         <Image src={donation.src}/> 
-    </div>
-              <Link href="/donations">Back to Donations</Link>
-              </>
+              </Layout>
 )
+}
+export async function getProps(context)
+{
+  const {id}=context.query; //make id avalible 
+  const res =await fetch(`http://localhost:4000/donations/${id}`)
+  const donation=await res.json()
+  return{
+    props:donation,
+  }
 }

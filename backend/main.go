@@ -39,9 +39,9 @@ func main() {
 
 	// Initialize router and routes.
 	r := mux.NewRouter()
-	r.HandleFunc("/donations", getDonations).Methods("GET")
+	r.HandleFunc("/donations/donationList", getDonations).Methods("GET")
 	r.HandleFunc("/donations/{id}", getDonationByID).Methods("GET")
-	r.HandleFunc("/donations", createDonation).Methods("POST") //write function for this 
+	r.HandleFunc("/donations/donationList", createDonation).Methods("POST") //write function for this 
 	r.HandleFunc("/donations/{id}", deleteDonation).Methods("DELETE") //write function for this too
 
 	// Serve static files from the "build" directory.

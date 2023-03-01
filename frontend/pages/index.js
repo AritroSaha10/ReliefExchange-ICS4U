@@ -11,7 +11,7 @@ export default function Home() {
 
       <main>
         <h1 className={styles.title}>
-          Welcome to <a href="/donations/donations">Next.js!</a>
+          Welcome to <a href="/donations/donationList">Next.js!</a>
         </h1>
 
         <p className={styles.description}>
