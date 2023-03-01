@@ -14,22 +14,24 @@ import (
 )
 
 type Donation struct {
-	ID          string `json:"id,omitempty"`
+	ID          string `json:"id,omitempty"` //take proprety from json 
 	Description string `json:"description,omitempty"`
 	Location    string `json:"location,omitempty"`
 }
-
+//global varible
 var (
-	dbClient *db.Client
+	dbClient *db.Client //create real time client pointer
 )
 
 func main() {
-	// Initialize Firebase Realtime Database client.
+// (credentials for firebase)
 	opt := option.WithCredentialsFile("firebase-credentials.json")
+	//create new firebase app with options
 	app, err := firebase.NewApp(context.Background(), nil, opt)
 	if err != nil {
 		log.Fatalf("Error initializing Firebase app: %v\n", err)
 	}
+		// Initialize Firebase Realtime Database client. 
 	dbClient, err = app.DatabaseWithURL(context.Background(), "https://YOUR_PROJECT_ID.firebaseio.com/")
 	if err != nil {
 		log.Fatalf("Error initializing Firebase Realtime Database client: %v\n", err)
@@ -58,18 +60,19 @@ func getDonations(w http.ResponseWriter, r *http.Request) {
 
 	// Retrieve all donations from the database.
 	donationsRef := dbClient.NewRef("donations")
-	snapshot, err := donationsRef.Get(context.Background())
+	snapshot, err := donationsRef.Get(context.Background()) //represents data at specific time 
 	if err != nil {
 		log.Printf("Error retrieving donations from Firebase Realtime Database: %v\n", err)
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return
+		return 
 	}
 
 	// Convert snapshot to []Donation and return as JSON response.
+	//snapshot is defined as the reference to the donations
 	var donations []Donation
-	if err := snapshot.ForEach(func(donationSnapshot *db.Ref) error {
+	if err := snapshot.ForEach(func(donationSnapshot *db.Ref) error { //donationSnapshot type *db.Ref points to the donation struct in the child nodes of the snapshot
 		var donation Donation
-		if err := donationSnapshot.Value(&donation); err != nil {
+		if err := donationSnapshot.Value(&donation); err != nil { //Store value of snapshot (each donation) to the donation varible
 			return err
 		}
 		donations = append(donations, donation)
@@ -79,7 +82,7 @@ func getDonations(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
-	json.NewEncoder(w).Encode(donations)
+	json.NewEncoder(w).Encode(donations) //return all donations 
 }
 
 func getDonationByID(w http.ResponseWriter, r *http.Request) {
@@ -88,12 +91,13 @@ func getDonationByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Extract id from URL path parameter.
-	vars := mux.Vars(r)
+
+	vars := mux.Vars(r) //return map of the URL info
+		// Extract id from URL path parameter.
 	id := vars["id"]
 
 	// Retrieve donation from the database.
-	donationRef := dbClient.NewRef(fmt.Sprintf("donations/%s", id))
+	donationRef := dbClient.NewRef(fmt.Sprintf("donations/%s", id)) //get donation by path.  Sprintf is used to construct path using id. 
 	donationSnapshot, err := donationRef.Get(context.Background())
 	if err != nil {
 		if err == db.ErrNotFound {
@@ -107,64 +111,17 @@ func getDonationByID(w http.ResponseWriter, r *http.Request) {
 
 	// Parse the donation snapshot into a Donation struct.
 	var donation Donation
-	if err := donationSnapshot.Unmarshal(&donation); err != nil {
+	if err := donationSnapshot.Unmarshal(&donation); err != nil { //Stores value of snapshot to donation varible by unmarshalling (even if different names/types)
 		log.Printf("Error unmarshaling donation snapshot: %v\n", err)
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
 	
 	// Return the donation as JSON.
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Content-Type", "application/json") //tells client server is sending a JSon response 
 	if err := json.NewEncoder(w).Encode(donation); err != nil {
 		log.Printf("Error encoding donation as JSON: %v\n", err)
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 	}
 }
-
-// package main
-
-// import (
-//     "encoding/json"
-//     "fmt"
-//     "log"
-//     "net/http"
-// 	// firebase "firebase.google.com/go"
-// 	// "firebase.google.com/go/db"
-// 	// "google.golang.org/api/option"
-// )
-
-// type Donation struct {
-//     ID          int    `json:"id"`
-//     Title       string `json:"title"`
-//     Description string `json:"description"`
-//     Location    string `json:"location"`
-//     Date        string `json:"date"`
-// }
-
-// var donations = []Donation{
-//     {ID: 1, Title: "Bookshelf", Description: "Brown wooden bookshelf", Location: "Los Angeles", Date: "2023-02-16"},
-//     {ID: 2, Title: "Table", Description: "Glass top dining table", Location: "San Francisco", Date: "2023-02-18"},
-//     {ID: 3, Title: "Sofa", Description: "Red velvet sofa with cushions", Location: "New York City", Date: "2023-02-20"},
-// }
-
-// func main() {
-//     http.HandleFunc("/donations/", getDonationByID)
-// 	http.HandleFunc("/donations", getAllDonations)
-//     log.Fatal(http.ListenAndServe(":8080", nil)) //start listening on port and if any erros log them and exit
-// }
-// func getAllDonations(w http.ResponseWriter, r *http.Request) {
-//     json.NewEncoder(w).Encode(donations)
-// }
-
-// func getDonationByID(w http.ResponseWriter, r *http.Request) { //Request contains information about the link 
-//     id := r.URL.Path[len("/donations/"):] //extract id from the link 
-// 	//donations is the object literal defined above 
-//     for _, donation := range donations { //loop through donations to check if it matches the link
-//         if fmt.Sprintf("%d", donation.ID) == id { //sprinf is used to convert the id (which is an int) to a string so it can be compared with the id varible 
-//             json.NewEncoder(w).Encode(donation)
-//             return
-//         }
-//     }
-//     http.NotFound(w, r)
-// }
 
