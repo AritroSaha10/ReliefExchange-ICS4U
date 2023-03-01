@@ -12,9 +12,9 @@ import (
 	"github.com/gorilla/mux"
 	"google.golang.org/api/option"
 )
-
+//take proprety from json 
 type Donation struct {
-	ID          string `json:"id,omitempty"` //take proprety from json 
+	ID          string `json:"id,omitempty"` 
 	Description string `json:"description,omitempty"`
 	Location    string `json:"location,omitempty"`
 }
