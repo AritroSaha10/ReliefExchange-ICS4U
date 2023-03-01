@@ -1,6 +1,6 @@
 import Head from 'next/head';
 import styles from '../styles/Home.module.css';
-import Link from "next/link";
+
 export default function Home() {
   return (
     <div className={styles.container}>
@@ -11,7 +11,7 @@ export default function Home() {
 
       <main>
         <h1 className={styles.title}>
-          <Link href="/posts/donations">Donations</Link>
+          Welcome to <a href="/donations/donations">Next.js!</a>
         </h1>
 
         <p className={styles.description}>
@@ -113,4 +113,3 @@ export default function Home() {
     </div>
   )
 }
-
