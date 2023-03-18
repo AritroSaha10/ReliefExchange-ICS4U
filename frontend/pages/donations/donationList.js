@@ -23,7 +23,7 @@ export default function donations({donations}) {
     </>
     ) 
   }
-  export async function getProps()//server side 
+  export async function getServerSideProps()
   {
 const res=await fetch("https://localhost:4000/donations") //get donations from server side 
 const donations=await res.json();

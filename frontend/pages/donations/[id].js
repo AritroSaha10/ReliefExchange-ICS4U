@@ -11,7 +11,7 @@ return(
               </Layout>
 )
 }
-export async function getProps(context)
+export async function getServerSideProps(context)
 {
   const {id}=context.query; //make id avalible 
   const res =await fetch(`http://localhost:4000/donations/${id}`)
