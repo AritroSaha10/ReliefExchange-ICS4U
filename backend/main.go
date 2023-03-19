@@ -4,124 +4,99 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
+	"os"
+//intall go get firebase.google.com/go/v4  go get github.com/gin-gonic/gin
 
-	firebase "firebase.google.com/go"
-	"firebase.google.com/go/db"
-	"github.com/gorilla/mux"
+	"firebase.google.com/go/v4"
+	"github.com/gin-gonic/gin"
+	"google.golang.org/api/iterator"
 	"google.golang.org/api/option"
 )
 //take proprety from json 
 type Donation struct {
-	ID          string `json:"id,omitempty"` 
-	Description string `json:"description,omitempty"`
-	Location    string `json:"location,omitempty"`
+	ID          string `json:"id"`
+	Description string `json:"description"`
+	Location    string `json:"location"`
 }
-//global varible
-var (
-	dbClient *db.Client //create real time client pointer
-)
+
 
 func main() {
-// (credentials for firebase)
-	opt := option.WithCredentialsFile("firebase-credentials.json")
+
+	ctx :=context.Background()
+	//allow go code to interact with firebase safetly
+	serviceAccountKeyFile:="path/to/our-service-account-key.json"
+	opt := option.WithCredentialsFile(serviceAccountKeyFile)
 	//create new firebase app with options
-	app, err := firebase.NewApp(context.Background(), nil, opt)
+	app, err := firebase.NewApp(ctx, nil, opt)
 	if err != nil {
 		log.Fatalf("Error initializing Firebase app: %v\n", err)
+		os.Exit(1)
 	}
-		// Initialize Firebase Realtime Database client. 
-	dbClient, err = app.DatabaseWithURL(context.Background(), "https://YOUR_PROJECT_ID.firebaseio.com/")
+		// Initialize firestore client
+	client, err := app.firestore(ctx)
 	if err != nil {
-		log.Fatalf("Error initializing Firebase Realtime Database client: %v\n", err)
+		log.Fatalf("Error initializing Firestore client: %v\n", err)
+		os.Exit(1)
 	}
 
-	// Initialize router and routes.
-	r := mux.NewRouter()
-	r.HandleFunc("/donations/donationList", getDonations).Methods("GET")
-	r.HandleFunc("/donations/{id}", getDonationByID).Methods("GET")
-	r.HandleFunc("/donations/donationList", createDonation).Methods("POST") //write function for this 
-	r.HandleFunc("/donations/{id}", deleteDonation).Methods("DELETE") //write function for this too
-
-	// Serve static files from the "build" directory.
-	r.PathPrefix("/").Handler(http.FileServer(http.Dir("./build/")))
-
-	// Start server.
-	log.Println("Starting server on port 4000...")
-	log.Fatal(http.ListenAndServe(":4000", r))
-}
-
-func getDonations(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "GET" {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
-	// Retrieve all donations from the database.
-	donationsRef := dbClient.NewRef("donations")
-	snapshot, err := donationsRef.Get(context.Background()) //represents data at specific time 
-	if err != nil {
-		log.Printf("Error retrieving donations from Firebase Realtime Database: %v\n", err)
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return 
-	}
-
-	// Convert snapshot to []Donation and return as JSON response.
-	//snapshot is defined as the reference to the donations
-	var donations []Donation
-	if err := snapshot.ForEach(func(donationSnapshot *db.Ref) error { //donationSnapshot type *db.Ref points to the donation struct in the child nodes of the snapshot
-		var donation Donation
-		if err := donationSnapshot.Value(&donation); err != nil { //Store value of snapshot (each donation) to the donation varible
-			return err
+	// Initialize gin
+	r := gin.Default()
+	//retrieves donations from getAllDonations() ([]Donation,error) and sends a JSON response to the fronend with a http statusOK and a response body as a donations slice
+	r.GET("/donations/donationList",func(c *gin.Context) //passing in the req res objecs
+	{
+		donations,err :=getAllDonations(ctx,client)
+		if err != nil{
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		}
-		donations = append(donations, donation)
-		return nil
-	}); err != nil {
-		log.Printf("Error converting snapshot to []Donation: %v\n", err)
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
-	json.NewEncoder(w).Encode(donations) //return all donations 
-}
-
-func getDonationByID(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "GET" {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
-
-	vars := mux.Vars(r) //return map of the URL info
-		// Extract id from URL path parameter.
-	id := vars["id"]
-
-	// Retrieve donation from the database.
-	donationRef := dbClient.NewRef(fmt.Sprintf("donations/%s", id)) //get donation by path.  Sprintf is used to construct path using id. 
-	donationSnapshot, err := donationRef.Get(context.Background())
-	if err != nil {
-		if err == db.ErrNotFound {
-			http.NotFound(w, r)
-		} else {
-			log.Printf("Error retrieving donation from Firebase Realtime Database: %v\n", err)
-			http.Error(w, "Internal server error", http.StatusInternalServerError)
+		else{
+			c.JSON(http.StatusOK,donations)
 		}
-		return
-	}
+	})
+	r.GET("/donations/:id",func(c *gin.Context){
+		id=c.param("id")
+		donation,err=getDonationByID(ctx,client,id)
+		if err!=nil{
+			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		}
+		else{
+			return c.JSON(http.StatusOK,donation)
+		}
 
-	// Parse the donation snapshot into a Donation struct.
-	var donation Donation
-	if err := donationSnapshot.Unmarshal(&donation); err != nil { //Stores value of snapshot to donation varible by unmarshalling (even if different names/types)
-		log.Printf("Error unmarshaling donation snapshot: %v\n", err)
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
+	})
 	
-	// Return the donation as JSON.
-	w.Header().Set("Content-Type", "application/json") //tells client server is sending a JSon response 
-	if err := json.NewEncoder(w).Encode(donation); err != nil {
-		log.Printf("Error encoding donation as JSON: %v\n", err)
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
+	r.run(":4000")
+}
+//go function can return 2 things, in this case it is a donation struct and the error
+func getAllDonations(ctx context.Context,client *firestore.Client) ([]Donation, error) {
+	var donations []Donation
+	iter :=client.Collection("donations").Documents(ctx) //.Documents(ctx) returns a iterator
+	for {
+		doc,err:=iter.Next()
+		if err==iterator.Done{
+			break
+		}
+		if err!=nil
+		{
+			return nil,err //no data was retrieved-nil, but there was an error -err
+		}
+		var donation Donation
+		doc.DataTo(&donation)
+		donation.ID=doc.Ref.ID //sets new proprety called id to the one in the firebase
+		donations=append(donations,donation)
 	}
+	return donations,nil //nil-data was retrived without any errors
+}
+
+func getDonationByID(ctx context.Context, client *firestore.Client,id string) (Donation,error) {
+	var donation Donation
+	doc,err:=client.Collection("donations").Doc(id).Get(ctx) //get a single donation from its id
+	if err!=nil
+	{
+		return donation,err //returns empty donation struct
+	}
+	doc.DataTo(&donation)
+	donation.ID=doc.Ref.ID
+	return donation,nil
 }
 
