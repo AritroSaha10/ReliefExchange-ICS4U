@@ -11,7 +11,7 @@ import (
 	"net/http"
 )
 
-const SERVICE_ACCOUNT_FILENAME = "ics4uo-project-firebase-key.json"
+const SERVICE_ACCOUNT_FILENAME = "ics4u0-project-firebase-key.json"
 
 var firebaseContext context.Context
 var firebaseApp *firebase.App
