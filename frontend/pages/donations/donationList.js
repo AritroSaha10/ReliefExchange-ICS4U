@@ -8,16 +8,18 @@ import {useState,useEffect} from "react";
 
 export default function displayDonations() {
   const [donations,setDonations]=useState([])
-  useEffect(() => { //runs parrelel to other code.
-    (async()=>{
+  useEffect(() => {
+    const fetchDonations = async () => {
       try {
-        const  data  = await axios.get("/api/donations");
+        console.log("sdkfsdkfjsdlfkdsjflskdjfldsk")
+        const  data  = await axios.get("/api/donation");
         setDonations(data);
       } catch (error) {
         console.error("Error fetching donations:", error);
       }
-    })();
+    };
 
+    fetchDonations();
   }, []);
     return(
         <>

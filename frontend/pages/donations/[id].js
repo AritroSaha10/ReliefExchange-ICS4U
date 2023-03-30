@@ -32,7 +32,7 @@ import Image from "next/image";
 return(
   <Layout>
 
-  <Link href="/donations">Back to Donations</Link>
+  <Link href="/donations/donationList">Back to Donations</Link>
         <Image src={donation.src}/> 
               </Layout>
 )
