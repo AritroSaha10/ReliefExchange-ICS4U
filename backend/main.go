@@ -1,14 +1,15 @@
 package main
 
 import (
-	"cloud.google.com/go/firestore"
 	"context"
-	"firebase.google.com/go"
+	"log"
+	"net/http"
+
+	"cloud.google.com/go/firestore"
+	firebase "firebase.google.com/go"
 	"github.com/gin-gonic/gin"
 	"google.golang.org/api/iterator"
 	"google.golang.org/api/option"
-	"log"
-	"net/http"
 )
 
 const SERVICE_ACCOUNT_FILENAME = "ics4u0-project-firebase-key.json"
