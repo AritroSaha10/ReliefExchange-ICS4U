@@ -46,6 +46,19 @@ func getDonationFromIDEndpoint(c *gin.Context) {
 	}
 }
 
+// func postDonationEndpoint(c *gin.Context) {
+// 	//get data from the request user entered in the form
+
+// 	//donation, err := getNewDonation(firebaseContext, firestoreClient, data)	//create new donation object from struct
+
+// 	//add to the firestore databse
+// 	if err != nil {
+// 		c.IndentedJSON(http.StatusNotFound, gin.H{"error": err.Error()})
+// 	} else {
+// 		c.IndentedJSON(http.StatusOK, donation)
+// 	}
+// }
+
 func main() {
 	firebaseContext = context.Background()
 	firebaseCreds := option.WithCredentialsFile(SERVICE_ACCOUNT_FILENAME)
@@ -65,6 +78,7 @@ func main() {
 
 	r.GET("/donations/donationList", getDonationsListEndpoint)
 	r.GET("/donations/:id", getDonationFromIDEndpoint)
+	// r.POST("/donations/donationList", postDonationEndpoint)
 
 	err = r.Run()
 	if err != nil {

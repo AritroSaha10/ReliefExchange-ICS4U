@@ -15,8 +15,8 @@ import Image from "next/image";
      if (id) {
        const fetchDonation = async () => {
          try {
-           const  data  = await axios.get(`/api/donations?id=${id}`);
-           setDonation(data);
+           const  res  = await axios.get(`/api/donations?id=${id}`);
+           setDonation(res.data);
          } catch (error) {
            console.error("Error fetching donation:", error);
          }
@@ -30,10 +30,11 @@ import Image from "next/image";
      return <div>Loading...</div>;
    }
 return(
-  <Layout>
+  <>
 
   <Link href="/donations/donationList">Back to Donations</Link>
-        <Image src={donation.src}/> 
-              </Layout>
+      <h1>{donation.id}</h1>
+        {/* <Image src={donation.src}/>  */}
+              </>
 )
 }

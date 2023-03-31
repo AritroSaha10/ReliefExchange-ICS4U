@@ -12,7 +12,8 @@ export default function displayDonations() {
     const fetchDonations = async () => {
       try {
         console.log("sdkfsdkfjsdlfkdsjflskdjfldsk")
-        const  data  = await axios.get("/api/donation");
+        const  {data}  = await axios.get("/api/donations");
+        
         setDonations(data);
       } catch (error) {
         console.error("Error fetching donations:", error);
@@ -29,7 +30,7 @@ export default function displayDonations() {
 <ul>
   {donations.map((donation)=>(
   <li key={donation.id}>
-    <Link href={`/donations/${donation.id}`}>{donation.name}</Link>
+    <Link href={`/donations/${donation.id}`}>{donation.id}</Link>
     </li>
   ))}
 </ul>
