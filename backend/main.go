@@ -37,7 +37,6 @@ func getDonationsListEndpoint(c *gin.Context) {
 
 func getDonationFromIDEndpoint(c *gin.Context) {
 	id := c.Param("id")
-
 	donation, err := getDonationByID(firebaseContext, firestoreClient, id)
 	if err != nil {
 		c.IndentedJSON(http.StatusNotFound, gin.H{"error": err.Error()})
@@ -46,18 +45,23 @@ func getDonationFromIDEndpoint(c *gin.Context) {
 	}
 }
 
-// func postDonationEndpoint(c *gin.Context) {
-// 	//get data from the request user entered in the form
+func postDonationEndpoint(c *gin.Context) {
+	var donation Donation
+	//set donation ownerId to current userId
+	if err := c.ShouldBindJSON(&donation); err != nil { //transfers request body so that feilds match the donation struct
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	docID, err := addDonation(firebaseContext, firestoreClient, donation) //create new donation object from struct
+	//add to the firestore databse
+	if err != nil {
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	} else {
+		c.IndentedJSON(http.StatusCreated, docID)
+	}
 
-// 	//donation, err := getNewDonation(firebaseContext, firestoreClient, data)	//create new donation object from struct
-
-// 	//add to the firestore databse
-// 	if err != nil {
-// 		c.IndentedJSON(http.StatusNotFound, gin.H{"error": err.Error()})
-// 	} else {
-// 		c.IndentedJSON(http.StatusOK, donation)
-// 	}
-// }
+}
 
 func main() {
 	firebaseContext = context.Background()
@@ -78,7 +82,7 @@ func main() {
 
 	r.GET("/donations/donationList", getDonationsListEndpoint)
 	r.GET("/donations/:id", getDonationFromIDEndpoint)
-	// r.POST("/donations/donationList", postDonationEndpoint)
+	r.POST("/donations/new", postDonationEndpoint)
 
 	err = r.Run()
 	if err != nil {
@@ -121,4 +125,17 @@ func getDonationByID(ctx context.Context, client *firestore.Client, id string) (
 	}
 	donation.ID = doc.Ref.ID
 	return donation, nil
+}
+
+func addDonation(ctx context.Context, client *firestore.Client, donation Donation) (string, error) {
+	docRef, _, err := client.Collection("donations").Add(ctx, map[string]interface{}{
+		"title":       donation.Title,
+		"description": donation.Description,
+		"location":    donation.Location,
+		"imgs":        donation.Images,
+	})
+	if err != nil {
+		return "", err
+	}
+	return docRef.ID, nil
 }
