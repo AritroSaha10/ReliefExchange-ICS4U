@@ -18,12 +18,13 @@ var firebaseContext context.Context
 var firebaseApp *firebase.App
 var firestoreClient *firestore.Client
 
-type Donation struct {
+type Donation struct { //used to send readable data back to client.
 	ID          string   `json:"id"`
 	Title       string   `json:"title"`
 	Description string   `json:"description"`
 	Location    string   `json:"location"`
 	Images      []string `json:"imgs"`
+	OwnerId     string   `json:"ownerid"`
 }
 
 func getDonationsListEndpoint(c *gin.Context) {
@@ -47,7 +48,7 @@ func getDonationFromIDEndpoint(c *gin.Context) {
 
 func postDonationEndpoint(c *gin.Context) {
 	var donation Donation
-	//set donation ownerId to current userId
+
 	if err := c.ShouldBindJSON(&donation); err != nil { //transfers request body so that feilds match the donation struct
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -60,6 +61,29 @@ func postDonationEndpoint(c *gin.Context) {
 	} else {
 		c.IndentedJSON(http.StatusCreated, docID)
 	}
+
+}
+
+func deleteDonationEndpoint(c *gin.Context) {
+	id := c.Param("id")
+	donationRef := firestoreClient.Collection("donations").Doc(id)
+	donationData, err := donationRef.Get(context.Background())
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	}
+	//define userId
+	if donationData.Data()["ownerid"] != userId {
+		c.JSON(http.StatusForbidden, gin.H{"error": "You are not authorized to delete this donation."})
+		return
+	}
+
+	_, err = donationRef.Delete(context.Background()) // only need the err return value
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "Donation deleted successfully"})
 
 }
 
@@ -83,7 +107,7 @@ func main() {
 	r.GET("/donations/donationList", getDonationsListEndpoint)
 	r.GET("/donations/:id", getDonationFromIDEndpoint)
 	r.POST("/donations/new", postDonationEndpoint)
-
+	r.DELETE("/donations/:id", deleteDonationEndpoint)
 	err = r.Run()
 	if err != nil {
 		return
@@ -123,7 +147,7 @@ func getDonationByID(ctx context.Context, client *firestore.Client, id string) (
 	if err != nil {
 		return Donation{}, err
 	}
-	donation.ID = doc.Ref.ID
+	donation.ID = doc.Ref.ID //ID is stored in the Ref feild, so DataTo, does not store id in the donations object
 	return donation, nil
 }
 
@@ -133,6 +157,8 @@ func addDonation(ctx context.Context, client *firestore.Client, donation Donatio
 		"description": donation.Description,
 		"location":    donation.Location,
 		"imgs":        donation.Images,
+		//define userId
+		"ownerid": userId,
 	})
 	if err != nil {
 		return "", err
