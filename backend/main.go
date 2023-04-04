@@ -9,6 +9,7 @@ import (
 	"google.golang.org/api/option"
 	"log"
 	"net/http"
+	"time"
 )
 
 const SERVICE_ACCOUNT_FILENAME = "ics4u0-project-firebase-key.json"
@@ -18,11 +19,14 @@ var firebaseApp *firebase.App
 var firestoreClient *firestore.Client
 
 type Donation struct {
-	ID          string   `json:"id"`
-	Title       string   `json:"title"`
-	Description string   `json:"description"`
-	Location    string   `json:"location"`
-	Images      []string `json:"imgs"`
+	ID                string                `json:"id"`
+	Title             string                `json:"title"`
+	Description       string                `json:"description"`
+	Location          string                `json:"location"`
+	City              string                `json:"city"`
+	Images            []string              `json:"images"`
+	CreationTimestamp time.Time             `json:"creation_timestamp"`
+	Author            firestore.DocumentRef `json:"author"`
 }
 
 func getDonationsListEndpoint(c *gin.Context) {
