@@ -1,9 +1,12 @@
 package main
 
 import (
-	"cloud.google.com/go/firestore"
 	"context"
-	"firebase.google.com/go"
+	"log"
+	"net/http"
+
+	"cloud.google.com/go/firestore"
+	firebase "firebase.google.com/go"
 	"github.com/gin-gonic/gin"
 	"google.golang.org/api/iterator"
 	"google.golang.org/api/option"
@@ -18,6 +21,7 @@ var firebaseContext context.Context
 var firebaseApp *firebase.App
 var firestoreClient *firestore.Client
 
+<<<<<<< HEAD
 type Donation struct {
 	ID                string                `json:"id"`
 	Title             string                `json:"title"`
@@ -27,7 +31,7 @@ type Donation struct {
 	Images            []string              `json:"images"`
 	CreationTimestamp time.Time             `json:"creation_timestamp"`
 	Author            firestore.DocumentRef `json:"author"`
-}
+}    
 
 func getDonationsListEndpoint(c *gin.Context) {
 	donations, err := getAllDonations(firebaseContext, firestoreClient)
@@ -40,13 +44,54 @@ func getDonationsListEndpoint(c *gin.Context) {
 
 func getDonationFromIDEndpoint(c *gin.Context) {
 	id := c.Param("id")
-
 	donation, err := getDonationByID(firebaseContext, firestoreClient, id)
 	if err != nil {
 		c.IndentedJSON(http.StatusNotFound, gin.H{"error": err.Error()})
 	} else {
 		c.IndentedJSON(http.StatusOK, donation)
 	}
+}
+
+func postDonationEndpoint(c *gin.Context) {
+	var donation Donation
+
+	if err := c.ShouldBindJSON(&donation); err != nil { //transfers request body so that feilds match the donation struct
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	docID, err := addDonation(firebaseContext, firestoreClient, donation) //create new donation object from struct
+	//add to the firestore databse
+	if err != nil {
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	} else {
+		c.IndentedJSON(http.StatusCreated, docID)
+	}
+
+}
+
+func deleteDonationEndpoint(c *gin.Context) {
+	id := c.Param("id")
+	donationRef := firestoreClient.Collection("donations").Doc(id)
+	donationData, err := donationRef.Get(context.Background())
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	}
+	//define userId
+    // TODO: Use author data ref instead of this
+	if donationData.Data()["ownerid"] != userId {
+		c.JSON(http.StatusForbidden, gin.H{"error": "You are not authorized to delete this donation."})
+		return
+	}
+
+	_, err = donationRef.Delete(context.Background()) // only need the err return value
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "Donation deleted successfully"})
+
 }
 
 func main() {
@@ -68,7 +113,8 @@ func main() {
 
 	r.GET("/donations/donationList", getDonationsListEndpoint)
 	r.GET("/donations/:id", getDonationFromIDEndpoint)
-
+	r.POST("/donations/new", postDonationEndpoint)
+	r.DELETE("/donations/:id", deleteDonationEndpoint)
 	err = r.Run()
 	if err != nil {
 		return
@@ -108,6 +154,22 @@ func getDonationByID(ctx context.Context, client *firestore.Client, id string) (
 	if err != nil {
 		return Donation{}, err
 	}
-	donation.ID = doc.Ref.ID
+	donation.ID = doc.Ref.ID //ID is stored in the Ref feild, so DataTo, does not store id in the donations object
 	return donation, nil
+}
+
+func addDonation(ctx context.Context, client *firestore.Client, donation Donation) (string, error) {
+	docRef, _, err := client.Collection("donations").Add(ctx, map[string]interface{}{
+		"title":       donation.Title,
+		"description": donation.Description,
+		"location":    donation.Location,
+		"imgs":        donation.Images,
+		//define userId
+        // TODO: Change to provide a ref to author obj instead
+		"ownerid": userId,
+	})
+	if err != nil {
+		return "", err
+	}
+	return docRef.ID, nil
 }

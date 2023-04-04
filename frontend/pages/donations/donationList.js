@@ -1,11 +1,27 @@
 import Link from "next/link";
 import Image from "next/image";
 import Head from "next/head"
+import axios from "axios"; 
+import {useState,useEffect} from "react";
 //.. is move out of folder . is move out of file
 
 
-export default function donations({donations}) {
+export default function displayDonations() {
+  const [donations,setDonations]=useState([])
+  useEffect(() => {
+    const fetchDonations = async () => {
+      try {
+        console.log("sdkfsdkfjsdlfkdsjflskdjfldsk")
+        const  {data}  = await axios.get("/api/donations");
+        
+        setDonations(data);
+      } catch (error) {
+        console.error("Error fetching donations:", error);
+      }
+    };
 
+    fetchDonations();
+  }, []);
     return(
         <>
         <Head> <title>Donations</title></Head>
@@ -14,7 +30,7 @@ export default function donations({donations}) {
 <ul>
   {donations.map((donation)=>(
   <li key={donation.id}>
-    <Link href={`/donations/${donation.id}`}>{donation.name}</Link>
+    <Link href={`/donations/${donation.id}`}>{donation.id}</Link>
     </li>
   ))}
 </ul>
@@ -22,12 +38,4 @@ export default function donations({donations}) {
  
     </>
     ) 
-  }
-  export async function getServerSideProps()
-  {
-const res=await fetch("http://localhost:4000/donations/donationList") //get donations from server side 
-const donations=await res.json();
-return {
-  props: {donations},
-};
   }
