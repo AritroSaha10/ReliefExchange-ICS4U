@@ -5,14 +5,16 @@ import (
 	"log"
 	"net/http"
 
-	"cloud.google.com/go/firestore"
-	firebase "firebase.google.com/go"
-	"github.com/gin-gonic/gin"
-	"google.golang.org/api/iterator"
-	"google.golang.org/api/option"
 	"log"
 	"net/http"
 	"time"
+
+	"cloud.google.com/go/firestore"
+	firebase "firebase.google.com/go"
+	"firebase.google.com/go/auth"
+	"github.com/gin-gonic/gin"
+	"google.golang.org/api/iterator"
+	"google.golang.org/api/option"
 )
 
 const SERVICE_ACCOUNT_FILENAME = "ics4u0-project-firebase-key.json"
@@ -20,8 +22,8 @@ const SERVICE_ACCOUNT_FILENAME = "ics4u0-project-firebase-key.json"
 var firebaseContext context.Context
 var firebaseApp *firebase.App
 var firestoreClient *firestore.Client
+var authClient *auth.Client
 
-<<<<<<< HEAD
 type Donation struct {
 	ID                string                `json:"id"`
 	Title             string                `json:"title"`
@@ -31,7 +33,11 @@ type Donation struct {
 	Images            []string              `json:"images"`
 	CreationTimestamp time.Time             `json:"creation_timestamp"`
 	Author            firestore.DocumentRef `json:"author"`
-}    
+}
+
+type DeleteDonationRequestBody struct {
+	IDToken string `json:"token"`
+}
 
 func getDonationsListEndpoint(c *gin.Context) {
 	donations, err := getAllDonations(firebaseContext, firestoreClient)
@@ -78,9 +84,22 @@ func deleteDonationEndpoint(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
-	//define userId
-    // TODO: Use author data ref instead of this
-	if donationData.Data()["ownerid"] != userId {
+
+	var body DeleteDonationRequestBody
+	if err := c.ShouldBindJSON(&body); err != nil { //transfers request body so that feilds match the donation struct
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	token, err := authClient.VerifyIDToken(firebaseContext, body.IDToken)
+	if err != nil {
+		c.IndentedJSON(http.StatusForbidden, gin.H{"error": "You are not authorized to delete this donation."})
+		return
+	}
+
+	userUID := token.UID
+
+	if donationData.Data()["ownerId"] != userUID {
 		c.JSON(http.StatusForbidden, gin.H{"error": "You are not authorized to delete this donation."})
 		return
 	}
@@ -90,8 +109,8 @@ func deleteDonationEndpoint(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"message": "Donation deleted successfully"})
 
+	c.JSON(http.StatusOK, gin.H{"message": "Donation deleted successfully"})
 }
 
 func main() {
@@ -107,6 +126,11 @@ func main() {
 	firestoreClient, err = firebaseApp.Firestore(firebaseContext)
 	if err != nil {
 		log.Fatalf("Error initializing Firestore client: %v\n", err)
+	}
+
+	authClient, err = firebaseApp.Auth(firebaseContext)
+	if err != nil {
+		log.Fatalf("Error initializing Firebase Auth client: %v\n", err)
 	}
 
 	r := gin.Default()
@@ -158,15 +182,13 @@ func getDonationByID(ctx context.Context, client *firestore.Client, id string) (
 	return donation, nil
 }
 
-func addDonation(ctx context.Context, client *firestore.Client, donation Donation) (string, error) {
+func addDonation(ctx context.Context, client *firestore.Client, donation Donation, userId string) (string, error) {
 	docRef, _, err := client.Collection("donations").Add(ctx, map[string]interface{}{
 		"title":       donation.Title,
 		"description": donation.Description,
 		"location":    donation.Location,
 		"imgs":        donation.Images,
-		//define userId
-        // TODO: Change to provide a ref to author obj instead
-		"ownerid": userId,
+		"ownerId":     userId,
 	})
 	if err != nil {
 		return "", err
