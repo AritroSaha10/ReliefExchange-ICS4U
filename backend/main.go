@@ -46,6 +46,10 @@ type DeleteDonationRequestBody struct {
 	IDToken string `json:"token"`
 }
 
+type PostDonationRequestBody struct {
+	IDToken string `json:"token"`
+}
+
 func getDonationsListEndpoint(c *gin.Context) {
 	donations, err := getAllDonations(firebaseContext, firestoreClient)
 	if err != nil {
@@ -82,7 +86,22 @@ func postDonationEndpoint(c *gin.Context) {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	docID, err := addDonation(firebaseContext, firestoreClient, donation) //create new donation object from struct
+
+	var body PostDonationRequestBody
+	if err := c.ShouldBindJSON(&body); err != nil { //transfers request body so that feilds match the donation struct
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	token, err := authClient.VerifyIDToken(firebaseContext, body.IDToken)
+	if err != nil {
+		c.IndentedJSON(http.StatusForbidden, gin.H{"error": "You are not authorized to make this donation."})
+		return
+	}
+
+	userUID := token.UID
+
+	docID, err := addDonation(firebaseContext, firestoreClient, donation, userUID) //create new donation object from struct
 	//add to the firestore databse
 	if err != nil {
 		c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
