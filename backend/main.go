@@ -35,6 +35,13 @@ type Donation struct {
 	Author            firestore.DocumentRef `json:"author"`
 }
 
+type UserData struct {
+	FirstName             string    `json:"first_name"`
+	LastName              string    `json:"last_name"`
+	RegistrationTimestamp time.Time `json:"registered_date"`
+	UID                   string
+}
+
 type DeleteDonationRequestBody struct {
 	IDToken string `json:"token"`
 }
@@ -55,6 +62,16 @@ func getDonationFromIDEndpoint(c *gin.Context) {
 		c.IndentedJSON(http.StatusNotFound, gin.H{"error": err.Error()})
 	} else {
 		c.IndentedJSON(http.StatusOK, donation)
+	}
+}
+
+func getUserDataFromIDEndpoint(c *gin.Context) {
+	id := c.Param("id")
+	userData, err := getUserDataByID(firebaseContext, firestoreClient, id)
+	if err != nil {
+		c.IndentedJSON(http.StatusNotFound, gin.H{"error": err.Error()})
+	} else {
+		c.IndentedJSON(http.StatusOK, userData)
 	}
 }
 
@@ -180,6 +197,20 @@ func getDonationByID(ctx context.Context, client *firestore.Client, id string) (
 	}
 	donation.ID = doc.Ref.ID //ID is stored in the Ref feild, so DataTo, does not store id in the donations object
 	return donation, nil
+}
+
+func getUserDataByID(ctx context.Context, client *firestore.Client, id string) (UserData, error) {
+	var userData UserData
+	doc, err := client.Collection("users").Doc(id).Get(ctx) // Get a single user from its id
+	if err != nil {
+		return userData, err //returns empty user struct
+	}
+	err = doc.DataTo(&userData)
+	if err != nil {
+		return UserData{}, err
+	}
+	userData.UID = doc.Ref.ID // ID is stored in the Ref feild, so DataTo, does not store id in the user data object
+	return userData, nil
 }
 
 func addDonation(ctx context.Context, client *firestore.Client, donation Donation, userId string) (string, error) {
