@@ -4,9 +4,6 @@ import (
 	"context"
 	"log"
 	"net/http"
-
-	"log"
-	"net/http"
 	"time"
 
 	"cloud.google.com/go/firestore"
@@ -82,18 +79,18 @@ func getUserDataFromIDEndpoint(c *gin.Context) {
 func postDonationEndpoint(c *gin.Context) {
 	var donation Donation
 
-	if err := c.ShouldBindJSON(&donation); err != nil { //transfers request body so that feilds match the donation struct
+	if err := c.ShouldBindJSON(&donation); err != nil { //transfers request body so that feilds match the donation struct (will not transfer any feilds that are not in donation struct eg. json token)
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
 	var body PostDonationRequestBody
-	if err := c.ShouldBindJSON(&body); err != nil { //transfers request body so that feilds match the donation struct
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	if err := c.ShouldBindJSON(&body); err != nil { //stores request body info into the body varible, so that it matches feild in struct (IDToken) in json format
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()}) //if user not signed in, then will send error
 		return
 	}
 
-	token, err := authClient.VerifyIDToken(firebaseContext, body.IDToken)
+	token, err := authClient.VerifyIDToken(firebaseContext, body.IDToken) //token is for user to verify with the server, after it is decoded, we have access to all feilds
 	if err != nil {
 		c.IndentedJSON(http.StatusForbidden, gin.H{"error": "You are not authorized to make this donation."})
 		return
@@ -175,6 +172,7 @@ func main() {
 	r.GET("/donations/:id", getDonationFromIDEndpoint)
 	r.POST("/donations/new", postDonationEndpoint)
 	r.DELETE("/donations/:id", deleteDonationEndpoint)
+	r.DELETE("/users/:id", getUserDataFromIDEndpoint)
 	err = r.Run()
 	if err != nil {
 		return
