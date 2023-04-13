@@ -22,14 +22,14 @@ var firestoreClient *firestore.Client
 var authClient *auth.Client
 
 type Donation struct {
-	ID                string                `json:"id"`
-	Title             string                `json:"title"`
-	Description       string                `json:"description"`
-	Location          string                `json:"location"`
-	City              string                `json:"city"`
-	Images            []string              `json:"images"`
-	CreationTimestamp time.Time             `json:"creation_timestamp"`
-	Author            firestore.DocumentRef `json:"author"`
+	ID                string    `json:"id"`
+	Title             string    `json:"title"`
+	Description       string    `json:"description"`
+	Location          string    `json:"location"`
+	City              string    `json:"city"`
+	Images            []string  `json:"images"`
+	CreationTimestamp time.Time `json:"creation_timestamp"`
+	ownerId           string    `json:"ownerid"`
 }
 
 type UserData struct {
