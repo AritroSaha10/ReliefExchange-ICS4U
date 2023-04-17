@@ -29,7 +29,7 @@ type Donation struct {
 	City              string    `json:"city"`
 	Images            []string  `json:"images"`
 	CreationTimestamp time.Time `json:"creation_timestamp"`
-	ownerId           string    `json:"ownerid"`
+	OwnerId           string    `json:"ownerid"`
 }
 
 type UserData struct {
@@ -85,7 +85,7 @@ func postDonationEndpoint(c *gin.Context) {
 	}
 
 	var body PostDonationRequestBody
-	if err := c.ShouldBindJSON(&body); err != nil { //stores request body info into the body varible, so that it matches feild in struct (IDToken) in json format
+	if err := c.ShouldBindJSON(&body); err != nil { //stores request body info into the body varible, so that it matches feild in struct in json format
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()}) //if user not signed in, then will send error
 		return
 	}
@@ -236,7 +236,7 @@ func addDonation(ctx context.Context, client *firestore.Client, donation Donatio
 		"description": donation.Description,
 		"location":    donation.Location,
 		"imgs":        donation.Images,
-		"ownerId":     userId,
+		"OwnerId":     userId,
 	})
 	if err != nil {
 		return "", err

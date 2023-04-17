@@ -11,7 +11,6 @@ export default function displayDonations() {
   useEffect(() => {
     const fetchDonations = async () => {
       try {
-        console.log("sdkfsdkfjsdlfkdsjflskdjfldsk")
         const  {data}  = await axios.get("/api/donations");
         
         setDonations(data);
@@ -22,6 +21,7 @@ export default function displayDonations() {
 
     fetchDonations();
   }, []);
+ 
     return(
         <>
         <Head> <title>Donations</title></Head>
