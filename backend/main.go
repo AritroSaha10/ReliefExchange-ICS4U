@@ -43,9 +43,9 @@ type DeleteDonationRequestBody struct {
 	IDToken string `json:"token"`
 }
 
-type PostDonationRequestBody struct {
-	IDToken string `json:"token"`
-}
+// type PostDonationRequestBody struct {
+// 	IDToken string `json:"token"`
+// }
 
 func getDonationsListEndpoint(c *gin.Context) {
 	donations, err := getAllDonations(firebaseContext, firestoreClient)
@@ -77,14 +77,12 @@ func getUserDataFromIDEndpoint(c *gin.Context) {
 }
 
 func postDonationEndpoint(c *gin.Context) {
-	var donation Donation
-
-	if err := c.ShouldBindJSON(&donation); err != nil { //transfers request body so that feilds match the donation struct (will not transfer any feilds that are not in donation struct eg. json token)
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
+	var body struct {
+		Donation
+		IDToken string `json:"token"`
 	}
 
-	var body PostDonationRequestBody
+	// var body PostDonationRequestBody
 	if err := c.ShouldBindJSON(&body); err != nil { //stores request body info into the body varible, so that it matches feild in struct in json format
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()}) //if user not signed in, then will send error
 		return
@@ -98,7 +96,7 @@ func postDonationEndpoint(c *gin.Context) {
 
 	userUID := token.UID
 
-	docID, err := addDonation(firebaseContext, firestoreClient, donation, userUID) //create new donation object from struct
+	docID, err := addDonation(firebaseContext, firestoreClient, body.Donation, userUID) //create new donation object from struct
 	//add to the firestore databse
 	if err != nil {
 		c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
