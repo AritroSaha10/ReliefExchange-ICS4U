@@ -11,11 +11,11 @@ export default function Home() {
 
       <main>
         <h1 className={styles.title}>
-          Welcome to <a href="/donations/donationList">Next.js!</a>
+           <a href="/donations/donationList">Relief Exchange</a>
         </h1>
 
         <p className={styles.description}>
-          Get started by editing <code>pages/index.js</code>
+          
         </p>
 
         <div className={styles.grid}>

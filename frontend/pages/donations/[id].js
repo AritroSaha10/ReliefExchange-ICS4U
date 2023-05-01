@@ -33,7 +33,9 @@ return(
   <>
 
   <Link href="/donations/donationList">Back to Donations</Link>
-      <h1>{donation.id}</h1>
+      <h1>{donation.title}</h1>
+      <p>{donation.city}, {donation.location}</p>
+      <p>{donation.description}</p>
         {/* <Image src={donation.src}/>  */}
               </>
 )

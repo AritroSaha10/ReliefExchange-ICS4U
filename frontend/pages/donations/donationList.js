@@ -21,7 +21,7 @@ export default function displayDonations() {
 
     fetchDonations();
   }, []);
- 
+  
     return(
         <>
         <Head> <title>Donations</title></Head>
@@ -30,7 +30,11 @@ export default function displayDonations() {
 <ul>
   {donations.map((donation)=>(
   <li key={donation.id}>
-    <Link href={`/donations/${donation.id}`}>{donation.id}</Link>
+    {/* <Image src={donation.images[0]}/> */}
+    
+    <Link href={`/donations/${donation.id}`}>{donation.title}</Link>
+    <p>{donation.city}, {donation.location}</p>
+    <p>{donation.description}</p>
     </li>
   ))}
 </ul>
