@@ -11,11 +11,11 @@ export default function Home() {
 
       <main>
         <h1 className={styles.title}>
-           <a href="/donations/donationList">Relief Exchange</a>
+          <a href="/donations/donationList">Relief Exchange</a>
         </h1>
 
         <p className={styles.description}>
-          
+
         </p>
 
         <div className={styles.grid}>
