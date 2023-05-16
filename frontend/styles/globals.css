@@ -1,3 +1,19 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.searchWrapper {
+    border: none !important;
+}
+
+.optionListContainer {
+    @apply rounded-lg !important;
+}
+
+.optionContainer {
+    @apply rounded-lg !important;
+}
+
+.option {
+    @apply rounded-lg !important;
+}
