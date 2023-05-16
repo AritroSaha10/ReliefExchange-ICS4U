@@ -7,6 +7,7 @@ import { useRouter } from "next/router";
 import Multiselect from 'multiselect-react-dropdown';
 import ReCAPTCHA from "react-google-recaptcha"
 
+import axios from "axios";
 import React from "react";
 
 import { AiOutlineCloudUpload } from "react-icons/ai"
@@ -74,6 +75,31 @@ export default function CreateDonation() {
         return () => unsubscribe();
     }, []);
 
+    const onSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+
+        // Confirming the CAPTCHA
+        const token = captchaRef.current.getValue();
+        captchaRef.current.reset();
+
+        if (!token) {
+            alert("Please complete the CAPTCHA and try again.");
+            return;
+        }
+
+        try {
+            const res = await axios.post(`http://localhost:8080/confirmCAPTCHA?token=${token}`)
+            console.log(res.data)
+
+            if (!res.data.human) throw "User was detected to be a bot by ReCAPTCHA."
+        } catch (e) {
+            alert("Something went wrong. Please try again.");
+            console.error(e);
+        }
+
+        console.log(e);
+    }
+
     return (
         <Layout name="Make a Donation">
             <div className="flex flex-col gap-4 p-10 flex-grow min-w-screen">
@@ -85,7 +111,7 @@ export default function CreateDonation() {
                     <p className="text-center text-gray-200 text-md">Loading...</p>
                 )}
                 {signedIn && (
-                    <form>
+                    <form onSubmit={onSubmit}>
                         <div className="flex flex-col gap-6">
                             <div className="flex flex-col items-center">
                                 <h3 className="text-white text-2xl font-medium mb-2 text-center lg:text-left">Product Name: (Max. 100 characters) <span className="text-red-500"> *</span></h3>
