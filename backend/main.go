@@ -2,14 +2,18 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"log"
 	"net/http"
+	"os"
 	"time"
 
 	"cloud.google.com/go/firestore"
 	firebase "firebase.google.com/go"
 	"firebase.google.com/go/auth"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	_ "github.com/joho/godotenv/autoload"
 	"google.golang.org/api/iterator"
 	"google.golang.org/api/option"
 )
@@ -104,7 +108,6 @@ func postDonationEndpoint(c *gin.Context) {
 	} else {
 		c.IndentedJSON(http.StatusCreated, docID)
 	}
-
 }
 
 func deleteDonationEndpoint(c *gin.Context) {
@@ -144,6 +147,36 @@ func deleteDonationEndpoint(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Donation deleted successfully"})
 }
 
+func confirmCAPTCHAToken(c *gin.Context) {
+	var captchaResponseBody struct {
+		Success bool `json:"success"`
+	}
+
+	token := c.Query("token")
+
+	resp, err := http.Get("https://www.google.com/recaptcha/api/siteverify?secret=" + os.Getenv("RECAPTCHA_SECRET_KEY") + "&response=" + token)
+
+	if err != nil {
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	err = json.NewDecoder(resp.Body).Decode(&captchaResponseBody)
+	if err != nil {
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.IndentedJSON(http.StatusOK, gin.H{"human": captchaResponseBody.Success})
+}
+
 func main() {
 	firebaseContext = context.Background()
 	firebaseCreds := option.WithCredentialsFile(SERVICE_ACCOUNT_FILENAME)
@@ -166,8 +199,18 @@ func main() {
 
 	r := gin.Default()
 
+	r.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"*"},
+		AllowMethods:     []string{"GET", "POST", "DELETE"},
+		AllowHeaders:     []string{"Origin"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+		MaxAge:           12 * time.Hour,
+	}))
+
 	r.GET("/donations/donationList", getDonationsListEndpoint)
 	r.GET("/donations/:id", getDonationFromIDEndpoint)
+	r.POST("/confirmCAPTCHA", confirmCAPTCHAToken)
 	r.POST("/donations/new", postDonationEndpoint)
 	r.DELETE("/donations/:id", deleteDonationEndpoint)
 	r.DELETE("/users/:id", getUserDataFromIDEndpoint)
