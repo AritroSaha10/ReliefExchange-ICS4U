@@ -20,6 +20,12 @@ const links = [
         id: "home",
         priority: false
     },
+    {
+        name: "Donations",
+        link: "/donations",
+        id: "donations",
+        priority: false
+    },
     { // THIS SHOULD BE LOGIN / SIGN UP DEPENDING ON AUTH STATE
         name: "Log in / sign up",
         link: "/signin",
