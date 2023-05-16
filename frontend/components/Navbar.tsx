@@ -34,7 +34,7 @@ const baseLinks = [
 const signedInLinks = [
     {
         name: "Donate",
-        link: "/donate",
+        link: "/donations/create",
         id: "donate",
         priority: false
     },
