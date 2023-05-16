@@ -7,13 +7,16 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/router";
+import { onAuthStateChanged } from "firebase/auth";
+import auth from "lib/firebase/auth";
 
 // import Logo from "../public/images/logo.png";
 
 import { GoThreeBars } from "react-icons/go"
 
-const links = [
+const baseLinks = [
     {
         name: "Home",
         link: "/",
@@ -26,16 +29,45 @@ const links = [
         id: "donations",
         priority: false
     },
-    { // THIS SHOULD BE LOGIN / SIGN UP DEPENDING ON AUTH STATE
-        name: "Log in / sign up",
-        link: "/signin",
-        id: "signin",
+];
+
+const signedInLinks = [
+    {
+        name: "Donate",
+        link: "/donate",
+        id: "donate",
+        priority: false
+    },
+    {
+        name: "Sign Out",
+        link: "/sign-out",
+        id: "sign-out",
+        priority: true
+    },
+];
+
+const signedOutLinks = [
+    {
+        name: "Sign In / Register",
+        link: "/sign-in",
+        id: "sign-in",
         priority: true
     },
 ];
 
 export default function Header() {
     const [showDropdown, setShowDropdown] = useState(false);
+    const [isSignedIn, setSignedIn] = useState(false);
+
+    const router = useRouter();
+
+    useEffect(() => {
+        const unsubscribe = onAuthStateChanged(auth, user => {
+            setSignedIn(user !== null);
+        });
+
+        return () => unsubscribe();
+    }, []);
 
     return (
         <header className="bg-slate-800 py-2 lg:py-4 sticky">
@@ -61,7 +93,21 @@ export default function Header() {
 
                 <div className={`${showDropdown ? "flex" : "hidden"} lg:flex flex-col lg:flex-row lg:ml-auto mt-3 lg:mt-0`} data-test-id="navbar">
                     {
-                        links.map(({ name, link, priority, id }) =>
+                        baseLinks.map(({ name, link, priority, id }) =>
+                            <Link key={name} href={link} className={`${priority ? "text-blue-600 hover:bg-blue-600 hover:text-white text-center border border-solid border-blue-600 mt-1 lg:mt-0 lg:ml-1" : "text-gray-300 hover:bg-gray-200 hover:text-gray-700 "} p-2 lg:px-4 lg:mx-2 rounded duration-300 transition-colors `}
+                                data-test-id={`navbar-${id}`}>
+                                {name}
+                            </Link>
+                        )
+                    }
+
+                    {
+                        isSignedIn ? signedInLinks.map(({ name, link, priority, id }) =>
+                            <Link key={name} href={link} className={`${priority ? "text-blue-600 hover:bg-blue-600 hover:text-white text-center border border-solid border-blue-600 mt-1 lg:mt-0 lg:ml-1" : "text-gray-300 hover:bg-gray-200 hover:text-gray-700 "} p-2 lg:px-4 lg:mx-2 rounded duration-300 transition-colors `}
+                                data-test-id={`navbar-${id}`}>
+                                {name}
+                            </Link>
+                        ) : signedOutLinks.map(({ name, link, priority, id }) =>
                             <Link key={name} href={link} className={`${priority ? "text-blue-600 hover:bg-blue-600 hover:text-white text-center border border-solid border-blue-600 mt-1 lg:mt-0 lg:ml-1" : "text-gray-300 hover:bg-gray-200 hover:text-gray-700 "} p-2 lg:px-4 lg:mx-2 rounded duration-300 transition-colors `}
                                 data-test-id={`navbar-${id}`}>
                                 {name}
