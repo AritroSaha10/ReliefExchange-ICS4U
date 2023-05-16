@@ -1,10 +1,11 @@
 import Layout from "@components/Layout";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 import auth from "lib/firebase/auth";
 import { useRouter } from "next/router";
 import Multiselect from 'multiselect-react-dropdown';
+import ReCAPTCHA from "react-google-recaptcha"
 
 import React from "react";
 
@@ -47,7 +48,12 @@ export default function CreateDonation() {
 
     const [submitting, setSubmitting] = useState(false);
 
+    const captchaRef = useRef(null);
+
+
     const [featuredImage, setFeaturedImage] = useState<FileList | []>([]);
+
+    const RECAPTCHA_SITE_KEY = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, newUser => {
@@ -139,42 +145,44 @@ export default function CreateDonation() {
                             </div>
 
                             <div className="flex flex-col items-center">
-                            <h3 className="text-white text-2xl font-medium mb-2 text-center">Product Photo:</h3>
-                            <div className="flex flex-col gap-4 items-center w-full lg:w-1/2">
-                                <label className={`${featuredImage.length ? "bg-slate-500" : "bg-gray-200"} text-white font-semibold py-2 px-4 rounded-xl border-2 border-slate-200 hover:border-slate-400 duration-300 lg:w-3/4 shadow cursor-pointer`}>
-                                    <div className="flex flex-col items-center justify-center">
-                                        {featuredImage.length == 0 ? (
-                                            <>
-                                                <AiOutlineCloudUpload className="text-6xl text-slate-500" />
-                                                <h2 className="text-xl text-slate-500 font-semibold text-center">Upload An Image</h2>
-                                            </>
-                                        ) : (
-                                            <>
-                                                <BsImage className="text-6xl text-white" />
-                                                <h2 className="text-xl text-white font-semibold text-center">Attached {featuredImage[0].name}</h2>
-                                            </>
-                                        )
-                                        }
-                                    </div>
-                                    <input
-                                        type="file"
-                                        className="absolute w-px h-px p-0 -m-px overflow-hidden border-0"
-                                        style={{ clip: "rect(0, 0, 0, 0)" }}
-                                        accept="image/png, image/gif, image/jpeg"
-                                        name="featuredImage"
-                                        onChange={
-                                            (e) => setFeaturedImage(e.target.files)
-                                        }
-                                    />
-                                </label>
+                                <h3 className="text-white text-2xl font-medium mb-2 text-center">Product Photo:</h3>
+                                <div className="flex flex-col gap-4 items-center w-full lg:w-1/2">
+                                    <label className={`${featuredImage.length ? "bg-slate-500" : "bg-gray-200"} text-white font-semibold py-2 px-4 rounded-xl border-2 border-slate-200 hover:border-slate-400 duration-300 lg:w-3/4 shadow cursor-pointer`}>
+                                        <div className="flex flex-col items-center justify-center">
+                                            {featuredImage.length == 0 ? (
+                                                <>
+                                                    <AiOutlineCloudUpload className="text-6xl text-slate-500" />
+                                                    <h2 className="text-xl text-slate-500 font-semibold text-center">Upload An Image</h2>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <BsImage className="text-6xl text-white" />
+                                                    <h2 className="text-xl text-white font-semibold text-center">Attached {featuredImage[0].name}</h2>
+                                                </>
+                                            )
+                                            }
+                                        </div>
+                                        <input
+                                            type="file"
+                                            className="absolute w-px h-px p-0 -m-px overflow-hidden border-0"
+                                            style={{ clip: "rect(0, 0, 0, 0)" }}
+                                            accept="image/png, image/gif, image/jpeg"
+                                            name="featuredImage"
+                                            onChange={
+                                                (e) => setFeaturedImage(e.target.files)
+                                            }
+                                        />
+                                    </label>
+                                </div>
+                                {featuredImage.length ?
+                                    <button className="text-md text-red-500" type="button" onClick={() => setFeaturedImage([])}>Remove</button>
+                                    : ""
+                                }
                             </div>
-                            {featuredImage.length ?
-                                <button className="text-md text-red-500" type="button" onClick={() => setFeaturedImage([])}>Remove</button>
-                                : ""
-                            }
-                        </div>
 
                             <div className="flex flex-col items-center gap-2 self-center mb-4">
+                                <ReCAPTCHA sitekey={RECAPTCHA_SITE_KEY} ref={captchaRef} />
+
                                 <label>
                                     <button
                                         className={`flex items-center bg-green-500 hover:bg-green-700 text-white font-semibold py-4 px-8 rounded text-xl capitalize duration-75 ${submitting && "bg-green-800 cursor-default"}`}

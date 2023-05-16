@@ -7,13 +7,14 @@
   },
   "dependencies": {
     "@uiw/react-md-editor": "^3.20.10",
-    "axios": "^1.3.4",
+    "axios": "^1.4.0",
     "firebase": "^9.22.0",
     "multiselect-react-dropdown": "^2.0.25",
     "next": "latest",
     "next-remove-imports": "^1.0.11",
     "react": "18.2.0",
     "react-dom": "18.2.0",
+    "react-google-recaptcha": "^2.1.0",
     "react-icons": "^4.8.0"
   },
   "devDependencies": {
