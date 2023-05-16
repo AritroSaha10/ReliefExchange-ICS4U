@@ -29,12 +29,14 @@ export default function SignIn() {
     }
     
     useEffect(() => {
-        onAuthStateChanged(auth, user => {
+        const unsubscribe = onAuthStateChanged(auth, user => {
             if (user) {
                 alert("You are signed in! Redirecting...");
                 router.push("/");
             }
         });
+
+        return () => unsubscribe();
     }, []);
     
     return (

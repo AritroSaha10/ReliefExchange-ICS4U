@@ -3,10 +3,24 @@ import Link from 'next/link';
 import Image from 'next/image';
 import Layout from '../components/Layout';
 
+import { useState, useEffect } from "react"
+import { onAuthStateChanged } from 'firebase/auth';
+import auth from 'lib/firebase/auth';
+
 import HeroImage from "@media/hero.jpg";
 import KeepDonateStock from "@media/keep-donate-stock.jpg"
 
 export default function Home() {
+  const [isSignedIn, setSignedIn] = useState(false);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, user => {
+      setSignedIn(user !== null);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
   return (
     <Layout name="Home">
       <header className="h-screen relative">
@@ -31,9 +45,11 @@ export default function Home() {
             </h2>
 
             <div className="flex flex-wrap gap-2 justify-center mt-4">
-              <Link className='px-4 py-2 bg-blue-500 hover:bg-blue-700 text-white text-xl active:bg-blue-800 duration-75 rounded-lg font-medium' href="/donate">
-                Donate
-              </Link>
+              {isSignedIn &&
+                <Link className='px-4 py-2 bg-blue-500 hover:bg-blue-700 text-white text-xl active:bg-blue-800 duration-75 rounded-lg font-medium' href="/donate">
+                  Donate
+                </Link>
+              }
               <Link className='px-4 py-2 bg-blue-500 hover:bg-blue-700 text-white text-xl active:bg-blue-800 duration-75 rounded-lg font-medium' href="/donations">
                 View Recent Items
               </Link>
