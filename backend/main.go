@@ -37,15 +37,13 @@ type UserData struct {
 	LastName              string    `json:"last_name"`
 	RegistrationTimestamp time.Time `json:"registered_date"`
 	UID                   string
+	Admin                 bool                    `json:"admin"`
+	Posts                 []firestore.DocumentRef `json:"posts"`
 }
 
 type DeleteDonationRequestBody struct {
 	IDToken string `json:"token"`
 }
-
-// type PostDonationRequestBody struct {
-// 	IDToken string `json:"token"`
-// }
 
 func getDonationsListEndpoint(c *gin.Context) {
 	donations, err := getAllDonations(firebaseContext, firestoreClient)
@@ -82,7 +80,6 @@ func postDonationEndpoint(c *gin.Context) {
 		IDToken string `json:"token"`
 	}
 
-	// var body PostDonationRequestBody
 	if err := c.ShouldBindJSON(&body); err != nil { //stores request body info into the body varible, so that it matches feild in struct in json format
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()}) //if user not signed in, then will send error
 		return
@@ -143,7 +140,34 @@ func deleteDonationEndpoint(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"message": "Donation deleted successfully"})
 }
+func addUserEndpoint(c *gin.Context) {
+	var body struct {
+		UserData
+		IDToken string `json:"token"`
+	}
 
+	if err := c.ShouldBindJSON(&body.UserData); err != nil { //stores request body info into the body varible, so that it matches feild in struct in json format
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()}) //if user not signed in, then will send error
+		return
+	}
+
+	token, err := authClient.VerifyIDToken(firebaseContext, body.IDToken) //token is for user to verify with the server, after it is decoded, we have access to all feilds
+	if err != nil {
+		c.IndentedJSON(http.StatusForbidden, gin.H{"error": "You are not authorized to create this user"})
+		return
+	}
+
+	userUID := token.UID
+
+	err = addUser(firebaseContext, firestoreClient, body.UserData, userUID) //create new donation object from struct
+	//add to the firestore databse
+	if err != nil {
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	} else {
+		c.IndentedJSON(http.StatusCreated, gin.H{"message": "User added successfully"})
+	}
+}
 func main() {
 	firebaseContext = context.Background()
 	firebaseCreds := option.WithCredentialsFile(SERVICE_ACCOUNT_FILENAME)
@@ -169,6 +193,7 @@ func main() {
 	r.GET("/donations/donationList", getDonationsListEndpoint)
 	r.GET("/donations/:id", getDonationFromIDEndpoint)
 	r.POST("/donations/new", postDonationEndpoint)
+	r.POST("/users/new", addUserEndpoint)
 	r.DELETE("/donations/:id", deleteDonationEndpoint)
 	r.DELETE("/users/:id", getUserDataFromIDEndpoint)
 	err = r.Run()
@@ -240,4 +265,18 @@ func addDonation(ctx context.Context, client *firestore.Client, donation Donatio
 		return "", err
 	}
 	return docRef.ID, nil
+}
+func addUser(ctx context.Context, client *firestore.Client, userdata UserData, userId string) error {
+	_, err := client.Doc("userdata/"+userId).Create(ctx, map[string]interface{}{
+		"first_name": userdata.FirstName,
+		"last_name":  userdata.LastName,
+		"admin":      false,
+		"posts":      []firestore.DocumentRef{},
+		"id":         userId,
+	})
+	if err != nil {
+		return err
+	}
+	return nil
+
 }
