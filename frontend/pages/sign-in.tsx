@@ -21,6 +21,11 @@ export default function SignIn() {
             await setPersistence(auth, browserLocalPersistence);
             
             const res = await signInWithPopup(auth, provider);
+            
+            if (res.user.metadata.creationTime == res.user.metadata.lastSignInTime) {
+                // TODO: Send a request to the endpoint to generate the user data for a new user
+            }
+
             console.log(res);          
         } catch (e) {
             console.error(e);

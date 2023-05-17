@@ -2,14 +2,18 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"log"
 	"net/http"
+	"os"
 	"time"
 
 	"cloud.google.com/go/firestore"
 	firebase "firebase.google.com/go"
 	"firebase.google.com/go/auth"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	_ "github.com/joho/godotenv/autoload"
 	"google.golang.org/api/iterator"
 	"google.golang.org/api/option"
 )
@@ -101,7 +105,6 @@ func postDonationEndpoint(c *gin.Context) {
 	} else {
 		c.IndentedJSON(http.StatusCreated, docID)
 	}
-
 }
 
 func deleteDonationEndpoint(c *gin.Context) {
@@ -190,8 +193,18 @@ func main() {
 
 	r := gin.Default()
 
+	r.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"*"},
+		AllowMethods:     []string{"GET", "POST", "DELETE"},
+		AllowHeaders:     []string{"Origin"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+		MaxAge:           12 * time.Hour,
+	}))
+
 	r.GET("/donations/donationList", getDonationsListEndpoint)
 	r.GET("/donations/:id", getDonationFromIDEndpoint)
+	r.POST("/confirmCAPTCHA", confirmCAPTCHAToken)
 	r.POST("/donations/new", postDonationEndpoint)
 	r.POST("/users/new", addUserEndpoint)
 	r.DELETE("/donations/:id", deleteDonationEndpoint)
@@ -199,7 +212,7 @@ func main() {
 	err = r.Run()
 	if err != nil {
 		return
-	}
+	}c
 }
 
 // Gets all donations available

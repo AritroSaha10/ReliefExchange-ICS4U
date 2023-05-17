@@ -46,7 +46,7 @@ export default function Home() {
 
             <div className="flex flex-wrap gap-2 justify-center mt-4">
               {isSignedIn &&
-                <Link className='px-4 py-2 bg-blue-500 hover:bg-blue-700 text-white text-xl active:bg-blue-800 duration-75 rounded-lg font-medium' href="/donate">
+                <Link className='px-4 py-2 bg-blue-500 hover:bg-blue-700 text-white text-xl active:bg-blue-800 duration-75 rounded-lg font-medium' href="/donations/create">
                   Donate
                 </Link>
               }
