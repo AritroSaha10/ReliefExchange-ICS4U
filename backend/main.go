@@ -171,6 +171,35 @@ func addUserEndpoint(c *gin.Context) {
 		c.IndentedJSON(http.StatusCreated, gin.H{"message": "User added successfully"})
 	}
 }
+func confirmCAPTCHAToken(c *gin.Context) {
+	var captchaResponseBody struct {
+		Success bool `json:"success"`
+	}
+
+	token := c.Query("token")
+
+	resp, err := http.Get("https://www.google.com/recaptcha/api/siteverify?secret=" + os.Getenv("RECAPTCHA_SECRET_KEY") + "&response=" + token)
+
+	if err != nil {
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	err = json.NewDecoder(resp.Body).Decode(&captchaResponseBody)
+	if err != nil {
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.IndentedJSON(http.StatusOK, gin.H{"human": captchaResponseBody.Success})
+}
 func main() {
 	firebaseContext = context.Background()
 	firebaseCreds := option.WithCredentialsFile(SERVICE_ACCOUNT_FILENAME)
@@ -212,7 +241,7 @@ func main() {
 	err = r.Run()
 	if err != nil {
 		return
-	}c
+	}
 }
 
 // Gets all donations available
