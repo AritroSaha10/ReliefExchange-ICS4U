@@ -32,7 +32,7 @@ type Donation struct {
 	Location          string    `json:"location"`
 	City              string    `json:"city"`
 	Image             string    `json:"image"`
-	CreationTimestamp time.Time `json:"creation_timestamp"`
+	CreationTimestamp time.Time `json:"creation_timestamp"` // In UTC
 	OwnerId           string    `json:"ownerid"`
 	Tags              []string  `json:"tags"`
 }
@@ -40,7 +40,7 @@ type Donation struct {
 type UserData struct {
 	FirstName             string    `json:"first_name"`
 	LastName              string    `json:"last_name"`
-	RegistrationTimestamp time.Time `json:"registered_date"`
+	RegistrationTimestamp time.Time `json:"registered_date"` // In UTC
 	UID                   string
 	Admin                 bool                    `json:"admin"`
 	Posts                 []firestore.DocumentRef `json:"posts"`
@@ -81,8 +81,8 @@ func getUserDataFromIDEndpoint(c *gin.Context) {
 
 func postDonationEndpoint(c *gin.Context) {
 	var body struct {
-		Donation
-		IDToken string `json:"token"`
+		DonationData Donation `json:"data"`
+		IDToken      string   `json:"token"`
 	}
 
 	if err := c.ShouldBindJSON(&body); err != nil { //stores request body info into the body varible, so that it matches feild in struct in json format
@@ -98,7 +98,9 @@ func postDonationEndpoint(c *gin.Context) {
 
 	userUID := token.UID
 
-	docID, err := addDonation(firebaseContext, firestoreClient, body.Donation, userUID) //create new donation object from struct
+	log.Println(body.DonationData.CreationTimestamp)
+
+	docID, err := addDonation(firebaseContext, firestoreClient, body.DonationData, userUID) //create new donation object from struct
 	//add to the firestore databse
 	if err != nil {
 		c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -242,7 +244,7 @@ func main() {
 	r.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"*"},
 		AllowMethods:     []string{"GET", "POST", "DELETE"},
-		AllowHeaders:     []string{"Origin"},
+		AllowHeaders:     []string{"Origin,Content-Type"},
 		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: true,
 		MaxAge:           12 * time.Hour,
@@ -315,12 +317,13 @@ func getUserDataByID(ctx context.Context, client *firestore.Client, id string) (
 
 func addDonation(ctx context.Context, client *firestore.Client, donation Donation, userId string) (string, error) {
 	docRef, _, err := client.Collection("donations").Add(ctx, map[string]interface{}{
-		"title":       donation.Title,
-		"description": donation.Description,
-		"location":    donation.Location,
-		"img":         donation.Image,
-		"OwnerId":     userId,
-		"tags":        donation.Tags,
+		"title":              donation.Title,
+		"description":        donation.Description,
+		"location":           donation.Location,
+		"img":                donation.Image,
+		"owner_id":           userId,
+		"creation_timestamp": donation.CreationTimestamp,
+		"tags":               donation.Tags,
 	})
 	if err != nil {
 		return "", err

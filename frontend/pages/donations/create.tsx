@@ -1,57 +1,76 @@
 import Layout from "@components/Layout";
-
 import { useState, useEffect, useRef } from "react";
-import { onAuthStateChanged } from "firebase/auth";
+import { getIdToken, onAuthStateChanged, User } from "firebase/auth";
 import auth from "lib/firebase/auth";
 import { useRouter } from "next/router";
 import Multiselect from 'multiselect-react-dropdown';
 import ReCAPTCHA from "react-google-recaptcha"
-
 import axios from "axios";
 import React from "react";
-
 import { AiOutlineCloudUpload } from "react-icons/ai"
 import { BsImage } from "react-icons/bs"
-
+import dynamic from "next/dynamic";
+import * as commands from "@uiw/react-md-editor/lib/commands";
+import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
+import storage from "lib/firebase/storage";
 
 import "@uiw/react-md-editor/markdown-editor.css";
 import "@uiw/react-markdown-preview/markdown.css";
-import dynamic from "next/dynamic";
-
-
-const options = [
-    {
-        name: 'Option 1️⃣',
-        id: 1
-    },
-    {
-        name: 'Option 2️⃣',
-        id: 2
-    }
-]
-
 
 const MDEditor = dynamic(
     () => import("@uiw/react-md-editor").then((mod) => mod.default),
     { ssr: false }
 );
 
-import * as commands from "@uiw/react-md-editor/lib/commands";
+const options = [
+    {
+        name: 'Electronics',
+        id: 1
+    },
+    {
+        name: 'Tools',
+        id: 2
+    },
+    {
+        name: 'Sporting Goods',
+        id: 3
+    },
+    {
+        name: 'Home Appliances',
+        id: 4
+    },
+    {
+        name: 'Furniture',
+        id: 5
+    },
+    {
+        name: 'Clothing',
+        id: 6
+    },
+    {
+        name: 'Books',
+        id: 7
+    },
+    {
+        name: 'Baby Items',
+        id: 8
+    },
+    {
+        name: 'Other',
+        id: 9
+    }
+]
 
 export default function CreateDonation() {
-    const [loadingAuth, setLoadingAuth] = useState(true);
-    const [user, setUser] = useState<{ [key: string]: any }>({});
-    const [signedIn, setSignedIn] = useState<boolean>(false);
     const router = useRouter();
-    const [tagsSelected, setTagsSelected] = useState([]);
-
-    const [descriptionMD, setDescriptionMD] = useState("**Hello world!!!**");
-
-    const [submitting, setSubmitting] = useState(false);
-
     const captchaRef = useRef(null);
 
-
+    const [loadingAuth, setLoadingAuth] = useState(true);
+    const [user, setUser] = useState<User>(null);
+    const [signedIn, setSignedIn] = useState<boolean>(false);
+    const [tagsSelected, setTagsSelected] = useState([]);
+    const [descriptionMD, setDescriptionMD] = useState("**Hello world!!!**");
+    const [submitting, setSubmitting] = useState(false);
     const [featuredImage, setFeaturedImage] = useState<FileList | []>([]);
 
     const RECAPTCHA_SITE_KEY = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
@@ -63,7 +82,7 @@ export default function CreateDonation() {
                 setUser(newUser);
                 setSignedIn(true);
             } else {
-                setUser({});
+                setUser(null);
                 setSignedIn(false);
                 alert("You need to be signed in to access this page. Redirecting...");
                 router.push("/");
@@ -75,37 +94,88 @@ export default function CreateDonation() {
         return () => unsubscribe();
     }, []);
 
-    const onSubmit = async (e: React.FormEvent) => {
+    const onSubmit: React.FormEventHandler<HTMLFormElement> = async (e) => {
+        const formData = Object.fromEntries((new FormData(e.currentTarget)).entries());
         e.preventDefault();
+
+        setSubmitting(true);
 
         // Confirming the CAPTCHA
         const token = captchaRef.current.getValue();
         captchaRef.current.reset();
-
         if (!token) {
             alert("Please complete the CAPTCHA and try again.");
             return;
         }
-
         try {
             const res = await axios.post(`http://localhost:8080/confirmCAPTCHA?token=${token}`)
-            console.log(res.data)
-
             if (!res.data.human) throw "User was detected to be a bot by ReCAPTCHA."
         } catch (e) {
             alert("Something went wrong. Please try again.");
             console.error(e);
+            setSubmitting(false);
+            return
         }
 
-        console.log(e);
+        // CAPTCHA confirmed, now upload the image to Firebase Storage
+        let imgLink = "" // TODO: Make this an actual link
+        if (featuredImage.length !== 0) {
+            const imgRef = ref(storage, `donations/${crypto.randomUUID()}.jpg`);
+
+            try {
+                const imgSnapshot = await uploadBytes(imgRef, featuredImage[0]);
+                imgLink = await getDownloadURL(imgSnapshot.ref);
+            } catch (e) {
+                alert("Something went wrong while uploading your image. Please try again, and make sure that your image is <=10MB.");
+                console.error(e);
+                setSubmitting(false);
+                return
+            }
+        }
+
+        // Convert the current timestamp to UTC for a consistent timezone
+        const date = new Date();
+        const nowUTC = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(),
+            date.getUTCDate(), date.getUTCHours(),
+            date.getUTCMinutes(), date.getUTCSeconds()));
+
+        // Image uploaded, now prepare the data to send to endpoint
+        const idToken = await getIdToken(user, true);
+        const donationData = {
+            "title": formData["product-name"],
+            "description": descriptionMD,
+            "location": formData["product-location"],
+            "city": formData["product-location"], // TODO: REMOVE THIS WHEN BACKEND UPDATED
+            "images": imgLink ? [imgLink] : [], // TODO: MAKE THIS JUST A STRING WHEN BACKEND UPDATED
+            "tags": tagsSelected.map(obj => obj.name),
+            "creation_timestamp": nowUTC.toISOString(),
+            "ownerid": user.uid
+        };
+
+        // Send the prep'd data to our endpoint
+        try {
+            const apiRes = await axios.post("http://localhost:8080/donations/new", {
+                data: donationData,
+                token: idToken
+            });
+            alert("Your donation was successfully submitted! Redirecting you to its page...");
+            router.push(`/donations/${apiRes.data}`);
+        } catch (e) {
+            alert("Something went wrong while submitted your donation. Please try again.");
+            console.error(e);
+            setSubmitting(false);
+            return;
+        }
+
+        setSubmitting(false);
     }
 
     return (
         <Layout name="Make a Donation">
             <div className="flex flex-col gap-4 p-10 flex-grow min-w-screen">
                 <div className="flex flex-col gap-2 mb-4">
-                    <h1 className="text-4xl text-white font-bold text-center">Make a Donation</h1>
-                    <p className="text-md text-gray-200 text-center">Fill out this form to make a donation!</p>
+                    <h1 className="text-4xl text-white font-bold text-center">Make Donation Offer</h1>
+                    <p className="text-md text-gray-200 text-center">Fill out this form to offer a donation to others!</p>
                 </div>
                 {loadingAuth && (
                     <p className="text-center text-gray-200 text-md">Loading...</p>
@@ -117,6 +187,7 @@ export default function CreateDonation() {
                                 <h3 className="text-white text-2xl font-medium mb-2 text-center lg:text-left">Product Name: (Max. 100 characters) <span className="text-red-500"> *</span></h3>
                                 <div className="flex flex-col md:flex-row gap-4">
                                     <input
+                                        name="product-name"
                                         type="text"
                                         placeholder={`Product Name...`}
                                         className="rounded py-2 px-3 w-60 sm:w-72 align-middle text-gray-700 outline-none ring-2 ring-blue-100 focus:ring-blue-300 duration-200"
@@ -162,6 +233,7 @@ export default function CreateDonation() {
                                 <div className="flex flex-col md:flex-row gap-4">
                                     <input
                                         type="text"
+                                        name="product-location"
                                         placeholder={`Location...`}
                                         className="rounded py-2 px-3 w-72 sm:w-80 align-middle text-gray-700 outline-none ring-2 ring-blue-100 focus:ring-blue-300 duration-200"
                                         required
