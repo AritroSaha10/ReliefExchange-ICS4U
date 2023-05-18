@@ -145,11 +145,10 @@ export default function CreateDonation() {
             "title": formData["product-name"],
             "description": descriptionMD,
             "location": formData["product-location"],
-            "city": formData["product-location"], // TODO: REMOVE THIS WHEN BACKEND UPDATED
-            "images": imgLink ? [imgLink] : [], // TODO: MAKE THIS JUST A STRING WHEN BACKEND UPDATED
+            "img": imgLink,
             "tags": tagsSelected.map(obj => obj.name),
             "creation_timestamp": nowUTC.toISOString(),
-            "ownerid": user.uid
+            "ownerID": user.uid
         };
 
         // Send the prep'd data to our endpoint
