@@ -39,6 +39,7 @@ type Donation struct {
 type UserData struct {
 	FirstName             string    `json:"first_name"`
 	LastName              string    `json:"last_name"`
+	Email                 string    `json:"email"`
 	RegistrationTimestamp time.Time `json:"registered_date"` // In UTC
 	UID                   string
 	Admin                 bool                    `json:"admin"`
@@ -315,6 +316,7 @@ func addUser(ctx context.Context, client *firestore.Client, userdata UserData, u
 	_, err := client.Doc("userdata/"+userId).Create(ctx, map[string]interface{}{
 		"first_name": userdata.FirstName,
 		"last_name":  userdata.LastName,
+		"email":      userdata.Email,
 		"admin":      false,
 		"posts":      []firestore.DocumentRef{},
 		"id":         userId,
