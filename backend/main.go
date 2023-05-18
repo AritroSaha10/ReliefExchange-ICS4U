@@ -30,10 +30,9 @@ type Donation struct {
 	Title             string    `json:"title"`
 	Description       string    `json:"description"`
 	Location          string    `json:"location"`
-	City              string    `json:"city"`
-	Image             string    `json:"image"`
+	Image             string    `json:"img"`
 	CreationTimestamp time.Time `json:"creation_timestamp"` // In UTC
-	OwnerId           string    `json:"ownerid"`
+	OwnerId           string    `json:"owner_id"`
 	Tags              []string  `json:"tags"`
 }
 
@@ -133,7 +132,7 @@ func deleteDonationEndpoint(c *gin.Context) {
 
 	userUID := token.UID
 
-	if donationData.Data()["ownerId"] != userUID {
+	if donationData.Data()["owner_id"] != userUID {
 		c.JSON(http.StatusForbidden, gin.H{"error": "You are not authorized to delete this donation."})
 		return
 	}
@@ -299,6 +298,12 @@ func getDonationByID(ctx context.Context, client *firestore.Client, id string) (
 	if err != nil {
 		return Donation{}, err
 	}
+
+	// Override some attributes that don't work with DataTo
+	donation.Image = doc.Data()["img"].(string)
+	donation.OwnerId = doc.Data()["owner_id"].(string)
+	donation.CreationTimestamp = doc.Data()["creation_timestamp"].(time.Time)
+
 	donation.ID = doc.Ref.ID //ID is stored in the Ref feild, so DataTo, does not store id in the donations object
 	return donation, nil
 }
