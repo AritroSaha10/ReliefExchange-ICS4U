@@ -31,9 +31,10 @@ type Donation struct {
 	Description       string    `json:"description"`
 	Location          string    `json:"location"`
 	City              string    `json:"city"`
-	Images            []string  `json:"images"`
+	Image             string    `json:"image"`
 	CreationTimestamp time.Time `json:"creation_timestamp"` // In UTC
 	OwnerId           string    `json:"ownerid"`
+	Tags              []string  `json:"tags"`
 }
 
 type UserData struct {
@@ -203,6 +204,22 @@ func confirmCAPTCHAToken(c *gin.Context) {
 
 	c.IndentedJSON(http.StatusOK, gin.H{"human": captchaResponseBody.Success})
 }
+func banUser(c *gin.context) {
+	var body struct {
+		UserData
+		IDToken string `json:"token"`
+	}
+	// get sending user token
+	token, err := authClient.VerifyIDToken(firebaseContext, body.IDToken) //token is for user to verify with the server, after it is decoded, we have access to all feilds
+	if err != nil {
+		c.IndentedJSON(http.StatusForbidden, gin.H{"error": "You are not authorized to create this user"})
+		return
+	}
+	token.UID
+	// get uuid of user to ban
+	// if sending user is a admin delete all the donations of the user to ban including their data and account
+}
+
 func main() {
 	firebaseContext = context.Background()
 	firebaseCreds := option.WithCredentialsFile(SERVICE_ACCOUNT_FILENAME)
@@ -239,6 +256,7 @@ func main() {
 	r.POST("/confirmCAPTCHA", confirmCAPTCHAToken)
 	r.POST("/donations/new", postDonationEndpoint)
 	r.POST("/users/new", addUserEndpoint)
+	r.POST("/users/ban", banUserEndpoint)
 	r.DELETE("/donations/:id", deleteDonationEndpoint)
 	r.DELETE("/users/:id", getUserDataFromIDEndpoint)
 	err = r.Run()
@@ -303,9 +321,10 @@ func addDonation(ctx context.Context, client *firestore.Client, donation Donatio
 		"title":              donation.Title,
 		"description":        donation.Description,
 		"location":           donation.Location,
-		"imgs":               donation.Images,
+		"img":                donation.Image,
 		"owner_id":           userId,
 		"creation_timestamp": donation.CreationTimestamp,
+		"tags":               donation.Tags,
 	})
 	if err != nil {
 		return "", err
