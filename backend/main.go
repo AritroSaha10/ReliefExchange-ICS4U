@@ -38,13 +38,13 @@ type Donation struct {
 }
 
 type UserData struct {
-	FirstName             string    `json:"first_name"`
-	LastName              string    `json:"last_name"`
-	Email                 string    `json:"email"`
-	RegistrationTimestamp time.Time `json:"registered_date"` // In UTC
+	DisplayName           string                   `json:"display_name"`
+	Email                 string                   `json:"email"`
+	RegistrationTimestamp time.Time                `json:"registered_date"` // In UTC
+	Admin                 bool                     `json:"admin"`
+	Posts                 []*firestore.DocumentRef `json:"posts"`
+	DonationsMade         int64                    `json:"donations_made"`
 	UID                   string
-	Admin                 bool                    `json:"admin"`
-	Posts                 []firestore.DocumentRef `json:"posts"`
 }
 
 type DeleteDonationRequestBody struct {
@@ -74,6 +74,7 @@ func getUserDataFromIDEndpoint(c *gin.Context) {
 	id := c.Param("id")
 	userData, err := getUserDataByID(firebaseContext, firestoreClient, id)
 	if err != nil {
+		log.Println(err.Error())
 		c.IndentedJSON(http.StatusNotFound, gin.H{"error": err.Error()})
 	} else {
 		c.IndentedJSON(http.StatusOK, userData)
@@ -98,8 +99,6 @@ func postDonationEndpoint(c *gin.Context) {
 	}
 
 	userUID := token.UID
-
-	log.Println(body.DonationData.CreationTimestamp)
 
 	docID, err := addDonation(firebaseContext, firestoreClient, body.DonationData, userUID) //create new donation object from struct
 	//add to the firestore databse
@@ -204,22 +203,24 @@ func confirmCAPTCHAToken(c *gin.Context) {
 
 	c.IndentedJSON(http.StatusOK, gin.H{"human": captchaResponseBody.Success})
 }
-func banUser(c *gin.context) {
-	var body struct {
-		UserData
-		IDToken string `json:"token"`
-	}
-	// get sending user token
-	token, err := authClient.VerifyIDToken(firebaseContext, body.IDToken) //token is for user to verify with the server, after it is decoded, we have access to all feilds
-	if err != nil {
-		c.IndentedJSON(http.StatusForbidden, gin.H{"error": "You are not authorized to create this user"})
-		return
-	}
-	token.UID
-	// get uuid of user to ban
-	// if sending user is a admin delete all the donations of the user to ban including their data and account
-}
 
+/*
+	func banUser(c *gin.context) {
+		var body struct {
+			UserData
+			IDToken string `json:"token"`
+		}
+		// get sending user token
+		token, err := authClient.VerifyIDToken(firebaseContext, body.IDToken) //token is for user to verify with the server, after it is decoded, we have access to all feilds
+		if err != nil {
+			c.IndentedJSON(http.StatusForbidden, gin.H{"error": "You are not authorized to create this user"})
+			return
+		}
+		token.UID
+		// get uuid of user to ban
+		// if sending user is a admin delete all the donations of the user to ban including their data and account
+	}
+*/
 func main() {
 	firebaseContext = context.Background()
 	firebaseCreds := option.WithCredentialsFile(SERVICE_ACCOUNT_FILENAME)
@@ -253,12 +254,12 @@ func main() {
 
 	r.GET("/donations/donationList", getDonationsListEndpoint)
 	r.GET("/donations/:id", getDonationFromIDEndpoint)
+	r.GET("/users/:id", getUserDataFromIDEndpoint)
 	r.POST("/confirmCAPTCHA", confirmCAPTCHAToken)
 	r.POST("/donations/new", postDonationEndpoint)
 	r.POST("/users/new", addUserEndpoint)
-	r.POST("/users/ban", banUserEndpoint)
+	// r.POST("/users/ban", banUserEndpoint)
 	r.DELETE("/donations/:id", deleteDonationEndpoint)
-	r.DELETE("/users/:id", getUserDataFromIDEndpoint)
 	err = r.Run()
 	if err != nil {
 		return
@@ -312,6 +313,12 @@ func getUserDataByID(ctx context.Context, client *firestore.Client, id string) (
 	if err != nil {
 		return UserData{}, err
 	}
+
+	// Set values that aren't set in the DataTo function
+	userData.DisplayName = doc.Data()["display_name"].(string)
+	userData.RegistrationTimestamp = doc.Data()["registered_date"].(time.Time)
+	userData.DonationsMade = doc.Data()["donations_made"].(int64)
+
 	userData.UID = doc.Ref.ID // ID is stored in the Ref feild, so DataTo, does not store id in the user data object
 	return userData, nil
 }
@@ -333,12 +340,11 @@ func addDonation(ctx context.Context, client *firestore.Client, donation Donatio
 }
 func addUser(ctx context.Context, client *firestore.Client, userdata UserData, userId string) error {
 	_, err := client.Doc("userdata/"+userId).Create(ctx, map[string]interface{}{
-		"first_name": userdata.FirstName,
-		"last_name":  userdata.LastName,
-		"email":      userdata.Email,
-		"admin":      false,
-		"posts":      []firestore.DocumentRef{},
-		"id":         userId,
+		"display_name": userdata.DisplayName,
+		"email":        userdata.Email,
+		"admin":        false,
+		"posts":        []firestore.DocumentRef{},
+		"id":           userId,
 	})
 	if err != nil {
 		return err
