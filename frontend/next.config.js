@@ -1,4 +1,13 @@
 const removeImports = require('next-remove-imports')({
-    options: {},
 })
-module.exports = removeImports()
+module.exports = {
+    ...removeImports(),
+    images: {
+        remotePatterns: [
+            {
+                protocol: "https",
+                hostname: "lh3.googleusercontent.com",
+            }
+        ]
+    }
+}

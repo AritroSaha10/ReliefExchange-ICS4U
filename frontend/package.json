@@ -8,6 +8,7 @@
   "dependencies": {
     "@uiw/react-md-editor": "^3.20.10",
     "axios": "^1.4.0",
+    "dayjs": "^1.11.7",
     "firebase": "^9.22.0",
     "multiselect-react-dropdown": "^2.0.25",
     "next": "latest",
