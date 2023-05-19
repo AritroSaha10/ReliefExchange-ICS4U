@@ -34,13 +34,23 @@ export default function UserProfile() {
                 // Attempt to get the user's data from the backend
                 axios.get(convertBackendRouteToURL(`/users/${newUser.uid}`)).then(async res => {
                     let data = res.data;
-                    
+                    if (data.posts === null) {
+                        data.posts = []
+                    }
+
                     // Get data of each donation and replace the posts key with it
                     data.posts = await Promise.all(data.posts.map(async (post: { ID: string }) => {
                         // Get each donation
-                        const res = await axios.get(convertBackendRouteToURL(`/donations/${post.ID}`));
-                        return res.data;
+                        try {
+                            const res = await axios.get(convertBackendRouteToURL(`/donations/${post.ID}`));
+                            return res.data;
+                        } catch (e) {
+                            console.log(e);
+                            return null;
+                        }
                     }));
+
+                    data.posts = data.posts.filter((obj: any) => obj !== null)
 
                     setUserData(data);
                     setSignedIn(true);
