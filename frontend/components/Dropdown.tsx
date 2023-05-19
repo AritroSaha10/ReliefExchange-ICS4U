@@ -6,7 +6,10 @@ function classNames(...classes) {
     return classes.filter(Boolean).join(' ')
 }
 
-export default function Dropdown({ title, selectedItem, setSelectedItem, options }) {
+export default function Dropdown({ title, selectedItem, setSelectedItem, options, openOverlap }) {
+    // Default to True if not provided
+    openOverlap = typeof openOverlap === "boolean" ? openOverlap : false;
+
     return (
         <Menu as="div" className="relative inline-block text-left w-36">
             <div>
@@ -25,10 +28,10 @@ export default function Dropdown({ title, selectedItem, setSelectedItem, options
                 leaveFrom="transform opacity-100 scale-100"
                 leaveTo="transform opacity-0 scale-95"
             >
-                <Menu.Items className="absolute right-0 z-10 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                <Menu.Items className={classNames("right-0 z-10 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none", openOverlap ? "absolute" : "")}>
                     <div className="py-1">
                         {options.map(item => (
-                            <Menu.Item>
+                            <Menu.Item key={item.name}>
                                 {({ active }) => {
                                     return (
                                         <button

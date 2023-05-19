@@ -39,6 +39,12 @@ const signedInLinks = [
         priority: false
     },
     {
+        name: "Profile",
+        link: "/profile",
+        id: "profile",
+        priority: false
+    },
+    {
         name: "Sign Out",
         link: "/sign-out",
         id: "sign-out",
