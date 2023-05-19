@@ -60,7 +60,7 @@ export const getStaticProps: GetStaticProps = async (context) => {
         }
 
         const props = { donation }
-        return { props }
+        return { props, revalidate: 1 }
     } catch (e) {
         console.error(e);
         return {

@@ -251,7 +251,7 @@ func main() {
 		MaxAge:           12 * time.Hour,
 	}))
 
-	r.GET("/donations/donationList", getDonationsListEndpoint)
+	r.GET("/donations/list", getDonationsListEndpoint)
 	r.GET("/donations/:id", getDonationFromIDEndpoint)
 	r.GET("/users/:id", getUserDataFromIDEndpoint)
 	r.POST("/confirmCAPTCHA", confirmCAPTCHAToken)
@@ -279,6 +279,12 @@ func getAllDonations(ctx context.Context, client *firestore.Client) ([]Donation,
 		}
 		var donation Donation
 		err = doc.DataTo(&donation)
+
+		// Override some attributes that don't work with DataTo
+		donation.Image = doc.Data()["img"].(string)
+		donation.OwnerId = doc.Data()["owner_id"].(string)
+		donation.CreationTimestamp = doc.Data()["creation_timestamp"].(time.Time)
+
 		if err != nil {
 			return nil, err
 		}
