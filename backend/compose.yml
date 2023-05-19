@@ -1,0 +1,11 @@
+version: "3.9"
+services:
+  reliefexchange_backend:
+    container_name: reliefexchange_backend
+    restart: unless-stopped
+    image: docker.io/library/relief-exchange-backend
+    ports:
+      - 7000:5050
+    environment:
+      - FIREBASE_CREDENTIALS_JSON=${FIREBASE_CREDENTIALS_JSON}
+      - RECAPTCHA_SECRET_KEY=${RECAPTCHA_SECRET_KEY}
