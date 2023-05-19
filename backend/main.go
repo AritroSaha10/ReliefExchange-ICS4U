@@ -421,11 +421,15 @@ func addDonation(ctx context.Context, client *firestore.Client, donation Donatio
 
 	// Extract posts array
 	data := userDoc.Data()
-	posts, ok := data["posts"].([]*firestore.DocumentRef)
-	if !ok {
-		return "", fmt.Errorf("'posts' field not found or is not the correct type")
-	}
+	posts := make([]*firestore.DocumentRef, 0)
 
+	for _, postRaw := range data["posts"].([]interface{}) {
+		if postRef, ok := postRaw.(*firestore.DocumentRef); ok {
+			posts = append(posts, postRef)
+		} else {
+			log.Println("Unable to convert postRaw to *firestore.DocumentRef")
+		}
+	}
 	// Append the new donation reference
 	posts = append(posts, docRef)
 
