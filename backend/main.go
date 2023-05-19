@@ -46,6 +46,7 @@ type UserData struct {
 	Admin                 bool                     `json:"admin"`
 	Posts                 []*firestore.DocumentRef `json:"posts"`
 	UID                   string                   `json:"uid"`
+	DonationsMade         int64                    `json:"donations_made"`
 }
 
 type DeleteDonationRequestBody struct {
@@ -394,8 +395,13 @@ func getUserDataByID(ctx context.Context, client *firestore.Client, id string) (
 	}
 
 	// Set values that aren't set in the DataTo function
-	userData.DisplayName = doc.Data()["display_name"].(string)
-	userData.RegistrationTimestamp = doc.Data()["registered_date"].(time.Time)
+	var ok bool
+	userData.DisplayName, ok = doc.Data()["display_name"].(string)
+	userData.RegistrationTimestamp, ok = doc.Data()["registered_date"].(time.Time)
+	userData.DonationsMade, ok = doc.Data()["donations_made"].(int64)
+	if !ok {
+		log.Println("WARN: User data may have not been converted properly.")
+	}
 
 	userData.UID = doc.Ref.ID // ID is stored in the Ref feild, so DataTo, does not store id in the user data object
 	return userData, nil
@@ -421,9 +427,12 @@ func addDonation(ctx context.Context, client *firestore.Client, donation Donatio
 
 	// Extract posts array
 	data := userDoc.Data()
-	posts, ok := data["posts"].([]*firestore.DocumentRef)
-	if !ok {
-		return "", fmt.Errorf("'posts' field not found or is not the correct type")
+	rawPosts := data["posts"].([]interface{})
+
+	// Iterate over the array field to find document references
+	var posts []*firestore.DocumentRef
+	for _, value := range rawPosts {
+		posts = append(posts, value.(*firestore.DocumentRef))
 	}
 
 	// Append the new donation reference
