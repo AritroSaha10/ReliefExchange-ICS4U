@@ -13,6 +13,7 @@ import dynamic from "next/dynamic";
 import * as commands from "@uiw/react-md-editor/lib/commands";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import storage from "lib/firebase/storage";
+import allTags from "lib/tag-types";
 
 import "@uiw/react-md-editor/markdown-editor.css";
 import "@uiw/react-markdown-preview/markdown.css";
@@ -21,45 +22,6 @@ const MDEditor = dynamic(
     () => import("@uiw/react-md-editor").then((mod) => mod.default),
     { ssr: false }
 );
-
-const options = [
-    {
-        name: 'Electronics',
-        id: 1
-    },
-    {
-        name: 'Tools',
-        id: 2
-    },
-    {
-        name: 'Sporting Goods',
-        id: 3
-    },
-    {
-        name: 'Home Appliances',
-        id: 4
-    },
-    {
-        name: 'Furniture',
-        id: 5
-    },
-    {
-        name: 'Clothing',
-        id: 6
-    },
-    {
-        name: 'Books',
-        id: 7
-    },
-    {
-        name: 'Baby Items',
-        id: 8
-    },
-    {
-        name: 'Other',
-        id: 9
-    }
-]
 
 export default function CreateDonation() {
     const router = useRouter();
@@ -214,9 +176,8 @@ export default function CreateDonation() {
                             <div className="flex flex-col items-center">
                                 <h3 className="text-white text-2xl font-medium mb-2 text-center lg:text-left">Product Tags: (Max. 3 tags) <span className="text-red-500"> *</span></h3>
                                 <div className="flex flex-col gap-4 w-2/3 lg:w-1/2">
-
                                     <Multiselect
-                                        options={options} // Options to display in the dropdown
+                                        options={allTags} // Options to display in the dropdown
                                         selectedValues={tagsSelected} // Preselected value to persist in dropdown
                                         onSelect={setTagsSelected} // Function will trigger on select event
                                         onRemove={setTagsSelected} // Function will trigger on remove event
