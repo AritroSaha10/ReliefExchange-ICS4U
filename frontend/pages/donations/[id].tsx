@@ -220,6 +220,7 @@ export default function DonationSpecificPage({ rawDonation }) {
 
                     <div className="lg:ml-5 flex flex-col items-center lg:items-start">
                         <h1 className="text-white text-4xl font-semibold text-center break-all">{donation.title}</h1>
+                        <h3 className="text-gray-300 text-md text-center break-all">Posted on {donation.creation_timestamp.toLocaleDateString("en-US", { day: "numeric", month: "long", year: "numeric", })}</h3>
                         <h3 className="text-gray-300 text-md text-center break-all">Available in "{donation.location}"</h3>
 
                         <br />
