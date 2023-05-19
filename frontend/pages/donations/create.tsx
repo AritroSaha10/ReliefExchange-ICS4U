@@ -80,7 +80,7 @@ export default function CreateDonation() {
         }
 
         // CAPTCHA confirmed, now upload the image to Firebase Storage
-        let imgLink = "" // TODO: Make this an actual link
+        let imgLink = ""
         if (featuredImage.length !== 0) {
             const imgRef = ref(storage, `donations/${crypto.randomUUID()}.jpg`);
 
