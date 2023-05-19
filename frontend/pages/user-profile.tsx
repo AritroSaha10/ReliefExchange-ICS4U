@@ -10,6 +10,7 @@ import Layout from "@components/Layout";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime"
 import axios from "axios";
+import convertBackendRouteToURL from "lib/convertBackendRouteToURL";
 dayjs.extend(relativeTime)
 
 export default function UserProfile() {
@@ -31,13 +32,13 @@ export default function UserProfile() {
                 setUser(newUser);
 
                 // Attempt to get the user's data from the backend
-                axios.get(`http://localhost:8080/users/${newUser.uid}`).then(async res => {
+                axios.get(convertBackendRouteToURL(`/users/${newUser.uid}`)).then(async res => {
                     let data = res.data;
                     
                     // Get data of each donation and replace the posts key with it
                     data.posts = await Promise.all(data.posts.map(async (post: { ID: string }) => {
                         // Get each donation
-                        const res = await axios.get(`http://localhost:8080/donations/${post.ID}`);
+                        const res = await axios.get(convertBackendRouteToURL(`/donations/${post.ID}`));
                         return res.data;
                     }));
 

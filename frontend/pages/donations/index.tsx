@@ -8,6 +8,7 @@ import Donation from "lib/types/donation";
 import { GetStaticProps } from "next";
 import RawDonation from "lib/types/rawDonation";
 import axios from "axios";
+import convertBackendRouteToURL from "lib/convertBackendRouteToURL";
 
 const sortByOptions = [
     {
@@ -63,7 +64,7 @@ const filterByDateOptions = {
 const tagsOptions = allTags.reduce((a, v) => ({ ...a, [v.id]: v }), {})
 
 export const getStaticProps: GetStaticProps = async (context) => {
-    const rawDonations: RawDonation[] = (await axios.get("http://localhost:8080/donations/list")).data
+    const rawDonations: RawDonation[] = (await axios.get(convertBackendRouteToURL("/donations/list"))).data
 
     const props = { rawDonations }
     return { props, revalidate: 1 }

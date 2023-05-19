@@ -20,13 +20,14 @@ import { useEffect, useState } from "react";
 import { User, onAuthStateChanged } from "firebase/auth";
 import { useRouter } from "next/router";
 import auth from "lib/firebase/auth";
+import convertBackendRouteToURL from "lib/convertBackendRouteToURL";
 
 interface IParams extends ParsedUrlQuery {
     id: string
 }
 
 export const getStaticPaths: GetStaticPaths = async () => {
-    const rawDonations: RawDonation[] = (await axios.get("http://localhost:8080/donations/list")).data
+    const rawDonations: RawDonation[] = (await axios.get(convertBackendRouteToURL("/donations/list"))).data
     const arr: string[] = rawDonations.map(donation => donation.id)
 
     return {
@@ -43,10 +44,10 @@ export const getStaticProps: GetStaticProps = async (context) => {
     const { id } = context.params as IParams
 
     try {
-        const rawDonation: RawDonation = (await axios.get(`http://localhost:8080/donations/${id}`)).data
+        const rawDonation: RawDonation = (await axios.get(convertBackendRouteToURL(`/donations/${id}`))).data
         const rawDonationWithUserData = {
             ...rawDonation,
-            owner: (await axios.get(`http://localhost:8080/users/${rawDonation.owner_id}`)).data
+            owner: (await axios.get(convertBackendRouteToURL(`/users/${rawDonation.owner_id}`))).data
         }
 
         const props = { rawDonation: rawDonationWithUserData }
@@ -77,7 +78,7 @@ export default function DonationSpecificPage({ rawDonation }) {
         setPerformingAction(true)
 
         try {
-            await axios.post("http://localhost:8080/donations/report", {
+            await axios.post(convertBackendRouteToURL("/donations/report"), {
                 donation_id: donation.id,
                 token: await user.getIdToken()
             })
@@ -100,7 +101,7 @@ export default function DonationSpecificPage({ rawDonation }) {
             setPerformingAction(true)
 
             try {
-                await axios.post(`http://localhost:8080/donations/${donation.id}/delete`, {
+                await axios.post(convertBackendRouteToURL(`/donations/${donation.id}/delete`), {
                     token: await user.getIdToken()
                 })
 
@@ -121,7 +122,7 @@ export default function DonationSpecificPage({ rawDonation }) {
 
             try {
                 alert("This will take a while. Please wait...")
-                await axios.post(`http://localhost:8080/users/ban`, {
+                await axios.post(convertBackendRouteToURL(`/users/ban`), {
                     userToBan: donation.owner_id,
                     token: await user.getIdToken()
                 })
@@ -144,7 +145,7 @@ export default function DonationSpecificPage({ rawDonation }) {
                 setUser(newUser);
 
                 try {
-                    axios.get(`http://localhost:8080/users/${newUser.uid}`).then(res => {
+                    axios.get(convertBackendRouteToURL(`/users/${newUser.uid}`)).then(res => {
                         setIsAdmin(!!res.data.admin)
                     })
                 } catch (e) {

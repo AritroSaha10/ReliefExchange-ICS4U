@@ -17,6 +17,7 @@ import allTags from "lib/tag-types";
 
 import "@uiw/react-md-editor/markdown-editor.css";
 import "@uiw/react-markdown-preview/markdown.css";
+import convertBackendRouteToURL from "lib/convertBackendRouteToURL";
 
 const MDEditor = dynamic(
     () => import("@uiw/react-md-editor").then((mod) => mod.default),
@@ -70,7 +71,7 @@ export default function CreateDonation() {
             return;
         }
         try {
-            const res = await axios.post(`http://localhost:8080/confirmCAPTCHA?token=${token}`)
+            const res = await axios.post(convertBackendRouteToURL(`/confirmCAPTCHA?token=${token}`))
             if (!res.data.human) throw "User was detected to be a bot by ReCAPTCHA."
         } catch (e) {
             alert("Something went wrong. Please try again.");
@@ -115,7 +116,7 @@ export default function CreateDonation() {
 
         // Send the prep'd data to our endpoint
         try {
-            const apiRes = await axios.post("http://localhost:8080/donations/new", {
+            const apiRes = await axios.post(convertBackendRouteToURL("/donations/new"), {
                 data: donationData,
                 token: idToken
             });

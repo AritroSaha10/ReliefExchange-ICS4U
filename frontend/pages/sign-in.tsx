@@ -11,6 +11,7 @@ import MicrosoftLogo from "@media/social-media-logos/microsoft.png";
 import FacebookLogo from "@media/social-media-logos/facebook.png";
 import { useRouter } from "next/router";
 import axios from "axios";
+import convertBackendRouteToURL from "lib/convertBackendRouteToURL";
 
 export default function SignIn() {
     const provider = new GoogleAuthProvider();
@@ -26,7 +27,7 @@ export default function SignIn() {
             if (res.user.metadata.creationTime == res.user.metadata.lastSignInTime) {
                 // TODO: Send a request to the endpoint to generate the user data for a new user
                 try {
-                    await axios.post("http://localhost:8080/users/new", {
+                    await axios.post(convertBackendRouteToURL("/users/new"), {
                         token: await res.user.getIdToken()
                     })
                 } catch (e) {
