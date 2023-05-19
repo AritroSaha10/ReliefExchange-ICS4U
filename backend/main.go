@@ -258,7 +258,7 @@ func reportDonationEndpoint(c *gin.Context) {
 
 func main() {
 	firebaseContext = context.Background()
-	firebaseCreds := option.WithCredentialsFile(SERVICE_ACCOUNT_FILENAME)
+	firebaseCreds := option.WithCredentialsJSON([]byte(os.Getenv("FIREBASE_CREDENTIALS_JSON")))
 
 	app, err := firebase.NewApp(firebaseContext, nil, firebaseCreds)
 	if err != nil {
