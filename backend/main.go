@@ -295,7 +295,7 @@ func main() {
 	r.POST("/users/new", addUserEndpoint)
 	r.POST("/donations/report", reportDonationEndpoint)
 	// r.POST("/users/ban", banUserEndpoint)
-	r.POST("/donations/:id", deleteDonationEndpoint) // Not a DELETE endpoint so we can authorize ourselves
+	r.POST("/donations/:id/delete", deleteDonationEndpoint) // Not a DELETE endpoint so we can authorize ourselves
 	err = r.Run()
 	if err != nil {
 		return
@@ -343,9 +343,16 @@ func getDonationByID(ctx context.Context, client *firestore.Client, id string) (
 	}
 
 	// Override some attributes that don't work with DataTo
-	donation.Image = doc.Data()["img"].(string)
-	donation.OwnerId = doc.Data()["owner_id"].(string)
-	donation.CreationTimestamp = doc.Data()["creation_timestamp"].(time.Time)
+	data := doc.Data()
+	donation.Image = data["img"].(string)
+	donation.OwnerId = data["owner_id"].(string)
+	donation.CreationTimestamp = data["creation_timestamp"].(time.Time)
+
+	// Convert the empty interface types to actual strings
+	donation.Reports = make([]string, 0)
+	for _, reportRaw := range data["reports"].([]interface{}) {
+		donation.Reports = append(donation.Reports, fmt.Sprintf("%+v", reportRaw))
+	}
 
 	donation.ID = doc.Ref.ID //ID is stored in the Ref feild, so DataTo, does not store id in the donations object
 	return donation, nil
@@ -380,7 +387,7 @@ func addDonation(ctx context.Context, client *firestore.Client, donation Donatio
 		"owner_id":           userId,
 		"creation_timestamp": donation.CreationTimestamp,
 		"tags":               donation.Tags,
-		"reports":            donation.Reports,
+		"reports":            make([]string, 0),
 	})
 	if err != nil {
 		return "", err

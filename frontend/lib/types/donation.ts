@@ -6,5 +6,6 @@ export default interface Donation {
     img: string, // direct src to firebase image
     creation_timestamp: Date,
     tags: string[],
-    owner_id: string
+    owner_id: string,
+    reports: string[]
 }

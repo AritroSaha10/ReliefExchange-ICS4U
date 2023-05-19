@@ -13,6 +13,7 @@ import DonationWithUserData from "lib/types/donationWithUserData";
 
 import { BiLeftArrowAlt } from "react-icons/bi"
 import { FiFlag, FiTrash } from "react-icons/fi"
+import { FaBan } from "react-icons/fa"
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -69,6 +70,7 @@ export default function DonationSpecificPage({ rawDonation }) {
     }
 
     const [user, setUser] = useState<User>(null);
+    const [isAdmin, setIsAdmin] = useState(false);
     const [performingAction, setPerformingAction] = useState(false);
 
     const sendReport = async () => {
@@ -98,7 +100,7 @@ export default function DonationSpecificPage({ rawDonation }) {
             setPerformingAction(true)
 
             try {
-                await axios.post(`http://localhost:8080/donations/${donation.id}`, {
+                await axios.post(`http://localhost:8080/donations/${donation.id}/delete`, {
                     token: await user.getIdToken()
                 })
 
@@ -113,11 +115,41 @@ export default function DonationSpecificPage({ rawDonation }) {
         }
     }
 
+    const banUser = async () => {
+        if (confirm("Are you sure you want to ban this user? This will delete all their posts as well.")) {
+            setPerformingAction(true)
+
+            try {
+                alert("This will take a while. Please wait...")
+                await axios.post(`http://localhost:8080/users/ban`, {
+                    userToBan: donation.owner_id,
+                    token: await user.getIdToken()
+                })
+
+                alert("The user has been banned. Redirecting you to the donations index page...")
+                router.push("/donations")
+            } catch (e) {
+                console.error(e)
+                alert("Something went wrong while banning this user. Please try again later.")
+            }
+
+            setPerformingAction(false)
+        }
+    }
+
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, newUser => {
             if (newUser && Object.keys(newUser).length !== 0) {
                 // Set user data
                 setUser(newUser);
+
+                try {
+                    axios.get(`http://localhost:8080/users/${newUser.uid}`).then(res => {
+                        setIsAdmin(!!res.data.admin)
+                    })
+                } catch (e) {
+                    console.error(e)
+                }
             } else {
                 setUser(null);
             }
@@ -151,7 +183,7 @@ export default function DonationSpecificPage({ rawDonation }) {
                                 </button>
                             }
 
-                            {user && user.uid === donation.owner_id &&
+                            {user && (user.uid === donation.owner_id || isAdmin) &&
                                 <button
                                     className="flex items-center text-red-500 hover:text-red-600 active:text-red-700 disabled:text-red-900 duration-150"
                                     disabled={performingAction}
@@ -164,6 +196,26 @@ export default function DonationSpecificPage({ rawDonation }) {
                         </div>
 
                         {donation.img ? <Image src={donation.img} alt="Featured image" height={500} width={500} className="rounded-md object-cover object-center" /> : <></>}
+
+                        {user && isAdmin && (
+                            <div className="flex gap-2 justify-between mb-2 w-full">
+                                <button
+                                    className="flex items-center text-red-500 hover:text-red-600 active:text-red-700 disabled:text-red-900 duration-150"
+                                    disabled={performingAction}
+                                    onClick={() => banUser()}
+                                >
+                                    <FaBan className="mr-1" />
+                                    Ban User
+                                </button>
+
+                                <span
+                                    className="flex items-center text-orange-500"
+                                >
+                                    Reports: {donation.reports.length}
+                                    <FiFlag className="ml-1" />
+                                </span>
+                            </div>
+                        )}
                     </div>
 
                     <div className="lg:ml-5 flex flex-col items-center lg:items-start">
