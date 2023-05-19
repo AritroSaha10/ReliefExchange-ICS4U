@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -44,6 +45,7 @@ type UserData struct {
 	UID                   string
 	Admin                 bool                    `json:"admin"`
 	Posts                 []firestore.DocumentRef `json:"posts"`
+	Email                 string                  `json:"email"`
 }
 
 type DeleteDonationRequestBody struct {
@@ -203,20 +205,48 @@ func confirmCAPTCHAToken(c *gin.Context) {
 
 	c.IndentedJSON(http.StatusOK, gin.H{"human": captchaResponseBody.Success})
 }
-func banUser(c *gin.context) {
+func banUserEndpoint(c *gin.Context) {
 	var body struct {
-		UserData
+		UserData struct { // Define the UserData structure or replace it with your actual structure
+			UUID string `json:"uuid"`
+		}
 		IDToken string `json:"token"`
 	}
+
+	if err := c.ShouldBindJSON(&body); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
 	// get sending user token
-	token, err := authClient.VerifyIDToken(firebaseContext, body.IDToken) //token is for user to verify with the server, after it is decoded, we have access to all feilds
+	token, err := authClient.VerifyIDToken(firebaseContext, body.IDToken)
 	if err != nil {
 		c.IndentedJSON(http.StatusForbidden, gin.H{"error": "You are not authorized to create this user"})
 		return
 	}
-	token.UID
+
 	// get uuid of user to ban
-	// if sending user is a admin delete all the donations of the user to ban including their data and account
+	uuidToBan := body.UserData.UUID
+
+	// Check if the user trying to perform the ban is an admin
+	isAdmin, err := checkIfAdmin(firebaseContext, firestoreClient, token.UID)
+	if err != nil {
+		c.IndentedJSON(http.StatusForbidden, gin.H{"error": "internal server error"})
+		return
+	}
+
+	if isAdmin {
+		// if sending user is an admin delete all the donations of the user to ban including their data and account
+		err = banUser(firebaseContext, firestoreClient, uuidToBan)
+		if err != nil {
+			c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": "There was an error processing the ban"})
+			return
+		}
+
+		c.IndentedJSON(http.StatusOK, gin.H{"status": "User banned successfully"})
+	} else {
+		c.IndentedJSON(http.StatusForbidden, gin.H{"error": "You are not authorized to ban this user"})
+	}
 }
 
 func main() {
@@ -251,13 +281,13 @@ func main() {
 	}))
 
 	r.GET("/donations/donationList", getDonationsListEndpoint)
+	r.GET("/users/:id", getUserDataFromIDEndpoint)
 	r.GET("/donations/:id", getDonationFromIDEndpoint)
 	r.POST("/confirmCAPTCHA", confirmCAPTCHAToken)
 	r.POST("/donations/new", postDonationEndpoint)
 	r.POST("/users/new", addUserEndpoint)
 	r.POST("/users/ban", banUserEndpoint)
 	r.DELETE("/donations/:id", deleteDonationEndpoint)
-	r.DELETE("/users/:id", getUserDataFromIDEndpoint)
 	err = r.Run()
 	if err != nil {
 		return
@@ -325,6 +355,31 @@ func addDonation(ctx context.Context, client *firestore.Client, donation Donatio
 		"creation_timestamp": donation.CreationTimestamp,
 		"tags":               donation.Tags,
 	})
+	// Get current posts and append new post
+	// Get the user's document
+	userDoc, err := client.Doc("userdata/" + userId).Get(ctx)
+	if err != nil {
+		return "", err
+	}
+
+	// Extract posts array
+	data := userDoc.Data()
+	posts, ok := data["posts"].([]*firestore.DocumentRef)
+	if !ok {
+		return "", fmt.Errorf("'posts' field not found or is not the correct type")
+	}
+
+	// Append the new donation reference
+	posts = append(posts, docRef)
+
+	// Update the user document
+	_, err = client.Doc("userdata/"+userId).Set(ctx, map[string]interface{}{
+		"posts": posts,
+	}, firestore.MergeAll) //mergeall ensures that only the posts feild is changed
+	if err != nil {
+		return "", err
+	}
+
 	if err != nil {
 		return "", err
 	}
@@ -334,13 +389,61 @@ func addUser(ctx context.Context, client *firestore.Client, userdata UserData, u
 	_, err := client.Doc("userdata/"+userId).Create(ctx, map[string]interface{}{
 		"first_name": userdata.FirstName,
 		"last_name":  userdata.LastName,
+		"id":         userId,
 		"admin":      false,
 		"posts":      []firestore.DocumentRef{},
-		"id":         userId,
+		"email":      userdata.Email,
 	})
 	if err != nil {
 		return err
 	}
 	return nil
 
+}
+
+func banUser(ctx context.Context, client *firestore.Client, userId string) error {
+	// Get user data document reference
+	userDataRef := client.Doc("userdata/" + userId)
+
+	// Get user data
+	userDataDoc, err := userDataRef.Get(ctx)
+	if err != nil {
+		return fmt.Errorf("failed getting user data: %w", err)
+	}
+
+	// get the document references from the user data
+	var posts []firestore.DocumentRef
+	if err := userDataDoc.DataTo(&posts); err != nil {
+		return fmt.Errorf("failed getting posts from user data: %w", err)
+	}
+
+	// Delete each post
+	for _, postRef := range posts {
+		if _, err := postRef.Delete(ctx); err != nil {
+			return fmt.Errorf("failed deleting post %v: %w", postRef.ID, err)
+		}
+	}
+
+	// Delete user data
+	if _, err := userDataRef.Delete(ctx); err != nil {
+		return fmt.Errorf("failed deleting user data: %w", err)
+	}
+
+	return nil
+}
+func checkIfAdmin(ctx context.Context, client *firestore.Client, senderId string) (bool, error) {
+	// Get the user document
+	doc, err := client.Doc("userdata/" + senderId).Get(ctx)
+	if err != nil {
+		return false, err
+	}
+
+	// Get the data and access the 'isAdmin' field
+	data := doc.Data()
+	isAdmin, ok := data["isAdmin"].(bool)
+	if !ok {
+		return false, fmt.Errorf("isAdmin field not found or is not a bool")
+	}
+
+	return isAdmin, nil
 }
