@@ -12,7 +12,7 @@ import RawDonation from "lib/types/rawDonation";
 import DonationWithUserData from "lib/types/donationWithUserData";
 
 import { BiLeftArrowAlt } from "react-icons/bi"
-import { FiFlag } from "react-icons/fi"
+import { FiFlag, FiTrash } from "react-icons/fi"
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -51,24 +51,28 @@ export const getStaticProps: GetStaticProps = async (context) => {
         const props = { rawDonation: rawDonationWithUserData }
         return { props, revalidate: 1 }
     } catch (e) {
-        console.error(e);
-        return {
-            notFound: true
+        if (e.response.status === 404) {
+            return {
+                notFound: true
+            }
+        } else {
+            throw e
         }
     }
 }
 
 export default function DonationSpecificPage({ rawDonation }) {
-    const donation: Donation = {
+    const router = useRouter()
+    const donation: DonationWithUserData = {
         ...rawDonation,
         creation_timestamp: new Date(rawDonation.creation_timestamp)
     }
 
     const [user, setUser] = useState<User>(null);
-    const [sendingReport, setSendingReport] = useState(false);
+    const [performingAction, setPerformingAction] = useState(false);
 
     const sendReport = async () => {
-        setSendingReport(true)
+        setPerformingAction(true)
 
         try {
             await axios.post("http://localhost:8080/donations/report", {
@@ -86,7 +90,27 @@ export default function DonationSpecificPage({ rawDonation }) {
             }
         }
 
-        setSendingReport(false)
+        setPerformingAction(false)
+    }
+
+    const deletePost = async () => {
+        if (confirm("Are you sure you want to delete this post? You won't be able to recover it.")) {
+            setPerformingAction(true)
+
+            try {
+                await axios.post(`http://localhost:8080/donations/${donation.id}`, {
+                    token: await user.getIdToken()
+                })
+
+                alert("The post has been deleted. Redirecting you to the donations index page...")
+                router.push("/donations")
+            } catch (e) {
+                console.error(e)
+                alert("Something went wrong while deleting this post. Please try again later.")
+            }
+
+            setPerformingAction(false)
+        }
     }
 
     useEffect(() => {
@@ -116,14 +140,25 @@ export default function DonationSpecificPage({ rawDonation }) {
                                 Back to Donations
                             </Link>
 
-                            {user &&
+                            {user && user.uid !== donation.owner_id &&
                                 <button
                                     className="flex items-center text-red-500 hover:text-red-600 active:text-red-700 disabled:text-red-900 duration-150"
-                                    disabled={sendingReport}
+                                    disabled={performingAction}
                                     onClick={() => sendReport()}
                                 >
                                     Report
                                     <FiFlag className="ml-1" />
+                                </button>
+                            }
+
+                            {user && user.uid === donation.owner_id &&
+                                <button
+                                    className="flex items-center text-red-500 hover:text-red-600 active:text-red-700 disabled:text-red-900 duration-150"
+                                    disabled={performingAction}
+                                    onClick={() => deletePost()}
+                                >
+                                    Delete
+                                    <FiTrash className="ml-1" />
                                 </button>
                             }
                         </div>
