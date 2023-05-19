@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -31,21 +32,20 @@ type Donation struct {
 	Title             string    `json:"title"`
 	Description       string    `json:"description"`
 	Location          string    `json:"location"`
-	City              string    `json:"city"`
-	Image             string    `json:"image"`
+	Image             string    `json:"img"`
 	CreationTimestamp time.Time `json:"creation_timestamp"` // In UTC
-	OwnerId           string    `json:"ownerid"`
+	OwnerId           string    `json:"owner_id"`
 	Tags              []string  `json:"tags"`
+	Reports           []string  `json:"reports"` // Includes the UIDs of every person who reported it
 }
 
 type UserData struct {
-	FirstName             string    `json:"first_name"`
-	LastName              string    `json:"last_name"`
-	RegistrationTimestamp time.Time `json:"registered_date"` // In UTC
-	UID                   string
-	Admin                 bool                    `json:"admin"`
-	Posts                 []firestore.DocumentRef `json:"posts"`
-	Email                 string                  `json:"email"`
+	DisplayName           string                   `json:"display_name"`
+	Email                 string                   `json:"email"`
+	RegistrationTimestamp time.Time                `json:"registered_date"` // In UTC
+	Admin                 bool                     `json:"admin"`
+	Posts                 []*firestore.DocumentRef `json:"posts"`
+	UID                   string                   `json:"uid"`
 }
 
 type DeleteDonationRequestBody struct {
@@ -75,6 +75,7 @@ func getUserDataFromIDEndpoint(c *gin.Context) {
 	id := c.Param("id")
 	userData, err := getUserDataByID(firebaseContext, firestoreClient, id)
 	if err != nil {
+		log.Println(err.Error())
 		c.IndentedJSON(http.StatusNotFound, gin.H{"error": err.Error()})
 	} else {
 		c.IndentedJSON(http.StatusOK, userData)
@@ -99,8 +100,6 @@ func postDonationEndpoint(c *gin.Context) {
 	}
 
 	userUID := token.UID
-
-	log.Println(body.DonationData.CreationTimestamp)
 
 	docID, err := addDonation(firebaseContext, firestoreClient, body.DonationData, userUID) //create new donation object from struct
 	//add to the firestore databse
@@ -135,7 +134,7 @@ func deleteDonationEndpoint(c *gin.Context) {
 
 	userUID := token.UID
 
-	if donationData.Data()["ownerId"] != userUID {
+	if donationData.Data()["owner_id"] != userUID {
 		c.JSON(http.StatusForbidden, gin.H{"error": "You are not authorized to delete this donation."})
 		return
 	}
@@ -150,11 +149,10 @@ func deleteDonationEndpoint(c *gin.Context) {
 }
 func addUserEndpoint(c *gin.Context) {
 	var body struct {
-		UserData
 		IDToken string `json:"token"`
 	}
 
-	if err := c.ShouldBindJSON(&body.UserData); err != nil { //stores request body info into the body varible, so that it matches feild in struct in json format
+	if err := c.ShouldBindJSON(&body); err != nil { //stores request body info into the body varible, so that it matches feild in struct in json format
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()}) //if user not signed in, then will send error
 		return
 	}
@@ -167,7 +165,7 @@ func addUserEndpoint(c *gin.Context) {
 
 	userUID := token.UID
 
-	err = addUser(firebaseContext, firestoreClient, body.UserData, userUID) //create new donation object from struct
+	err = addUser(firebaseContext, firestoreClient, userUID) //create new donation object from struct
 	//add to the firestore databse
 	if err != nil {
 		c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -249,9 +247,42 @@ func banUserEndpoint(c *gin.Context) {
 	}
 }
 
+func reportDonationEndpoint(c *gin.Context) {
+	var body struct {
+		DonationID string `json:"donation_id"`
+		IDToken    string `json:"token"`
+	}
+
+	if err := c.ShouldBindJSON(&body); err != nil { // Transfers request body so that fields match the struct
+		log.Println(err.Error())
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	token, err := authClient.VerifyIDToken(firebaseContext, body.IDToken)
+	if err != nil {
+		c.IndentedJSON(http.StatusForbidden, gin.H{"error": "You are not authorized to delete this donation."})
+		return
+	}
+
+	userUID := token.UID
+	err = reportDonation(firebaseContext, firestoreClient, body.DonationID, userUID)
+	if err != nil {
+		if err.Error() == "User has already sent a report" {
+			c.IndentedJSON(http.StatusConflict, gin.H{"error": err.Error()})
+		} else {
+			log.Println(err.Error())
+			c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		}
+		return
+	}
+
+	c.Status(http.StatusAccepted)
+}
+
 func main() {
 	firebaseContext = context.Background()
-	firebaseCreds := option.WithCredentialsFile(SERVICE_ACCOUNT_FILENAME)
+	firebaseCreds := option.WithCredentialsJSON([]byte(os.Getenv("FIREBASE_CREDENTIALS_JSON")))
 
 	app, err := firebase.NewApp(firebaseContext, nil, firebaseCreds)
 	if err != nil {
@@ -280,13 +311,14 @@ func main() {
 		MaxAge:           12 * time.Hour,
 	}))
 
-	r.GET("/donations/donationList", getDonationsListEndpoint)
-	r.GET("/users/:id", getUserDataFromIDEndpoint)
+	r.GET("/donations/list", getDonationsListEndpoint)
 	r.GET("/donations/:id", getDonationFromIDEndpoint)
+	r.GET("/users/:id", getUserDataFromIDEndpoint)
 	r.POST("/confirmCAPTCHA", confirmCAPTCHAToken)
 	r.POST("/donations/new", postDonationEndpoint)
 	r.POST("/users/new", addUserEndpoint)
 	r.POST("/users/ban", banUserEndpoint)
+	r.POST("/donations/report", reportDonationEndpoint)
 	r.DELETE("/donations/:id", deleteDonationEndpoint)
 	err = r.Run()
 	if err != nil {
@@ -308,6 +340,12 @@ func getAllDonations(ctx context.Context, client *firestore.Client) ([]Donation,
 		}
 		var donation Donation
 		err = doc.DataTo(&donation)
+
+		// Override some attributes that don't work with DataTo
+		donation.Image = doc.Data()["img"].(string)
+		donation.OwnerId = doc.Data()["owner_id"].(string)
+		donation.CreationTimestamp = doc.Data()["creation_timestamp"].(time.Time)
+
 		if err != nil {
 			return nil, err
 		}
@@ -327,6 +365,19 @@ func getDonationByID(ctx context.Context, client *firestore.Client, id string) (
 	if err != nil {
 		return Donation{}, err
 	}
+
+	// Override some attributes that don't work with DataTo
+	data := doc.Data()
+	donation.Image = data["img"].(string)
+	donation.OwnerId = data["owner_id"].(string)
+	donation.CreationTimestamp = data["creation_timestamp"].(time.Time)
+
+	// Convert the empty interface types to actual strings
+	donation.Reports = make([]string, 0)
+	for _, reportRaw := range data["reports"].([]interface{}) {
+		donation.Reports = append(donation.Reports, fmt.Sprintf("%+v", reportRaw))
+	}
+
 	donation.ID = doc.Ref.ID //ID is stored in the Ref feild, so DataTo, does not store id in the donations object
 	return donation, nil
 }
@@ -341,6 +392,11 @@ func getUserDataByID(ctx context.Context, client *firestore.Client, id string) (
 	if err != nil {
 		return UserData{}, err
 	}
+
+	// Set values that aren't set in the DataTo function
+	userData.DisplayName = doc.Data()["display_name"].(string)
+	userData.RegistrationTimestamp = doc.Data()["registered_date"].(time.Time)
+
 	userData.UID = doc.Ref.ID // ID is stored in the Ref feild, so DataTo, does not store id in the user data object
 	return userData, nil
 }
@@ -354,6 +410,7 @@ func addDonation(ctx context.Context, client *firestore.Client, donation Donatio
 		"owner_id":           userId,
 		"creation_timestamp": donation.CreationTimestamp,
 		"tags":               donation.Tags,
+		"reports":            make([]string, 0),
 	})
 	// Get current posts and append new post
 	// Get the user's document
@@ -385,16 +442,62 @@ func addDonation(ctx context.Context, client *firestore.Client, donation Donatio
 	}
 	return docRef.ID, nil
 }
-func addUser(ctx context.Context, client *firestore.Client, userdata UserData, userId string) error {
-	_, err := client.Doc("userdata/"+userId).Create(ctx, map[string]interface{}{
-		"first_name": userdata.FirstName,
-		"last_name":  userdata.LastName,
-		"id":         userId,
-		"admin":      false,
-		"posts":      []firestore.DocumentRef{},
-		"email":      userdata.Email,
+
+func reportDonation(ctx context.Context, client *firestore.Client, donationID string, userUID string) error {
+	doc, err := client.Collection("donations").Doc(donationID).Get(ctx) // Get the donation's data
+	if err != nil {
+		return err
+	}
+
+	// Check whether they have already reported this donation
+	currentReports, ok := doc.Data()["reports"].([]string)
+	if !ok {
+		// Convert the empty interface types to actual strings
+		currentReports = make([]string, 0)
+		for _, reportRaw := range doc.Data()["reports"].([]interface{}) {
+			currentReports = append(currentReports, fmt.Sprintf("%+v", reportRaw))
+		}
+	}
+
+	// Check whether they've already made a report
+	for _, report := range currentReports {
+		if report == userUID {
+			return errors.New("User has already sent a report")
+		}
+	}
+
+	// Add their UID to the donation, and update the doc
+	newReports := append(currentReports, userUID)
+	_, err = client.Collection("donations").Doc(donationID).Update(ctx, []firestore.Update{
+		{
+			Path:  "reports",
+			Value: newReports,
+		},
 	})
 	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func addUser(ctx context.Context, client *firestore.Client, userId string) error {
+	userData, err := authClient.GetUser(ctx, userId)
+	if err != nil {
+		return err
+	}
+
+	_, err = client.Doc("users/"+userId).Create(ctx, map[string]interface{}{
+		"display_name":    userData.DisplayName,
+		"email":           userData.Email,
+		"admin":           false,
+		"posts":           []firestore.DocumentRef{},
+		"uid":             userId,
+		"donations_made":  0,
+		"registered_date": time.Unix(userData.UserMetadata.CreationTimestamp/1000, 0),
+	})
+	if err != nil {
+		log.Println(err.Error())
 		return err
 	}
 	return nil

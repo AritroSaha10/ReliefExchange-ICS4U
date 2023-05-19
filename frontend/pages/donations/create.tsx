@@ -13,53 +13,16 @@ import dynamic from "next/dynamic";
 import * as commands from "@uiw/react-md-editor/lib/commands";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import storage from "lib/firebase/storage";
+import allTags from "lib/tag-types";
 
 import "@uiw/react-md-editor/markdown-editor.css";
 import "@uiw/react-markdown-preview/markdown.css";
+import convertBackendRouteToURL from "lib/convertBackendRouteToURL";
 
 const MDEditor = dynamic(
     () => import("@uiw/react-md-editor").then((mod) => mod.default),
     { ssr: false }
 );
-
-const options = [
-    {
-        name: 'Electronics',
-        id: 1
-    },
-    {
-        name: 'Tools',
-        id: 2
-    },
-    {
-        name: 'Sporting Goods',
-        id: 3
-    },
-    {
-        name: 'Home Appliances',
-        id: 4
-    },
-    {
-        name: 'Furniture',
-        id: 5
-    },
-    {
-        name: 'Clothing',
-        id: 6
-    },
-    {
-        name: 'Books',
-        id: 7
-    },
-    {
-        name: 'Baby Items',
-        id: 8
-    },
-    {
-        name: 'Other',
-        id: 9
-    }
-]
 
 export default function CreateDonation() {
     const router = useRouter();
@@ -108,7 +71,7 @@ export default function CreateDonation() {
             return;
         }
         try {
-            const res = await axios.post(`http://localhost:8080/confirmCAPTCHA?token=${token}`)
+            const res = await axios.post(convertBackendRouteToURL(`/confirmCAPTCHA?token=${token}`))
             if (!res.data.human) throw "User was detected to be a bot by ReCAPTCHA."
         } catch (e) {
             alert("Something went wrong. Please try again.");
@@ -118,7 +81,7 @@ export default function CreateDonation() {
         }
 
         // CAPTCHA confirmed, now upload the image to Firebase Storage
-        let imgLink = "" // TODO: Make this an actual link
+        let imgLink = ""
         if (featuredImage.length !== 0) {
             const imgRef = ref(storage, `donations/${crypto.randomUUID()}.jpg`);
 
@@ -145,16 +108,15 @@ export default function CreateDonation() {
             "title": formData["product-name"],
             "description": descriptionMD,
             "location": formData["product-location"],
-            "city": formData["product-location"], // TODO: REMOVE THIS WHEN BACKEND UPDATED
-            "images": imgLink ? [imgLink] : [], // TODO: MAKE THIS JUST A STRING WHEN BACKEND UPDATED
+            "img": imgLink,
             "tags": tagsSelected.map(obj => obj.name),
             "creation_timestamp": nowUTC.toISOString(),
-            "ownerid": user.uid
+            "ownerID": user.uid
         };
 
         // Send the prep'd data to our endpoint
         try {
-            const apiRes = await axios.post("http://localhost:8080/donations/new", {
+            const apiRes = await axios.post(convertBackendRouteToURL("/donations/new"), {
                 data: donationData,
                 token: idToken
             });
@@ -215,9 +177,8 @@ export default function CreateDonation() {
                             <div className="flex flex-col items-center">
                                 <h3 className="text-white text-2xl font-medium mb-2 text-center lg:text-left">Product Tags: (Max. 3 tags) <span className="text-red-500"> *</span></h3>
                                 <div className="flex flex-col gap-4 w-2/3 lg:w-1/2">
-
                                     <Multiselect
-                                        options={options} // Options to display in the dropdown
+                                        options={allTags} // Options to display in the dropdown
                                         selectedValues={tagsSelected} // Preselected value to persist in dropdown
                                         onSelect={setTagsSelected} // Function will trigger on select event
                                         onRemove={setTagsSelected} // Function will trigger on remove event

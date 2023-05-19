@@ -1,4 +1,4 @@
-module good_exchange
+module relief_exchange_backend
 
 go 1.20
 

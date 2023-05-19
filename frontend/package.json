@@ -6,8 +6,11 @@
     "start": "next start"
   },
   "dependencies": {
+    "@headlessui/react": "^1.7.14",
     "@uiw/react-md-editor": "^3.20.10",
     "axios": "^1.4.0",
+    "cookies-next": "^2.1.1",
+    "dayjs": "^1.11.7",
     "firebase": "^9.22.0",
     "multiselect-react-dropdown": "^2.0.25",
     "next": "latest",
@@ -15,7 +18,9 @@
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-google-recaptcha": "^2.1.0",
-    "react-icons": "^4.8.0"
+    "react-icons": "^4.8.0",
+    "react-markdown": "^8.0.7",
+    "rsuite": "^5.34.0"
   },
   "devDependencies": {
     "@types/node": "20.1.4",
