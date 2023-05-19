@@ -12,7 +12,13 @@ import RawDonation from "lib/types/rawDonation";
 import DonationWithUserData from "lib/types/donationWithUserData";
 
 import { BiLeftArrowAlt } from "react-icons/bi"
+import { FiFlag } from "react-icons/fi"
+
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import { User, onAuthStateChanged } from "firebase/auth";
+import { useRouter } from "next/router";
+import auth from "lib/firebase/auth";
 
 interface IParams extends ParsedUrlQuery {
     id: string
@@ -20,12 +26,7 @@ interface IParams extends ParsedUrlQuery {
 
 export const getStaticPaths: GetStaticPaths = async () => {
     const rawDonations: RawDonation[] = (await axios.get("http://localhost:8080/donations/list")).data
-    const donations: Donation[] = rawDonations.map(rawDonation => ({
-        ...rawDonation,
-        creation_timestamp: new Date(rawDonation.creation_timestamp)
-    }))
-
-    const arr: string[] = donations.map(donation => donation.id)
+    const arr: string[] = rawDonations.map(donation => donation.id)
 
     return {
         paths: arr.map((id) => {
@@ -42,13 +43,12 @@ export const getStaticProps: GetStaticProps = async (context) => {
 
     try {
         const rawDonation: RawDonation = (await axios.get(`http://localhost:8080/donations/${id}`)).data
-        const donation: DonationWithUserData = {
+        const rawDonationWithUserData = {
             ...rawDonation,
-            creation_timestamp: new Date(rawDonation.creation_timestamp),
             owner: (await axios.get(`http://localhost:8080/users/${rawDonation.owner_id}`)).data
         }
 
-        const props = { donation }
+        const props = { rawDonation: rawDonationWithUserData }
         return { props, revalidate: 1 }
     } catch (e) {
         console.error(e);
@@ -58,16 +58,75 @@ export const getStaticProps: GetStaticProps = async (context) => {
     }
 }
 
-export default function DonationSpecificPage({ donation }: { donation: DonationWithUserData }) {
+export default function DonationSpecificPage({ rawDonation }) {
+    const donation: Donation = {
+        ...rawDonation,
+        creation_timestamp: new Date(rawDonation.creation_timestamp)
+    }
+
+    const [user, setUser] = useState<User>(null);
+    const [sendingReport, setSendingReport] = useState(false);
+
+    const sendReport = async () => {
+        setSendingReport(true)
+
+        try {
+            await axios.post("http://localhost:8080/donations/report", {
+                donation_id: donation.id,
+                token: await user.getIdToken()
+            })
+
+            alert("The post has been successfully reported. Thank you for helping us keep ReliefExchange clean.")
+        } catch (e) {
+            if (e.response.status === 409) {
+                alert("You have already reported this post. You cannot report it again.");
+            } else {
+                console.error(e)
+                alert("Something went wrong while reporting this post. Please try again later.")
+            }
+        }
+
+        setSendingReport(false)
+    }
+
+    useEffect(() => {
+        const unsubscribe = onAuthStateChanged(auth, newUser => {
+            if (newUser && Object.keys(newUser).length !== 0) {
+                // Set user data
+                setUser(newUser);
+            } else {
+                setUser(null);
+            }
+        });
+
+        return () => unsubscribe();
+    }, []);
+
     return (
         <Layout name={donation.title}>
             <div className="flex flex-col lg:items-center lg:justify-center flex-grow">
                 <div className="flex flex-col lg:flex-row px-10 py-4 lg:px-20 lg:py-4 xl:px-60 xl:py-10 items-center">
                     <div className="flex flex-col gap-2 items-center lg:w-1/2">
-                        <Link href="/donations" className="flex items-center text-blue-500 hover:text-blue-600 active:text-blue-700 duration-150 lg:self-start mb-2">
-                            <BiLeftArrowAlt />
-                            Back to Donations
-                        </Link>
+                        <div className="flex gap-2 justify-between mb-2 w-full">
+                            <Link
+                                href="/donations"
+                                className="flex items-center text-blue-500 hover:text-blue-600 active:text-blue-700 duration-150"
+                            >
+                                <BiLeftArrowAlt />
+                                Back to Donations
+                            </Link>
+
+                            {user &&
+                                <button
+                                    className="flex items-center text-red-500 hover:text-red-600 active:text-red-700 disabled:text-red-900 duration-150"
+                                    disabled={sendingReport}
+                                    onClick={() => sendReport()}
+                                >
+                                    Report
+                                    <FiFlag className="ml-1" />
+                                </button>
+                            }
+                        </div>
 
                         {donation.img ? <Image src={donation.img} alt="Featured image" height={500} width={500} className="rounded-md object-cover object-center" /> : <></>}
                     </div>
