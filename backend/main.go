@@ -46,7 +46,7 @@ type UserData struct {
 	Admin                 bool                     `json:"admin"`
 	Posts                 []*firestore.DocumentRef `json:"posts"`
 	DonationsMade         int64                    `json:"donations_made"`
-	UID                   string
+	UID                   string                   `json:"uid"`
 }
 
 type DeleteDonationRequestBody struct {
@@ -150,11 +150,10 @@ func deleteDonationEndpoint(c *gin.Context) {
 }
 func addUserEndpoint(c *gin.Context) {
 	var body struct {
-		UserData
 		IDToken string `json:"token"`
 	}
 
-	if err := c.ShouldBindJSON(&body.UserData); err != nil { //stores request body info into the body varible, so that it matches feild in struct in json format
+	if err := c.ShouldBindJSON(&body); err != nil { //stores request body info into the body varible, so that it matches feild in struct in json format
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()}) //if user not signed in, then will send error
 		return
 	}
@@ -167,7 +166,7 @@ func addUserEndpoint(c *gin.Context) {
 
 	userUID := token.UID
 
-	err = addUser(firebaseContext, firestoreClient, body.UserData, userUID) //create new donation object from struct
+	err = addUser(firebaseContext, firestoreClient, userUID) //create new donation object from struct
 	//add to the firestore databse
 	if err != nil {
 		c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -427,15 +426,23 @@ func reportDonation(ctx context.Context, client *firestore.Client, donationID st
 	return nil
 }
 
-func addUser(ctx context.Context, client *firestore.Client, userdata UserData, userId string) error {
-	_, err := client.Doc("userdata/"+userId).Create(ctx, map[string]interface{}{
-		"display_name": userdata.DisplayName,
-		"email":        userdata.Email,
-		"admin":        false,
-		"posts":        []firestore.DocumentRef{},
-		"id":           userId,
+func addUser(ctx context.Context, client *firestore.Client, userId string) error {
+	userData, err := authClient.GetUser(ctx, userId)
+	if err != nil {
+		return err
+	}
+
+	_, err = client.Doc("users/"+userId).Create(ctx, map[string]interface{}{
+		"display_name":    userData.DisplayName,
+		"email":           userData.Email,
+		"admin":           false,
+		"posts":           []firestore.DocumentRef{},
+		"uid":             userId,
+		"donations_made":  0,
+		"registered_date": time.Unix(userData.UserMetadata.CreationTimestamp/1000, 0),
 	})
 	if err != nil {
+		log.Println(err.Error())
 		return err
 	}
 	return nil
