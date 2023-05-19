@@ -38,7 +38,7 @@ export default function Footer() {
             };
 
             if (hasCookie('googtrans')) {
-                setSelectedLanguage(getCookie('googtrans'))
+                setSelectedLanguage(getCookie('googtrans').toString())
             }
             else {
                 setSelectedLanguage('/auto/en')
