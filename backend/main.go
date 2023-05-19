@@ -295,7 +295,7 @@ func main() {
 	r.POST("/users/new", addUserEndpoint)
 	r.POST("/donations/report", reportDonationEndpoint)
 	// r.POST("/users/ban", banUserEndpoint)
-	r.DELETE("/donations/:id", deleteDonationEndpoint)
+	r.POST("/donations/:id", deleteDonationEndpoint) // Not a DELETE endpoint so we can authorize ourselves
 	err = r.Run()
 	if err != nil {
 		return
