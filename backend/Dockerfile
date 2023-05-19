@@ -1,21 +1,34 @@
-FROM golang:alpine
+# STEP 1: Build an executable binary
+FROM golang:alpine AS builder
 
-ENV GIN_MODE=release
-ENV PORT=3004
+# Install Git to fetch dependencies
+RUN apk update && apk add --no-cache git ca-certificates tzdata && update-ca-certificates
+WORKDIR $GOPATH/src/mypackage/myapp/
+COPY . .
 
-WORKDIR /go/src/go-docker-dev.to
+# Fetch dependencies using go mod (go 1.11)
+RUN go mod download
+RUN go mod verify
 
-COPY src /go/src/go-docker-dev.to/src
-COPY templates /go/src/go-docker-dev.to/templates
+# Build binary
+RUN go build -o /go/bin/reliefexchange_backend
 
-# Run the two commands below to install git and dependencies for the project. 
-RUN apk update && apk add --no-cache git
-RUN go get ./...
+# STEP 2: Build image solely with executable
+FROM scratch
+COPY --from=builder /go/bin/reliefexchange_backend /go/bin/reliefexchange_backend
 
-COPY dependencies /go/src
+# Import necessary data
+COPY --from=builder /usr/share/zoneinfo /usr/share/zoneinfo
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+COPY --from=builder /etc/passwd /etc/passwd
+COPY --from=builder /etc/group /etc/group
 
-RUN go build go-docker-dev.to/src/app
+# Set up environment variables
+ENV GIN_MODE release
+ENV PORT 5050
 
-EXPOSE $PORT
+# Expose port
+EXPOSE 5050
 
-ENTRYPOINT ["./app"]
+# Run backend
+ENTRYPOINT ["/go/bin/reliefexchange_backend"]
