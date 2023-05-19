@@ -414,7 +414,7 @@ func addDonation(ctx context.Context, client *firestore.Client, donation Donatio
 	})
 	// Get current posts and append new post
 	// Get the user's document
-	userDoc, err := client.Doc("userdata/" + userId).Get(ctx)
+	userDoc, err := client.Doc("users/" + userId).Get(ctx)
 	if err != nil {
 		return "", err
 	}
@@ -430,7 +430,7 @@ func addDonation(ctx context.Context, client *firestore.Client, donation Donatio
 	posts = append(posts, docRef)
 
 	// Update the user document
-	_, err = client.Doc("userdata/"+userId).Set(ctx, map[string]interface{}{
+	_, err = client.Doc("users/"+userId).Set(ctx, map[string]interface{}{
 		"posts": posts,
 	}, firestore.MergeAll) //mergeall ensures that only the posts feild is changed
 	if err != nil {
@@ -506,7 +506,7 @@ func addUser(ctx context.Context, client *firestore.Client, userId string) error
 
 func banUser(ctx context.Context, client *firestore.Client, userId string) error {
 	// Get user data document reference
-	userDataRef := client.Doc("userdata/" + userId)
+	userDataRef := client.Doc("users/" + userId)
 
 	// Get user data
 	userDataDoc, err := userDataRef.Get(ctx)
@@ -536,7 +536,7 @@ func banUser(ctx context.Context, client *firestore.Client, userId string) error
 }
 func checkIfAdmin(ctx context.Context, client *firestore.Client, senderId string) (bool, error) {
 	// Get the user document
-	doc, err := client.Doc("userdata/" + senderId).Get(ctx)
+	doc, err := client.Doc("users/" + senderId).Get(ctx)
 	if err != nil {
 		return false, err
 	}
