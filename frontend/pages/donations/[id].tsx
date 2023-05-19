@@ -6,28 +6,16 @@ import { ParsedUrlQuery } from 'querystring'
 import Donation from "lib/types/donation";
 import Layout from "@components/Layout";
 import { ReactMarkdown } from "react-markdown/lib/react-markdown";
+
 import UserData from "lib/types/userData";
+import RawDonation from "lib/types/rawDonation";
+import DonationWithUserData from "lib/types/donationWithUserData";
 
 import { BiLeftArrowAlt } from "react-icons/bi"
 import Link from "next/link";
 
 interface IParams extends ParsedUrlQuery {
     id: string
-}
-
-interface RawDonation {
-    id: string,
-    title: string,
-    description: string, // markdown
-    location: string,
-    img: string, // direct src to firebase image
-    creation_timestamp: string,
-    tags: string[],
-    owner_id: string
-}
-
-interface DonationWithUserData extends Donation {
-    owner: UserData
 }
 
 export const getStaticPaths: GetStaticPaths = async () => {
@@ -53,9 +41,10 @@ export const getStaticProps: GetStaticProps = async (context) => {
     const { id } = context.params as IParams
 
     try {
-        const rawDonation: Donation = (await axios.get(`http://localhost:8080/donations/${id}`)).data
+        const rawDonation: RawDonation = (await axios.get(`http://localhost:8080/donations/${id}`)).data
         const donation: DonationWithUserData = {
             ...rawDonation,
+            creation_timestamp: new Date(rawDonation.creation_timestamp),
             owner: (await axios.get(`http://localhost:8080/users/${rawDonation.owner_id}`)).data
         }
 
