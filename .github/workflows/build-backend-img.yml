@@ -15,7 +15,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: relief-exchange-backend
+  IMAGE_NAME: aritrosaha10/relief-exchange-backend
 
 jobs:
   build-and-push-image:
