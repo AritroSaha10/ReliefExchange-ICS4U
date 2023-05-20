@@ -77,14 +77,14 @@ export default function Footer() {
             <div id="google_translate_element" style={{ width: '0px', height: '0px', position: 'absolute', left: '50%', zIndex: -99999 }}></div>
 
             <div className="flex flex-col items-center justify-center w-full">
-                
-                    <Dropdown 
-                        title="Select a language" 
-                        selectedItem={languagesDropdown.filter(obj => obj.value === selectedLanguage)[0]} 
-                        setSelectedItem={(langObj) => langChange(langObj.value)} 
-                        options={languagesDropdown} 
-                        openOverlap={false}
-                    />
+
+                <Dropdown
+                    title="Select a language"
+                    selectedItem={languagesDropdown.filter(obj => obj.value === selectedLanguage)[0]}
+                    setSelectedItem={(langObj) => langChange(langObj.value)}
+                    options={languagesDropdown}
+                    openOverlap={false}
+                />
             </div>
         </footer>
     );

@@ -10,7 +10,7 @@ import { useRouter } from "next/router";
 
 export default function SignOut() {
     const router = useRouter();
-    
+
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, user => {
             if (!user) {
@@ -26,7 +26,7 @@ export default function SignOut() {
 
         return () => unsubscribe();
     }, []);
-    
+
     return (
         <Layout name="Sign In">
             <div className="flex flex-col flex-grow items-center justify-center">

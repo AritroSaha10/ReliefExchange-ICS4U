@@ -3,17 +3,17 @@
 @tailwind utilities;
 
 .searchWrapper {
-    border: none !important;
+  border: none !important;
 }
 
 .optionListContainer {
-    @apply rounded-lg !important;
+  @apply rounded-lg !important;
 }
 
 .optionContainer {
-    @apply rounded-lg !important;
+  @apply rounded-lg !important;
 }
 
 .option {
-    @apply rounded-lg !important;
+  @apply rounded-lg !important;
 }

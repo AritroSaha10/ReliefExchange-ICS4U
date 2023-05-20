@@ -12,7 +12,7 @@ if (getApps().length === 0) {
             messagingSenderId: "42306297294",
             appId: "1:42306297294:web:38997c053c7d1047761f9f",
             measurementId: "G-B1WYFG9DDL"
-          });
+        });
     } catch (error) {
         console.error("Firebase initialization error: ", error.stack);
     }
