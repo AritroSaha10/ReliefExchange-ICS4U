@@ -21,7 +21,8 @@
     "react-google-recaptcha": "^2.1.0",
     "react-icons": "^4.8.0",
     "react-markdown": "^8.0.7",
-    "rsuite": "^5.34.0"
+    "rsuite": "^5.34.0",
+    "sharp": "^0.32.1"
   },
   "devDependencies": {
     "@types/node": "20.1.4",
