@@ -9,11 +9,12 @@ import { GetStaticProps } from "next";
 import RawDonation from "lib/types/rawDonation";
 import axios from "axios";
 import convertBackendRouteToURL from "lib/convertBackendRouteToURL";
+import DonationCard from "@components/DonationCard";
 
 const sortByOptions = [
     {
         name: "Sort by",
-        func: null,
+        func: (a: Donation, b: Donation) => -(a.creation_timestamp.getTime() - b.creation_timestamp.getTime()), // Function to use to sort, default to date desc.
         id: 1
     },
     {
@@ -94,7 +95,7 @@ export default function DonationsIndex({ rawDonations }: { rawDonations: RawDona
         largestTimeDelta = largestTimeDelta === 0 ? 10e10 : largestTimeDelta;
 
         const filteredByTagsAndTime = filteredByQuery.filter(donation => (
-            (tagsToFilterBy.length !== 0 ? tagsToFilterBy.some(tag => donation.tags.includes(tag)) : true) &&
+            (tagsToFilterBy.length !== 0 ? tagsToFilterBy.some(tag => donation.tags && donation.tags.includes(tag)) : true) &&
             Date.now() - donation.creation_timestamp.getTime() <= largestTimeDelta
         ))
 
@@ -133,6 +134,11 @@ export default function DonationsIndex({ rawDonations }: { rawDonations: RawDona
                                 placeholder="Ex. clothing"
                                 id="search"
                                 ref={searchBoxRef}
+                                onKeyDown={e => {
+                                    if (e.key === "Enter") {
+                                        applySortAndFilter()
+                                    }
+                                }}
                             />
                             <button className="py-2 px-4 bg-blue-500 hover:bg-blue-600 active:bg-blue-700 duration-75 rounded-lg font-medium text-white" onClick={() => applySortAndFilter()}>
                                 <BiSearch />
@@ -145,6 +151,23 @@ export default function DonationsIndex({ rawDonations }: { rawDonations: RawDona
                             <FilterDropdown title="Filter by tags" selectedItems={filterByTags} setSelectedItems={setFilterByTags} options={tagsOptions} />
                         </div>
                     </div>
+                </div>
+
+                <div className="flex flex-col self-center gap-4 lg:gap-6 w-full px-4 md:px-8 py-4 lg:px-12">
+                    {data.map(donation => {
+                        const tags = donation.tags ? donation.tags.map(tagName => allTags.find(tag => tag.name === tagName)) : []
+
+                        return (
+                            <DonationCard 
+                                title={donation.title} 
+                                date={donation.creation_timestamp} 
+                                subtitle={donation.description}
+                                image={donation.img} 
+                                tags={tags} 
+                                href={`/donations/${donation.id}`} 
+                            />
+                        )
+                    })}
                 </div>
             </div>
         </Layout>

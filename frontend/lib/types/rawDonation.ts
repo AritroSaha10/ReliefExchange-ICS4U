@@ -5,7 +5,7 @@ export default interface RawDonation {
     location: string,
     img: string, // direct src to firebase image
     creation_timestamp: string,
-    tags: string[],
+    tags: string[] | null,
     owner_id: string,
     reports: string[]
 }
