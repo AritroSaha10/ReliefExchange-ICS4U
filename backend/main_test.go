@@ -3,13 +3,12 @@ package main
 import (
 	"context"
 	"testing"
+	"your_project_path/mocks"
 
 	"cloud.google.com/go/firestore"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/api/iterator"
-
-	"your_project_path/mocks"
 )
 
 func TestGetAllDonations(t *testing.T) {

@@ -23,10 +23,12 @@ import (
 
 const SERVICE_ACCOUNT_FILENAME = "ics4u0-project-firebase-key.json"
 
-var firebaseContext context.Context
-var firebaseApp *firebase.App
-var firestoreClient *firestore.Client
-var authClient *auth.Client
+var (
+	firebaseContext context.Context
+	firebaseApp     *firebase.App
+	firestoreClient *firestore.Client
+	authClient      *auth.Client
+)
 
 type Donation struct {
 	ID                string    `json:"id"`
@@ -90,12 +92,12 @@ func postDonationEndpoint(c *gin.Context) {
 		IDToken      string   `json:"token"`
 	}
 
-	if err := c.ShouldBindJSON(&body); err != nil { //stores request body info into the body varible, so that it matches feild in struct in json format
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()}) //if user not signed in, then will send error
+	if err := c.ShouldBindJSON(&body); err != nil { // stores request body info into the body varible, so that it matches feild in struct in json format
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()}) // if user not signed in, then will send error
 		return
 	}
 
-	token, err := authClient.VerifyIDToken(firebaseContext, body.IDToken) //token is for user to verify with the server, after it is decoded, we have access to all feilds
+	token, err := authClient.VerifyIDToken(firebaseContext, body.IDToken) // token is for user to verify with the server, after it is decoded, we have access to all feilds
 	if err != nil {
 		c.IndentedJSON(http.StatusForbidden, gin.H{"error": "You are not authorized to make this donation."})
 		return
@@ -103,8 +105,8 @@ func postDonationEndpoint(c *gin.Context) {
 
 	userUID := token.UID
 
-	docID, err := addDonation(firebaseContext, firestoreClient, body.DonationData, userUID) //create new donation object from struct
-	//add to the firestore databse
+	docID, err := addDonation(firebaseContext, firestoreClient, body.DonationData, userUID) // create new donation object from struct
+	// add to the firestore databse
 	if err != nil {
 		c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -123,7 +125,7 @@ func deleteDonationEndpoint(c *gin.Context) {
 	}
 
 	var body DeleteDonationRequestBody
-	if err := c.ShouldBindJSON(&body); err != nil { //transfers request body so that feilds match the donation struct
+	if err := c.ShouldBindJSON(&body); err != nil { // transfers request body so that feilds match the donation struct
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
@@ -149,17 +151,18 @@ func deleteDonationEndpoint(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"message": "Donation deleted successfully"})
 }
+
 func addUserEndpoint(c *gin.Context) {
 	var body struct {
 		IDToken string `json:"token"`
 	}
 
-	if err := c.ShouldBindJSON(&body); err != nil { //stores request body info into the body varible, so that it matches feild in struct in json format
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()}) //if user not signed in, then will send error
+	if err := c.ShouldBindJSON(&body); err != nil { // stores request body info into the body varible, so that it matches feild in struct in json format
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()}) // if user not signed in, then will send error
 		return
 	}
 
-	token, err := authClient.VerifyIDToken(firebaseContext, body.IDToken) //token is for user to verify with the server, after it is decoded, we have access to all feilds
+	token, err := authClient.VerifyIDToken(firebaseContext, body.IDToken) // token is for user to verify with the server, after it is decoded, we have access to all feilds
 	if err != nil {
 		c.IndentedJSON(http.StatusForbidden, gin.H{"error": "You are not authorized to create this user"})
 		return
@@ -167,8 +170,8 @@ func addUserEndpoint(c *gin.Context) {
 
 	userUID := token.UID
 
-	err = addUser(firebaseContext, firestoreClient, userUID) //create new donation object from struct
-	//add to the firestore databse
+	err = addUser(firebaseContext, firestoreClient, userUID) // create new donation object from struct
+	// add to the firestore databse
 	if err != nil {
 		c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -176,6 +179,7 @@ func addUserEndpoint(c *gin.Context) {
 		c.IndentedJSON(http.StatusCreated, gin.H{"message": "User added successfully"})
 	}
 }
+
 func confirmCAPTCHAToken(c *gin.Context) {
 	var captchaResponseBody struct {
 		Success bool `json:"success"`
@@ -184,7 +188,6 @@ func confirmCAPTCHAToken(c *gin.Context) {
 	token := c.Query("token")
 
 	resp, err := http.Get("https://www.google.com/recaptcha/api/siteverify?secret=" + os.Getenv("RECAPTCHA_SECRET_KEY") + "&response=" + token)
-
 	if err != nil {
 		c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -205,6 +208,7 @@ func confirmCAPTCHAToken(c *gin.Context) {
 
 	c.IndentedJSON(http.StatusOK, gin.H{"human": captchaResponseBody.Success})
 }
+
 func banUserEndpoint(c *gin.Context) {
 	var body struct {
 		UserData struct { // Define the UserData structure or replace it with your actual structure
@@ -346,7 +350,7 @@ func getAllDonations(ctx context.Context, client *firestore.Client) ([]Donation,
 			break
 		}
 		if err != nil {
-			return nil, err //no data was retrieved-nil, but there was an error -err
+			return nil, err // no data was retrieved-nil, but there was an error -err
 		}
 		var donation Donation
 		err = doc.DataTo(&donation)
@@ -359,17 +363,17 @@ func getAllDonations(ctx context.Context, client *firestore.Client) ([]Donation,
 		if err != nil {
 			return nil, err
 		}
-		donation.ID = doc.Ref.ID //sets donation struct id to the one in the firebase
+		donation.ID = doc.Ref.ID // sets donation struct id to the one in the firebase
 		donations = append(donations, donation)
 	}
-	return donations, nil //nil-data was retrived without any errors
+	return donations, nil // nil-data was retrived without any errors
 }
 
 func getDonationByID(ctx context.Context, client *firestore.Client, id string) (Donation, error) {
 	var donation Donation
-	doc, err := client.Collection("donations").Doc(id).Get(ctx) //get a single donation from its id
+	doc, err := client.Collection("donations").Doc(id).Get(ctx) // get a single donation from its id
 	if err != nil {
-		return donation, err //returns empty donation struct
+		return donation, err // returns empty donation struct
 	}
 	err = doc.DataTo(&donation)
 	if err != nil {
@@ -388,7 +392,7 @@ func getDonationByID(ctx context.Context, client *firestore.Client, id string) (
 		donation.Reports = append(donation.Reports, fmt.Sprintf("%+v", reportRaw))
 	}
 
-	donation.ID = doc.Ref.ID //ID is stored in the Ref feild, so DataTo, does not store id in the donations object
+	donation.ID = doc.Ref.ID // ID is stored in the Ref feild, so DataTo, does not store id in the donations object
 	return donation, nil
 }
 
@@ -396,7 +400,7 @@ func getUserDataByID(ctx context.Context, client *firestore.Client, id string) (
 	var userData UserData
 	doc, err := client.Collection("users").Doc(id).Get(ctx) // Get a single user from its id
 	if err != nil {
-		return userData, err //returns empty user struct
+		return userData, err // returns empty user struct
 	}
 	err = doc.DataTo(&userData)
 	if err != nil {
@@ -449,7 +453,7 @@ func addDonation(ctx context.Context, client *firestore.Client, donation Donatio
 	// Update the user document
 	_, err = client.Doc("users/"+userId).Set(ctx, map[string]interface{}{
 		"posts": posts,
-	}, firestore.MergeAll) //mergeall ensures that only the posts feild is changed
+	}, firestore.MergeAll) // mergeall ensures that only the posts feild is changed
 	if err != nil {
 		return "", err
 	}
@@ -518,7 +522,6 @@ func addUser(ctx context.Context, client *firestore.Client, userId string) error
 		return err
 	}
 	return nil
-
 }
 
 func banUser(ctx context.Context, client *firestore.Client, userId string) error {
@@ -551,6 +554,7 @@ func banUser(ctx context.Context, client *firestore.Client, userId string) error
 
 	return nil
 }
+
 func checkIfAdmin(ctx context.Context, client *firestore.Client, senderId string) (bool, error) {
 	// Get the user document
 	doc, err := client.Doc("users/" + senderId).Get(ctx)
