@@ -13,6 +13,7 @@ import (
 	"cloud.google.com/go/firestore"
 	firebase "firebase.google.com/go"
 	"firebase.google.com/go/auth"
+	"github.com/getsentry/sentry-go"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	_ "github.com/joho/godotenv/autoload"
@@ -284,6 +285,14 @@ func reportDonationEndpoint(c *gin.Context) {
 func main() {
 	firebaseContext = context.Background()
 	firebaseCreds := option.WithCredentialsJSON([]byte(os.Getenv("FIREBASE_CREDENTIALS_JSON")))
+
+	err := sentry.Init(sentry.ClientOptions{
+		Dsn:              os.Getenv("https://4044f25736934d42862ea077a1283931@o924596.ingest.sentry.io/4505213654073344"),
+		TracesSampleRate: 1.0,
+	})
+	if err != nil {
+		log.Fatalf("Error initializing Sentry: %s", err)
+	}
 
 	app, err := firebase.NewApp(firebaseContext, nil, firebaseCreds)
 	if err != nil {
