@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"cloud.google.com/go/firestore"
@@ -117,20 +118,29 @@ func postDonationEndpoint(c *gin.Context) {
 
 func deleteDonationEndpoint(c *gin.Context) {
 	id := c.Param("id")
+
 	donationRef := firestoreClient.Collection("donations").Doc(id)
 	donationData, err := donationRef.Get(context.Background())
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
-
-	var body DeleteDonationRequestBody
-	if err := c.ShouldBindJSON(&body); err != nil { // transfers request body so that feilds match the donation struct
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	authHeader := c.GetHeader("Authorization")
+	if authHeader == "" {
+		c.JSON(http.StatusForbidden, gin.H{"error": "No authorization header provided"})
 		return
 	}
 
-	token, err := authClient.VerifyIDToken(firebaseContext, body.IDToken)
+	splitToken := strings.Split(authHeader, "Bearer")
+
+	if len(splitToken) != 2 {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Incorrect format for authorization header"})
+		return
+	}
+
+	tokenString := strings.TrimPrefix(authHeader, "Bearer ")
+
+	token, err := authClient.VerifyIDToken(firebaseContext, tokenString)
 	if err != nil {
 		c.IndentedJSON(http.StatusForbidden, gin.H{"error": "You are not authorized to delete this donation."})
 		return
@@ -138,7 +148,8 @@ func deleteDonationEndpoint(c *gin.Context) {
 
 	userUID := token.UID
 
-	if donationData.Data()["owner_id"] != userUID {
+	isAdmin, err := checkIfAdmin(firebaseContext, firestoreClient, userUID)
+	if donationData.Data()["owner_id"].(string) != userUID && (!isAdmin) {
 		c.JSON(http.StatusForbidden, gin.H{"error": "You are not authorized to delete this donation."})
 		return
 	}
@@ -333,7 +344,7 @@ func main() {
 	r.POST("/users/new", addUserEndpoint)
 	r.POST("/users/ban", banUserEndpoint)
 	r.POST("/donations/report", reportDonationEndpoint)
-	r.DELETE("/donations/:id", deleteDonationEndpoint)
+	r.POST("/donations/:id/delete", deleteDonationEndpoint)
 	err = r.Run()
 	if err != nil {
 		return

@@ -102,7 +102,10 @@ export default function DonationSpecificPage({ rawDonation }) {
 
             try {
                 await axios.post(convertBackendRouteToURL(`/donations/${donation.id}/delete`), {
-                    token: await user.getIdToken()
+                    headers: {
+                        Authorization: `Bearer ${user.getIdToken()}`,
+                      },
+                  
                 })
 
                 alert("The post has been deleted. Redirecting you to the donations index page...")
