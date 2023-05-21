@@ -3,10 +3,9 @@ import Head from "next/head"
 import Navbar from "./Navbar"
 import Footer from "./Footer"
 
-export default function Layout({ name, children, noAnim }: { name: string, children: any, noAnim?: boolean }) {
+export default function Layout({ name, children }: { name: string, children: any }) {
     const title = `${name} | Relief Exchange`;
-    const description = "Relief Exchange is a adsjlkkljasdkljadskljdas";
-    const imageSrc = "CHANGE ME"
+    const description = "Relief Exchange is a platform where generosity meets community. Learn more at our website.";
 
     return (
         <div className="flex flex-col min-h-screen bg-slate-900 overflow-hidden" key={name}>
@@ -17,16 +16,10 @@ export default function Layout({ name, children, noAnim }: { name: string, child
                 <meta property="og:title" content={title} />
                 <meta property="og:description" content={description} />
                 <meta property="og:type" content="website" />
-                <meta property="og:image" content={imageSrc} />
-                <meta property="og:image:type" content="image/png" />
-                <meta property="og:image:width" content="1111" />
-                <meta property="og:image:height" content="1111" />
 
                 <meta name="twitter:card" content="summary_large_image" />
-                <meta name="twitter:creator" content="@YOUR_TWITTER" />
                 <meta property="twitter:title" content={title} />
                 <meta property="twitter:description" content={description} />
-                <meta property="twitter:image:src" content={imageSrc} />
             </Head>
 
             <Navbar />

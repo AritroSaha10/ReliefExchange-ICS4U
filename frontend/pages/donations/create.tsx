@@ -1,7 +1,7 @@
 import Layout from "@components/Layout";
 import { useState, useEffect, useRef } from "react";
 import { getIdToken, onAuthStateChanged, User } from "firebase/auth";
-import auth from "lib/firebase/auth";
+import auth from "@lib/firebase/auth";
 import { useRouter } from "next/router";
 import Multiselect from 'multiselect-react-dropdown';
 import ReCAPTCHA from "react-google-recaptcha"
@@ -12,7 +12,7 @@ import { BsImage } from "react-icons/bs"
 import dynamic from "next/dynamic";
 import * as commands from "@uiw/react-md-editor/lib/commands";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
-import storage from "lib/firebase/storage";
+import storage from "@lib/firebase/storage";
 import allTags from "lib/tag-types";
 
 import "@uiw/react-md-editor/markdown-editor.css";
@@ -38,6 +38,9 @@ export default function CreateDonation() {
 
     const RECAPTCHA_SITE_KEY = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
 
+    /**
+     * Refresh user data on auth change
+     */
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, newUser => {
             if (newUser && Object.keys(newUser).length !== 0) {
@@ -57,6 +60,11 @@ export default function CreateDonation() {
         return () => unsubscribe();
     }, []);
 
+    /**
+     * Handle the submit event for the main form
+     * @param e Event handler data for a form
+     * @returns Nothing.
+     */
     const onSubmit: React.FormEventHandler<HTMLFormElement> = async (e) => {
         const formData = Object.fromEntries((new FormData(e.currentTarget)).entries());
         e.preventDefault();

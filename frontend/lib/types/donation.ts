@@ -1,3 +1,6 @@
+/**
+ * Data schema for a Donation.
+ */
 export default interface Donation {
     id: string,
     title: string,

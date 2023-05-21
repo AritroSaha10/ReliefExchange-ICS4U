@@ -1,18 +1,7 @@
-/**
-  * Name: Navbar (basic + responsive)
-  * Description: A rather normal Navbar that is responsive to any screen size. Uses next/link but feel free to replace with react-router-dom links
-  * Packages needed: React Icons
-  * Example: https://www.a-iac.org
-*/
-
 import Link from "next/link";
-import Image from "next/image";
 import { useState, useEffect } from "react";
-import { useRouter } from "next/router";
 import { onAuthStateChanged } from "firebase/auth";
-import auth from "lib/firebase/auth";
-
-// import Logo from "../public/images/logo.png";
+import auth from "../lib/firebase/auth";
 
 import { GoThreeBars } from "react-icons/go"
 
@@ -65,8 +54,7 @@ export default function Header() {
     const [showDropdown, setShowDropdown] = useState(false);
     const [isSignedIn, setSignedIn] = useState(false);
 
-    const router = useRouter();
-
+    // Refresh user data state on auth state change
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, user => {
             setSignedIn(user !== null);

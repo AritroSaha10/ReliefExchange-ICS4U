@@ -1,3 +1,6 @@
+/**
+ * Data schema for a Donation directly from the database.
+ */
 export default interface RawDonation {
     id: string,
     title: string,

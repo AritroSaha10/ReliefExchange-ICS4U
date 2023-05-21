@@ -1,0 +1,258 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`renders homepage unchanged 1`] = `
+<div>
+  <div
+    class="flex flex-col min-h-screen bg-slate-900 overflow-hidden"
+  >
+    <header
+      class="bg-slate-800 py-2 lg:py-4 sticky"
+    >
+      <div
+        class="container px-4 mx-auto lg:flex lg:items-center"
+      >
+        <div
+          class="flex justify-between items-center"
+        >
+          <a
+            href="/"
+          >
+            <span
+              class="text-2xl font-mono tracking-wider font-bold text-white"
+            >
+              ReliefExchange
+            </span>
+          </a>
+          <button
+            aria-label="Menu"
+            class="border border-solid border-gray-600 px-3 py-1 rounded text-gray-600 opacity-50 hover:opacity-75 lg:hidden"
+            data-test-id="navbar-menu"
+          >
+            <svg
+              fill="currentColor"
+              height="1em"
+              stroke="currentColor"
+              stroke-width="0"
+              viewBox="0 0 12 16"
+              width="1em"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M11.41 9H.59C0 9 0 8.59 0 8c0-.59 0-1 .59-1H11.4c.59 0 .59.41.59 1 0 .59 0 1-.59 1h.01zm0-4H.59C0 5 0 4.59 0 4c0-.59 0-1 .59-1H11.4c.59 0 .59.41.59 1 0 .59 0 1-.59 1h.01zM.59 11H11.4c.59 0 .59.41.59 1 0 .59 0 1-.59 1H.59C0 13 0 12.59 0 12c0-.59 0-1 .59-1z"
+                fill-rule="evenodd"
+              />
+            </svg>
+          </button>
+        </div>
+        <div
+          class="hidden lg:flex flex-col lg:flex-row lg:ml-auto mt-3 lg:mt-0"
+          data-test-id="navbar"
+        >
+          <a
+            class="text-gray-300 hover:bg-gray-200 hover:text-gray-700  p-2 lg:px-4 lg:mx-2 rounded duration-300 transition-colors "
+            data-test-id="navbar-home"
+            href="/"
+          >
+            Home
+          </a>
+          <a
+            class="text-gray-300 hover:bg-gray-200 hover:text-gray-700  p-2 lg:px-4 lg:mx-2 rounded duration-300 transition-colors "
+            data-test-id="navbar-donations"
+            href="/donations"
+          >
+            Donations
+          </a>
+          <a
+            class="text-blue-600 hover:bg-blue-600 hover:text-white text-center border border-solid border-blue-600 mt-1 lg:mt-0 lg:ml-1 p-2 lg:px-4 lg:mx-2 rounded duration-300 transition-colors "
+            data-test-id="navbar-sign-in"
+            href="/sign-in"
+          >
+            Sign In / Register
+          </a>
+        </div>
+      </div>
+    </header>
+    <div
+      class="flex-grow flex flex-col"
+    >
+      <header
+        class="h-screen relative"
+      >
+        <img
+          alt="Helping hand"
+          class="object-cover object-center blur-sm"
+          data-nimg="fill"
+          decoding="async"
+          sizes="100vw"
+          src="/_next/image?url=%2Fimg.jpg&w=3840&q=100"
+          srcset="/_next/image?url=%2Fimg.jpg&w=640&q=100 640w, /_next/image?url=%2Fimg.jpg&w=750&q=100 750w, /_next/image?url=%2Fimg.jpg&w=828&q=100 828w, /_next/image?url=%2Fimg.jpg&w=1080&q=100 1080w, /_next/image?url=%2Fimg.jpg&w=1200&q=100 1200w, /_next/image?url=%2Fimg.jpg&w=1920&q=100 1920w, /_next/image?url=%2Fimg.jpg&w=2048&q=100 2048w, /_next/image?url=%2Fimg.jpg&w=3840&q=100 3840w"
+          style="position: absolute; height: 100%; width: 100%; left: 0px; top: 0px; right: 0px; bottom: 0px; color: transparent; background-size: cover; background-position: 50% 50%; background-repeat: no-repeat;"
+        />
+        <div
+          class="relative z-1 h-screen bg-opacity-40 bg-black flex items-center justify-center"
+        >
+          <div
+            class="flex flex-col gap-4 mx-2 text-center"
+          >
+            <h1
+              class="text-gray-500 font-bold text-4xl xs:text-5xl md:text-6xl"
+            >
+              <span
+                class="text-white"
+              >
+                ReliefExchange
+              </span>
+            </h1>
+            <h2
+              class="text-gray-500 font-semibold text-2xl xs:text-3xl md:text-4xl"
+            >
+              <span
+                class="text-gray-300"
+              >
+                Where generosity meets community
+              </span>
+            </h2>
+            <div
+              class="flex flex-wrap gap-2 justify-center mt-4"
+            >
+              <a
+                class="px-4 py-2 bg-blue-500 hover:bg-blue-700 text-white text-xl active:bg-blue-800 duration-75 rounded-lg font-medium"
+                href="/donations"
+              >
+                View Recent Items
+              </a>
+            </div>
+          </div>
+        </div>
+      </header>
+      <section
+        class="flex p-10 flex-col items-center lg:flex-row lg:p-20 xl:px-40 items-left bg-transparent gap-6"
+        id="about"
+      >
+        <div
+          class="flex flex-col items-center lg:items-start w-4/5 text-center lg:text-left mb-4 lg:mb-0"
+        >
+          <h1
+            class="text-white font-bold text-3xl md:text-4xl"
+          >
+            Helping people 
+            <span
+              class="text-blue-300"
+            >
+              help people
+            </span>
+          </h1>
+          <p
+            class="mt-4 w-full md:w-3/4 text-lg text-gray-200"
+          >
+            We're a student-led organization that's focused on getting help to people. Here's the gist: you have some spare stuff. Whether its a fish tank or some exercise bands, you just don't need it now. Instead of throwing it away, why not give it to someone else who might not be able to regularly buy it, without you having to going through all the hassle of selling it?
+          </p>
+          <a
+            class="group mt-6 bg-blue-300 text-black font-semibold py-2 px-4 rounded-lg text-lg hover:bg-blue-400 duration-75"
+            href="/donations"
+          >
+            View Recent Items 
+            <span
+              class="group-hover:ml-1 duration-150 transition-all"
+            >
+              →
+            </span>
+          </a>
+        </div>
+        <div
+          class="flex p-0 m-0 w-1/2"
+        >
+          <img
+            alt="Image"
+            class="object-cover object-center rounded-xl"
+            data-nimg="1"
+            decoding="async"
+            height="540"
+            loading="lazy"
+            src="/_next/image?url=%2Fimg.jpg&w=1920&q=100"
+            srcset="/_next/image?url=%2Fimg.jpg&w=1080&q=100 1x, /_next/image?url=%2Fimg.jpg&w=1920&q=100 2x"
+            style="color: transparent; background-size: cover; background-position: 50% 50%; background-repeat: no-repeat;"
+            width="900"
+          />
+        </div>
+      </section>
+    </div>
+    <footer
+      class="flex flex-col gap-3 p-4 bg-slate-800"
+    >
+      <div
+        class="flex justify-center items-center gap-3"
+      >
+        <p
+          class="text-gray-200 text-sm"
+        >
+          Made by 
+          <a
+            class="text-blue-500 hover:text-blue-700 duration-200"
+            href="https://www.aritrosaha.ca/"
+          >
+            Aritro Saha
+          </a>
+          , Joshua Chou, and Taha Khan
+        </p>
+      </div>
+      <hr
+        class="mx-16 md:mx-32 lg:mx-64 bg-slate-600 border-none h-px"
+      />
+      <div
+        class="flex justify-center items-center gap-3"
+      >
+        <a
+          class="text-blue-500 hover:text-blue-700 duration-200"
+          href="https://docs.google.com/document/d/1SwvbGomqzTCoZS3yOiGqkT-3oLW5rO9EociF8mV30MM/edit"
+          rel="noreferrer"
+          target="_blank"
+        >
+          Quickstart Guide
+        </a>
+      </div>
+      <div
+        id="google_translate_element"
+        style="width: 0px; height: 0px; position: absolute; left: 50%; z-index: -99999;"
+      />
+      <div
+        class="flex flex-col items-center justify-center w-full"
+      >
+        <div
+          class="relative inline-block text-left w-36"
+          data-headlessui-state=""
+        >
+          <div>
+            <button
+              aria-expanded="false"
+              aria-haspopup="menu"
+              class="inline-flex w-full justify-center gap-x-1.5 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+              data-headlessui-state=""
+              id="headlessui-menu-button-:r0:"
+              type="button"
+            >
+              English
+              <svg
+                aria-hidden="true"
+                class="-mr-1 h-5 w-5 text-gray-400"
+                fill="currentColor"
+                height="1em"
+                stroke="currentColor"
+                stroke-width="0"
+                viewBox="0 0 16 16"
+                width="1em"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"
+                  fill-rule="evenodd"
+                />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </footer>
+  </div>
+</div>
+`;

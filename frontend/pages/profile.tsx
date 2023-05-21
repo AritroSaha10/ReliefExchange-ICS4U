@@ -4,7 +4,7 @@ import { useRouter } from "next/router";
 import Image from "next/image";
 
 import { User, onAuthStateChanged } from "firebase/auth";
-import auth from "lib/firebase/auth";
+import auth from "@lib/firebase/auth";
 import Layout from "@components/Layout";
 
 import dayjs from "dayjs";
@@ -17,6 +17,18 @@ import Link from "next/link";
 import Donation from "lib/types/donation";
 dayjs.extend(relativeTime)
 
+/**
+ * Increase the resolution of a Google profile picture link. 
+ * This is necessary since it's always 96px x 96px with no way to
+ * request a higher resolution picture.
+ * @param url The original image src link
+ * @param newRes The new resolution in pixels (2-dimensional res not allowed)
+ * @returns An altered src link with higher resolution
+ */
+const increasePFPResolution = (url: string, newRes: Number) => (
+    url.replace("s96-c", `s${newRes.toFixed(0)}-c`)
+)
+
 export default function UserProfile() {
     const [loadingAuth, setLoadingAuth] = useState(true);
     const [user, setUser] = useState<User>(null);
@@ -25,10 +37,10 @@ export default function UserProfile() {
 
     const router = useRouter();
 
-    const increasePFPResolution = (url: string, newRes: Number) => (
-        url.replace("s96-c", `s${newRes.toFixed(0)}-c`)
-    )
-
+    /**
+     * Refreshes user data on auth state change. Different from other versions of auth state change code,
+     * as this gets the data of both the user and their donations.
+     */
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, newUser => {
             if (newUser && Object.keys(newUser).length !== 0) {
@@ -61,8 +73,7 @@ export default function UserProfile() {
                     }));
 
                     data.posts = data.posts.filter((obj: any) => obj !== null)
-
-                    console.log(data.posts)
+                    data.posts.sort((a: Donation, b: Donation) => -(a.creation_timestamp.getTime() - b.creation_timestamp.getTime()))
 
                     setUserData(data);
                     setSignedIn(true);
@@ -83,7 +94,7 @@ export default function UserProfile() {
         });
 
         return () => unsubscribe();
-    }, []);
+    }, [router]);
 
     if (!loadingAuth && signedIn) {
         return (
@@ -118,13 +129,16 @@ export default function UserProfile() {
                                                 image={donation.img}
                                                 tags={tags}
                                                 href={`/donations/${donation.id}`}
+                                                isAdmin={false} // Don't bother with showing admin data on their own posts
+                                                reportCount={0}
+                                                key={donation.id}
                                             />
                                         )
                                     })}
                                 </div>
                             )}
 
-                            {userData.posts.length === 0 && <span className="text-gray-200 text-md">It seems you haven't opened any donations yet. Click <Link href="/donations/create" className="text-blue-400 hover:underline active:text-blue-500">Donate</Link> in the navbar to make one!</span>}
+                            {userData.posts.length === 0 && <span className="text-gray-200 text-md">It seems you haven&apos;t opened any donations yet. Click <Link href="/donations/create" className="text-blue-400 hover:underline active:text-blue-500">Donate</Link> in the navbar to make one!</span>}
                         </div>
                     </div>
                 </div>

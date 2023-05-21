@@ -554,7 +554,8 @@ func addDonation(ctx context.Context, client *firestore.Client, donation Donatio
 
 	// Update the user document
 	_, err = client.Doc("users/"+userId).Set(ctx, map[string]interface{}{
-		"posts": posts,
+		"posts":          posts,
+		"donations_made": userDoc.Data()["donations_made"].(int64),
 	}, firestore.MergeAll) // mergeall ensures that only the posts feild is changed
 	if err != nil {
 		return "", err

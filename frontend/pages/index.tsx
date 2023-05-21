@@ -5,7 +5,7 @@ import Layout from '../components/Layout';
 
 import { useState, useEffect } from "react"
 import { onAuthStateChanged } from 'firebase/auth';
-import auth from 'lib/firebase/auth';
+import auth from '../lib/firebase/auth';
 
 import HeroImage from "@media/hero.jpg";
 import KeepDonateStock from "@media/keep-donate-stock.jpg"
@@ -13,6 +13,9 @@ import KeepDonateStock from "@media/keep-donate-stock.jpg"
 export default function Home() {
   const [isSignedIn, setSignedIn] = useState(false);
 
+  /**
+   * Refresh auth data on change
+   */
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, user => {
       setSignedIn(user !== null);
@@ -41,7 +44,7 @@ export default function Home() {
             </h1>
 
             <h2 className="text-gray-500 font-semibold text-2xl xs:text-3xl md:text-4xl">
-              <span className="text-gray-300">Connecting those who can give to those who need</span>
+              <span className="text-gray-300">Where generosity meets community</span>
             </h2>
 
             <div className="flex flex-wrap gap-2 justify-center mt-4">
@@ -66,10 +69,10 @@ export default function Home() {
             Helping people <span className='text-blue-300'>help people</span>
           </h1>
           <p className="mt-4 w-full md:w-3/4 text-lg text-gray-200">
-            We&#39;re a student-led organization that's focused on
-            getting help to people. Here's the gist: you have some spare
+            We&#39;re a student-led organization that&apos;s focused on
+            getting help to people. Here&apos;s the gist: you have some spare
             stuff. Whether its a fish tank or some exercise bands, you just
-            don't need it now. Instead of throwing it away, why not give it to
+            don&apos;t need it now. Instead of throwing it away, why not give it to
             someone else who might not be able to regularly buy it, without you
             having to going through all the hassle of selling it?
           </p>

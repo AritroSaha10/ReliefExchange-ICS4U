@@ -3,6 +3,8 @@
     "lib": ["dom", "dom.iterable", "esnext"],
     "baseUrl": ".",
     "paths": {
+      "@pages/*": ["pages/*"],
+      "@lib/*": ["lib/*"],
       "@components/*": ["components/*"],
       "@util/*": ["util/*"],
       "@media/*": ["media/*"],
