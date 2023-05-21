@@ -701,9 +701,9 @@ func checkIfAdmin(ctx context.Context, client *firestore.Client, senderId string
 
 	// Get the data and access the 'isAdmin' field
 	data := doc.Data()
-	isAdmin, ok := data["isAdmin"].(bool)
+	isAdmin, ok := data["admin"].(bool)
 	if !ok {
-		return false, fmt.Errorf("isAdmin field not found or is not a bool")
+		return false, fmt.Errorf("admin field not found or is not a bool")
 	}
 
 	return isAdmin, nil
