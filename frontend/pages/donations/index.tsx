@@ -1,7 +1,7 @@
 import Dropdown from "@components/Dropdown";
 import FilterDropdown from "@components/FilterDropdown";
 import Layout from "@components/Layout";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import allTags from "lib/tag-types";
 import { BiSearch } from "react-icons/bi";
 import Donation from "lib/types/donation";
@@ -113,9 +113,9 @@ export default function DonationsIndex({ rawDonations }: { rawDonations: RawDona
         })
 
         return () => unsubscribe();
-    })
+    }, [])
 
-    const applySortAndFilter = () => {
+    const applySortAndFilter = useCallback(() => {
         // First filter by query
         const searchQuery = searchBoxRef.current.value;
         const filteredByQuery = originalDonations.filter(donation => donation.title.toLocaleLowerCase().includes(searchQuery.toLocaleLowerCase()));
@@ -136,12 +136,12 @@ export default function DonationsIndex({ rawDonations }: { rawDonations: RawDona
 
         // Finally set the state to the filtered data
         setData(finalData)
-    }
+    }, [filterByDate, filterByTags, originalDonations, sortBy.func])
 
     // Make sure to re-filter and sort every time the criteria changes
     useEffect(() => {
         applySortAndFilter();
-    }, [sortBy, filterByDate, filterByTags])
+    }, [sortBy, filterByDate, filterByTags, applySortAndFilter])
 
     return (
         <Layout name="Donations">
@@ -199,6 +199,7 @@ export default function DonationsIndex({ rawDonations }: { rawDonations: RawDona
                                 href={`/donations/${donation.id}`}
                                 isAdmin={isAdmin}
                                 reportCount={donation.reports ? donation.reports.length : 0}
+                                key={donation.id}
                             />
                         )
                     })}

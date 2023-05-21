@@ -51,7 +51,7 @@ export default function SignIn() {
         });
 
         return () => unsubscribe();
-    }, []);
+    }, [router]);
 
     return (
         <Layout name="Sign In">

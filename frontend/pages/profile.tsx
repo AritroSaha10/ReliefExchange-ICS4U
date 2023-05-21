@@ -83,7 +83,7 @@ export default function UserProfile() {
         });
 
         return () => unsubscribe();
-    }, []);
+    }, [router]);
 
     if (!loadingAuth && signedIn) {
         return (
@@ -118,13 +118,16 @@ export default function UserProfile() {
                                                 image={donation.img}
                                                 tags={tags}
                                                 href={`/donations/${donation.id}`}
+                                                isAdmin={false} // Don't bother with showing admin data on their own posts
+                                                reportCount={0}
+                                                key={donation.id}
                                             />
                                         )
                                     })}
                                 </div>
                             )}
 
-                            {userData.posts.length === 0 && <span className="text-gray-200 text-md">It seems you haven't opened any donations yet. Click <Link href="/donations/create" className="text-blue-400 hover:underline active:text-blue-500">Donate</Link> in the navbar to make one!</span>}
+                            {userData.posts.length === 0 && <span className="text-gray-200 text-md">It seems you haven&apos;t opened any donations yet. Click <Link href="/donations/create" className="text-blue-400 hover:underline active:text-blue-500">Donate</Link> in the navbar to make one!</span>}
                         </div>
                     </div>
                 </div>
