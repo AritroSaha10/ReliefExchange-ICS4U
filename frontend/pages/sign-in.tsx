@@ -7,8 +7,6 @@ import auth from "@lib/firebase/auth";
 import { GoogleAuthProvider, setPersistence, signInWithPopup, browserLocalPersistence, onAuthStateChanged, getRedirectResult, signInWithRedirect } from "firebase/auth";
 
 import GoogleLogo from "@media/social-media-logos/google.png";
-import MicrosoftLogo from "@media/social-media-logos/microsoft.png";
-import FacebookLogo from "@media/social-media-logos/facebook.png";
 import { useRouter } from "next/router";
 import axios from "axios";
 import convertBackendRouteToURL from "lib/convertBackendRouteToURL";
