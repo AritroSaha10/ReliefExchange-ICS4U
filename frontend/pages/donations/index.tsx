@@ -115,7 +115,7 @@ export default function DonationsIndex({ rawDonations }: { rawDonations: RawDona
         return () => unsubscribe();
     }, [])
 
-    const applySortAndFilter = useCallback(() => {
+    const applySortAndFilter = () => {
         // First filter by query
         const searchQuery = searchBoxRef.current.value;
         const filteredByQuery = originalDonations.filter(donation => donation.title.toLocaleLowerCase().includes(searchQuery.toLocaleLowerCase()));
@@ -136,12 +136,12 @@ export default function DonationsIndex({ rawDonations }: { rawDonations: RawDona
 
         // Finally set the state to the filtered data
         setData(finalData)
-    }, [filterByDate, filterByTags, originalDonations, sortBy.func])
+    }
 
     // Make sure to re-filter and sort every time the criteria changes
     useEffect(() => {
         applySortAndFilter();
-    }, [sortBy, filterByDate, filterByTags, applySortAndFilter])
+    }, [sortBy, filterByDate, filterByTags])
 
     return (
         <Layout name="Donations">

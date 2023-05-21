@@ -55,7 +55,7 @@ export default function CreateDonation() {
         });
 
         return () => unsubscribe();
-    }, [router]);
+    }, []);
 
     const onSubmit: React.FormEventHandler<HTMLFormElement> = async (e) => {
         const formData = Object.fromEntries((new FormData(e.currentTarget)).entries());
