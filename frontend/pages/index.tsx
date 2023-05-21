@@ -85,7 +85,15 @@ export default function Home() {
         <div
           className="flex p-0 m-0 w-1/2"
         >
-          <Image src={KeepDonateStock} alt="Image" className="object-cover object-center rounded-xl" width={900} height={540} quality={100} placeholder="blur" />
+          <Image
+            src={KeepDonateStock}
+            alt="Donation stock photo"
+            className="object-cover object-center rounded-xl"
+            width={900}
+            height={540}
+            placeholder="blur"
+            loading="lazy"
+          />
         </div>
       </section>
     </Layout>
