@@ -109,3 +109,9 @@ func TestGetDonationById(t *testing.T) {
 	assert.False(t, donation.CreationTimestamp.IsZero(), "CreationTimestamp should be set")
 
 }
+func TestCheckIfAdmin(t *testing.T) {
+	test_user_id := "4P9lIlcIYNeeCZja6Wc3coemX1A3" //Joshua.C
+	isAdmin, err := checkIfAdmin(firebaseContext, firestoreClient, test_user_id)
+	assert.NoError(t, err, "GetDonationById function should return without error")
+	assert.False(t, isAdmin, "Joshua.C is not an admin")
+}
