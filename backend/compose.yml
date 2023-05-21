@@ -3,7 +3,7 @@ services:
   reliefexchange_backend:
     container_name: reliefexchange_backend
     restart: unless-stopped
-    image: docker.io/library/relief-exchange-backend
+    image: ghcr.io/aritrosaha10/relief-exchange-backend:latest 
     ports:
       - 7000:5050
     environment:
