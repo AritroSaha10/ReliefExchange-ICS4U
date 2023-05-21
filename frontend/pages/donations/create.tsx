@@ -12,7 +12,7 @@ import { BsImage } from "react-icons/bs"
 import dynamic from "next/dynamic";
 import * as commands from "@uiw/react-md-editor/lib/commands";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
-import storage from "@lib/firebase/auth";
+import storage from "@lib/firebase/storage";
 import allTags from "lib/tag-types";
 
 import "@uiw/react-md-editor/markdown-editor.css";
