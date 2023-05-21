@@ -1,7 +1,7 @@
 import Dropdown from "@components/Dropdown";
 import FilterDropdown from "@components/FilterDropdown";
 import Layout from "@components/Layout";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import allTags from "lib/tag-types";
 import { BiSearch } from "react-icons/bi";
 import Donation from "lib/types/donation";
@@ -193,7 +193,9 @@ export default function DonationsIndex({ rawDonations }: { rawDonations: RawDona
 
                 <div className="flex flex-col self-center gap-4 lg:gap-6 w-full px-4 md:px-8 py-4 lg:px-12">
                     {data.map(donation => {
-                        const tags = donation.tags ? donation.tags.map(tagName => allTags.find(tag => tag.name === tagName)) : []
+                        const tags = (
+                            donation.tags ? donation.tags.map(tagName => allTags.find(tag => tag.name === tagName)) : []
+                        ).filter(tag => tag !== undefined);
 
                         return (
                             <DonationCard 
