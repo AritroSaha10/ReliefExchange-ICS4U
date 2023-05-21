@@ -1,9 +1,10 @@
 import DonationTag from 'lib/types/tag';
 import Image from 'next/image'
 import Link from 'next/link'
+import { FiFlag } from 'react-icons/fi';
 import removeMd from "remove-markdown"
 
-export default function DonationCard({ title, date, image, subtitle, tags, href }: { title: string, date: Date, image?: string, subtitle: string, tags: DonationTag[], href: string }) {
+export default function DonationCard({ title, date, image, subtitle, tags, href, isAdmin, reportCount }: { title: string, date: Date, image?: string, subtitle: string, tags: DonationTag[], href: string, isAdmin: boolean, reportCount: number }) {
     return (
         <div className="flex flex-col md:flex-row md:justify-start items-center gap-4 rounded-xl p-2 lg:p-6 duration-300 bg-slate-700">
             {image && <Image src={image} className="rounded-lg z-10 bg-blue-200 object-center object-cover aspect-square" alt={title} width={200} height={150} />}
@@ -11,22 +12,32 @@ export default function DonationCard({ title, date, image, subtitle, tags, href 
                 <div className="flex flex-col-reverse md:flex-row justify-center md:justify-between w-full items-center gap-1 lg:gap-2">
                     <div>
                         <h1 className="text-xl text-white text-center md:text-left font-semibold">{title}</h1>
-                        <div className='flex flex-wrap items-center gap-1 justify-center'>
-                            <h2 className='text-sm text-gray-200 text-center md:text-left'>
+                        <div className='flex flex-wrap items-center gap-1 justify-center text-sm text-gray-200'>
+                            <span className='text-center md:text-left'>
                                 {date.toLocaleDateString("en-CA", {
                                     day: "numeric",
                                     month: "short",
                                     year: "numeric"
                                 })}
-                                {tags.length !== 0 && " | "}
+                            </span>
 
-                            </h2>
+                            {tags.length !== 0 && <span> | </span>}
 
                             <div className='flex flex-wrap gap-1'>
                                 {tags.map(tag => (
-                                    <div className={`badge text-xs text-white border-0 px-2 py-1 rounded-lg ${tag.color}`} key={tag.name}>{tag.name.toLowerCase()}</div>
+                                    <span className={`text-xs text-white border-0 px-2 py-1 rounded-lg text-center ${tag.color}`} key={tag.name}>{tag.name.toLowerCase()}</span>
                                 ))}
                             </div>
+
+                            {isAdmin && (
+                                <>
+                                    <span> | </span>
+                                    <div className='flex items-center text-red-500'>
+                                        <FiFlag className='mr-1'></FiFlag>
+                                        {reportCount}
+                                    </div>
+                                </>
+                            )}
                         </div>
                     </div>
                 </div>

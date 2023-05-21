@@ -10,6 +10,8 @@ import RawDonation from "lib/types/rawDonation";
 import axios from "axios";
 import convertBackendRouteToURL from "lib/convertBackendRouteToURL";
 import DonationCard from "@components/DonationCard";
+import { onAuthStateChanged } from "firebase/auth";
+import auth from "lib/firebase/auth";
 
 const sortByOptions = [
     {
@@ -36,6 +38,19 @@ const sortByOptions = [
         name: "Alphabetical (desc.)",
         func: (a: Donation, b: Donation) => -a.title.localeCompare(b.title),
         id: 5
+    },
+]
+
+const adminSortByOptions = [
+    {
+        name: "Reports (asc.)",
+        func: (a: Donation, b: Donation) => (a.reports ? a.reports.length : 0) - (b.reports ? b.reports.length : 0),
+        id: 6
+    },
+    {
+        name: "Reports (desc.)",
+        func: (a: Donation, b: Donation) => (b.reports ? b.reports.length : 0) - (a.reports ? a.reports.length : 0),
+        id: 7
     },
 ]
 
@@ -82,6 +97,23 @@ export default function DonationsIndex({ rawDonations }: { rawDonations: RawDona
     const [sortBy, setSortBy] = useState(sortByOptions[0])
     const [filterByDate, setFilterByDate] = useState<number[]>([]) // These are arrays of IDs, not objects
     const [filterByTags, setFilterByTags] = useState<number[]>([])
+    const [isAdmin, setIsAdmin] = useState<boolean>(false);
+
+    useEffect(() => {
+        const unsubscribe = onAuthStateChanged(auth, user => {
+            if (user && Object.keys(user).length !== 0) {
+                // Attempt to get the user's data from the backend
+                axios.get(convertBackendRouteToURL(`/users/${user.uid}`)).then(async res => {
+                    // Get admin attribute from data
+                    setIsAdmin(res.data && !!res.data.admin);
+                }).catch(err => {
+                    console.error(err);
+                })
+            }
+        })
+
+        return () => unsubscribe();
+    })
 
     const applySortAndFilter = () => {
         // First filter by query
@@ -146,7 +178,7 @@ export default function DonationsIndex({ rawDonations }: { rawDonations: RawDona
                         </div>
 
                         <div className="flex flex-wrap gap-2 self-center justify-center">
-                            <Dropdown title="Sort by" selectedItem={sortBy} setSelectedItem={setSortBy} options={sortByOptions} openOverlap={false} />
+                            <Dropdown title="Sort by" selectedItem={sortBy} setSelectedItem={setSortBy} options={isAdmin ? sortByOptions.concat(adminSortByOptions) : sortByOptions} openOverlap={false} />
                             <FilterDropdown title="Filter by date" selectedItems={filterByDate} setSelectedItems={setFilterByDate} options={filterByDateOptions} />
                             <FilterDropdown title="Filter by tags" selectedItems={filterByTags} setSelectedItems={setFilterByTags} options={tagsOptions} />
                         </div>
@@ -164,7 +196,9 @@ export default function DonationsIndex({ rawDonations }: { rawDonations: RawDona
                                 subtitle={donation.description}
                                 image={donation.img} 
                                 tags={tags} 
-                                href={`/donations/${donation.id}`} 
+                                href={`/donations/${donation.id}`}
+                                isAdmin={isAdmin}
+                                reportCount={donation.reports ? donation.reports.length : 0}
                             />
                         )
                     })}
