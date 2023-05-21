@@ -71,9 +71,9 @@ export default function Footer() {
             <hr className="mx-16 md:mx-32 lg:mx-64 bg-slate-600 border-none h-px" />
 
             <div className="flex justify-center items-center gap-3">
-                <Link href="/contacts" className="text-blue-500 hover:text-blue-700 duration-200">
-                    Contact Us
-                </Link>
+                <a href="https://docs.google.com/document/d/1SwvbGomqzTCoZS3yOiGqkT-3oLW5rO9EociF8mV30MM/edit" target="_blank" rel="noreferrer" className="text-blue-500 hover:text-blue-700 duration-200">
+                    Quickstart Guide
+                </a>
             </div>
 
             <div id="google_translate_element" style={{ width: '0px', height: '0px', position: 'absolute', left: '50%', zIndex: -99999 }}></div>

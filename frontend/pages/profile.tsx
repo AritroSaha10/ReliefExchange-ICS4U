@@ -73,8 +73,7 @@ export default function UserProfile() {
                     }));
 
                     data.posts = data.posts.filter((obj: any) => obj !== null)
-
-                    console.log(data.posts)
+                    data.posts.sort((a: Donation, b: Donation) => -(a.creation_timestamp.getTime() - b.creation_timestamp.getTime()))
 
                     setUserData(data);
                     setSignedIn(true);
