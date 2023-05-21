@@ -17,6 +17,9 @@ export default function SignIn() {
     const provider = new GoogleAuthProvider();
     const router = useRouter();
 
+    /**
+     * Prompt the user to sign in 
+     */
     const continueWithGoogle = async () => {
         try {
             // Set persistence
@@ -25,7 +28,6 @@ export default function SignIn() {
             const res = await signInWithPopup(auth, provider);
 
             if (res.user.metadata.creationTime == res.user.metadata.lastSignInTime) {
-                // TODO: Send a request to the endpoint to generate the user data for a new user
                 try {
                     await axios.post(convertBackendRouteToURL("/users/new"), {
                         token: await res.user.getIdToken()
@@ -42,6 +44,9 @@ export default function SignIn() {
         }
     }
 
+    /**
+     * Bring them back to front page once they're signed in.
+     */
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, user => {
             if (user) {

@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { SelectPicker } from "rsuite";
 import { getCookie, hasCookie, setCookie } from 'cookies-next';
 import Dropdown from "./Dropdown";
 
@@ -22,6 +21,9 @@ const languagesDropdown = languages.map(obj => ({
 export default function Footer() {
     const [selectedLanguage, setSelectedLanguage] = useState(languages[0].value)
 
+    /**
+     * Set up auto-translate functionality
+     */
     useEffect(() => {
         try {
             // @ts-ignore All of this is imported by the extra script

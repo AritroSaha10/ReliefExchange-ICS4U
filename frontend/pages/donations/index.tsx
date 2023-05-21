@@ -99,6 +99,9 @@ export default function DonationsIndex({ rawDonations }: { rawDonations: RawDona
     const [filterByTags, setFilterByTags] = useState<number[]>([])
     const [isAdmin, setIsAdmin] = useState<boolean>(false);
 
+    /**
+     * Refresh user-specific (whether they're admin) data on auth change
+     */
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, user => {
             if (user && Object.keys(user).length !== 0) {
@@ -115,6 +118,9 @@ export default function DonationsIndex({ rawDonations }: { rawDonations: RawDona
         return () => unsubscribe();
     }, [])
 
+    /**
+     * Apply the sorting and filtering criteria on the original data from API.
+     */
     const applySortAndFilter = () => {
         // First filter by query
         const searchQuery = searchBoxRef.current.value;

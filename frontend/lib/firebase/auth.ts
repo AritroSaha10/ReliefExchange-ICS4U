@@ -1,6 +1,7 @@
 import { initializeApp, getApps } from "firebase/app"
 import { getAuth } from "firebase/auth"
 
+// Initialize a new app if it doesn't exist
 if (getApps().length === 0) {
     try {
         // Initialize Firebase

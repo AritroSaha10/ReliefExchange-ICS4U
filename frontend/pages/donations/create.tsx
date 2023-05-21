@@ -38,6 +38,9 @@ export default function CreateDonation() {
 
     const RECAPTCHA_SITE_KEY = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
 
+    /**
+     * Refresh user data on auth change
+     */
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, newUser => {
             if (newUser && Object.keys(newUser).length !== 0) {
@@ -57,6 +60,11 @@ export default function CreateDonation() {
         return () => unsubscribe();
     }, []);
 
+    /**
+     * Handle the submit event for the main form
+     * @param e Event handler data for a form
+     * @returns Nothing.
+     */
     const onSubmit: React.FormEventHandler<HTMLFormElement> = async (e) => {
         const formData = Object.fromEntries((new FormData(e.currentTarget)).entries());
         e.preventDefault();

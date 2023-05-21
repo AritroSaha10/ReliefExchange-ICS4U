@@ -13,6 +13,9 @@ import KeepDonateStock from "@media/keep-donate-stock.jpg"
 export default function Home() {
   const [isSignedIn, setSignedIn] = useState(false);
 
+  /**
+   * Refresh auth data on change
+   */
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, user => {
       setSignedIn(user !== null);

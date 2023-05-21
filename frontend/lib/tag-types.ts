@@ -1,5 +1,6 @@
 import DonationTag from "./types/tag";
 
+// All the possible tags that can be added to a Donation.
 const allTags: DonationTag[] = [
     {
         name: 'Electronics',

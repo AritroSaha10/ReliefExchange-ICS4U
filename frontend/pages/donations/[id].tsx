@@ -74,6 +74,9 @@ export default function DonationSpecificPage({ rawDonation }) {
     const [isAdmin, setIsAdmin] = useState(false);
     const [performingAction, setPerformingAction] = useState(false);
 
+    /**
+     * Sends a request to send a report regarding this post.
+     */
     const sendReport = async () => {
         setPerformingAction(true)
 
@@ -96,6 +99,9 @@ export default function DonationSpecificPage({ rawDonation }) {
         setPerformingAction(false)
     }
 
+    /**
+     * Sends a request to delete the post. Can only be run if the user is the owner of the post or an admin.
+     */
     const deletePost = async () => {
         if (confirm("Are you sure you want to delete this post? You won't be able to recover it.")) {
             setPerformingAction(true)
@@ -118,6 +124,9 @@ export default function DonationSpecificPage({ rawDonation }) {
         }
     }
 
+    /**
+     * Sends a request to ban the user.
+     */
     const banUser = async () => {
         if (confirm("Are you sure you want to ban this user? This will delete all their posts as well.")) {
             setPerformingAction(true)
@@ -140,6 +149,9 @@ export default function DonationSpecificPage({ rawDonation }) {
         }
     }
 
+    /**
+     * Add the event listener for auth state change
+     */
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, newUser => {
             if (newUser && Object.keys(newUser).length !== 0) {
