@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { onAuthStateChanged } from "firebase/auth";
-import auth from "lib/firebase/auth";
+import auth from "../lib/firebase/auth";
 
 import { GoThreeBars } from "react-icons/go"
 

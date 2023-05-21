@@ -11,7 +11,7 @@ import axios from "axios";
 import convertBackendRouteToURL from "lib/convertBackendRouteToURL";
 import DonationCard from "@components/DonationCard";
 import { onAuthStateChanged } from "firebase/auth";
-import auth from "lib/firebase/auth";
+import auth from "@lib/firebase/auth";
 
 const sortByOptions = [
     {

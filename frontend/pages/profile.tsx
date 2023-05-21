@@ -4,7 +4,7 @@ import { useRouter } from "next/router";
 import Image from "next/image";
 
 import { User, onAuthStateChanged } from "firebase/auth";
-import auth from "lib/firebase/auth";
+import auth from "@lib/firebase/auth";
 import Layout from "@components/Layout";
 
 import dayjs from "dayjs";

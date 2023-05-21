@@ -2,7 +2,7 @@ import Image from "next/image";
 import { useEffect, useState } from "react"
 
 import Layout from "@components/Layout";
-import auth from "lib/firebase/auth";
+import auth from "@lib/firebase/auth";
 
 import { signOut } from "firebase/auth";
 

@@ -19,7 +19,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { User, onAuthStateChanged } from "firebase/auth";
 import { useRouter } from "next/router";
-import auth from "lib/firebase/auth";
+import auth from "@lib/firebase/auth";
 import convertBackendRouteToURL from "lib/convertBackendRouteToURL";
 
 interface IParams extends ParsedUrlQuery {

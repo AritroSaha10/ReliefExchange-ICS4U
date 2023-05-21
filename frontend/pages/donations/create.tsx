@@ -1,7 +1,7 @@
 import Layout from "@components/Layout";
 import { useState, useEffect, useRef } from "react";
 import { getIdToken, onAuthStateChanged, User } from "firebase/auth";
-import auth from "lib/firebase/auth";
+import auth from "@lib/firebase/auth";
 import { useRouter } from "next/router";
 import Multiselect from 'multiselect-react-dropdown';
 import ReCAPTCHA from "react-google-recaptcha"
@@ -12,7 +12,7 @@ import { BsImage } from "react-icons/bs"
 import dynamic from "next/dynamic";
 import * as commands from "@uiw/react-md-editor/lib/commands";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
-import storage from "lib/firebase/storage";
+import storage from "@lib/firebase/auth";
 import allTags from "lib/tag-types";
 
 import "@uiw/react-md-editor/markdown-editor.css";

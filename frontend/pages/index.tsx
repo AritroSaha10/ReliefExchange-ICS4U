@@ -5,7 +5,7 @@ import Layout from '../components/Layout';
 
 import { useState, useEffect } from "react"
 import { onAuthStateChanged } from 'firebase/auth';
-import auth from 'lib/firebase/auth';
+import auth from '../lib/firebase/auth';
 
 import HeroImage from "@media/hero.jpg";
 import KeepDonateStock from "@media/keep-donate-stock.jpg"
