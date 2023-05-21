@@ -119,7 +119,9 @@ export default function UserProfile() {
                             {userData.posts.length !== 0 && (
                                 <div className="flex flex-col self-center gap-4 lg:gap-6 w-full">
                                     {userData.posts.map(donation => {
-                                        const tags = donation.tags ? donation.tags.map(tagName => allTags.find(tag => tag.name === tagName)) : []
+                                        const tags = (
+                                            donation.tags ? donation.tags.map(tagName => allTags.find(tag => tag.name === tagName)) : []
+                                        ).filter(tag => tag !== undefined);
 
                                         return (
                                             <DonationCard
