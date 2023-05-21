@@ -4,7 +4,7 @@ import { useEffect } from "react"
 import Layout from "@components/Layout";
 import auth from "lib/firebase/auth";
 
-import { GoogleAuthProvider, setPersistence, signInWithPopup, browserLocalPersistence, onAuthStateChanged } from "firebase/auth";
+import { GoogleAuthProvider, setPersistence, signInWithPopup, browserLocalPersistence, onAuthStateChanged, getRedirectResult, signInWithRedirect } from "firebase/auth";
 
 import GoogleLogo from "@media/social-media-logos/google.png";
 import MicrosoftLogo from "@media/social-media-logos/microsoft.png";
@@ -25,7 +25,9 @@ export default function SignIn() {
             // Set persistence
             await setPersistence(auth, browserLocalPersistence);
 
-            const res = await signInWithPopup(auth, provider);
+            // Create a redirect to sign in
+            signInWithRedirect(auth, provider);
+            const res = await getRedirectResult(auth, provider);
 
             if (res.user.metadata.creationTime == res.user.metadata.lastSignInTime) {
                 try {
