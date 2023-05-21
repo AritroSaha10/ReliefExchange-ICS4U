@@ -18,6 +18,8 @@ export default function SignOut() {
         signOut(auth).catch((e) => {
             alert("Something went wrong while signing you out. Please try again.");
             console.error(e);
+        }).finally(() => {
+            router.push("/")
         });
     }, []);
 
