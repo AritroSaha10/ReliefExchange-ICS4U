@@ -41,7 +41,7 @@ export default function Home() {
             </h1>
 
             <h2 className="text-gray-500 font-semibold text-2xl xs:text-3xl md:text-4xl">
-              <span className="text-gray-300">Connecting those who can give to those who need</span>
+              <span className="text-gray-300">Where generosity meets community</span>
             </h2>
 
             <div className="flex flex-wrap gap-2 justify-center mt-4">
