@@ -126,6 +126,7 @@ func deleteDonationEndpoint(c *gin.Context) {
 		return
 	}
 	authHeader := c.GetHeader("Authorization")
+
 	if authHeader == "" {
 		c.JSON(http.StatusForbidden, gin.H{"error": "No authorization header provided"})
 		return
@@ -148,7 +149,7 @@ func deleteDonationEndpoint(c *gin.Context) {
 
 	userUID := token.UID
 
-	isAdmin, err := checkIfAdmin(firebaseContext, firestoreClient, userUID)
+	isAdmin, _ := checkIfAdmin(firebaseContext, firestoreClient, userUID)
 	if donationData.Data()["owner_id"].(string) != userUID && (!isAdmin) {
 		c.JSON(http.StatusForbidden, gin.H{"error": "You are not authorized to delete this donation."})
 		return
