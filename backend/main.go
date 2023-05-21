@@ -24,6 +24,8 @@ import (
 
 const SERVICE_ACCOUNT_FILENAME = "ics4u0-project-firebase-key.json"
 
+// firebaseContext and firebaseApp are global variables for firebase context and application.
+// firestoreClient and authClient are clients for firestore and authentication respectively.
 var (
 	firebaseContext context.Context
 	firebaseApp     *firebase.App
@@ -31,6 +33,9 @@ var (
 	authClient      *auth.Client
 )
 
+// Donation represents a donation item.
+// It includes information about the item like title, description, location, image,
+// creation timestamp, owner's id, tags, and reports.
 type Donation struct {
 	ID                string    `json:"id"`
 	Title             string    `json:"title"`
@@ -43,6 +48,9 @@ type Donation struct {
 	Reports           []string  `json:"reports"` // Includes the UIDs of every person who reported it
 }
 
+// UserData represents a user's data.
+// It includes display name, email, registration timestamp, admin status, user's posts,
+// UID and count of donations made.
 type UserData struct {
 	DisplayName           string                   `json:"display_name"`
 	Email                 string                   `json:"email"`
@@ -53,10 +61,11 @@ type UserData struct {
 	DonationsMade         int64                    `json:"donations_made"`
 }
 
-type DeleteDonationRequestBody struct {
-	IDToken string `json:"token"`
-}
-
+// getDonationsListEndpoint handles the endpoint to fetch all donations.
+// Parameters:
+//   - c: the gin context, the request and response http.
+//
+// It sends a list of all donations in the database to the client.
 func getDonationsListEndpoint(c *gin.Context) {
 	donations, err := getAllDonations(firebaseContext, firestoreClient)
 	if err != nil {
@@ -66,6 +75,11 @@ func getDonationsListEndpoint(c *gin.Context) {
 	}
 }
 
+// getDonationFromIDEndpoint handles the endpoint to fetch a donation by id using the getDonationById function
+// Parameters:
+//   - c: the gin context, the request and response http.
+//
+// It sends the requested donation to the client.
 func getDonationFromIDEndpoint(c *gin.Context) {
 	id := c.Param("id")
 	donation, err := getDonationByID(firebaseContext, firestoreClient, id)
@@ -76,6 +90,11 @@ func getDonationFromIDEndpoint(c *gin.Context) {
 	}
 }
 
+// getUserDataFromIDEndpoint handles the endpoint to fetch a user's data by id using the getUserDataById Function
+// Parameters:
+//   - c: the gin context, the request and response http.
+//
+// It sends the requested user's data to the client.
 func getUserDataFromIDEndpoint(c *gin.Context) {
 	id := c.Param("id")
 	userData, err := getUserDataByID(firebaseContext, firestoreClient, id)
@@ -87,6 +106,12 @@ func getUserDataFromIDEndpoint(c *gin.Context) {
 	}
 }
 
+// postDonationEndpoint handles the endpoint to post a new donation.
+// Parameters:
+//   - c: the gin context, the request and response http.
+//
+// It accepts a donation and a user's id token, verifies the token,
+// and then uses the addDonation function to add the donation to the database.
 func postDonationEndpoint(c *gin.Context) {
 	var body struct {
 		DonationData Donation `json:"data"`
@@ -116,6 +141,12 @@ func postDonationEndpoint(c *gin.Context) {
 	}
 }
 
+// deleteDonationEndpoint handles the endpoint to delete a donation by id.
+// Parameters:
+//   - c: the gin context, the request and response http.
+//
+// It requires an Authorization header with a bearer token, verifies the token,
+// checks if the user is authorized to delete the donation, then deletes it.
 func deleteDonationEndpoint(c *gin.Context) {
 	id := c.Param("id")
 
@@ -164,6 +195,11 @@ func deleteDonationEndpoint(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Donation deleted successfully"})
 }
 
+// addUserEndpoint handles the endpoint to add a new user using the addUser function.
+// Parameters:
+//   - c: the gin context, the request and response http.
+//
+// It accepts a user's id token, verifies the token, and then adds the user to the database.
 func addUserEndpoint(c *gin.Context) {
 	var body struct {
 		IDToken string `json:"token"`
@@ -192,6 +228,11 @@ func addUserEndpoint(c *gin.Context) {
 	}
 }
 
+// confirmCAPTCHAToken handles the endpoint to verify a CAPTCHA token.
+// Parameters:
+//   - c: the gin context, the request and response http.
+//
+// It sends a request to Google's reCAPTCHA API and returns whether the token is valid.
 func confirmCAPTCHAToken(c *gin.Context) {
 	var captchaResponseBody struct {
 		Success bool `json:"success"`
@@ -221,6 +262,12 @@ func confirmCAPTCHAToken(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, gin.H{"human": captchaResponseBody.Success})
 }
 
+// banUserEndpoint handles the endpoint to ban a user.
+// Parameters:
+//   - c: the gin context, the request and response http.
+//
+// It accepts a user's id token and the id of the user to be banned, verifies the token,
+// checks if the user performing the ban is an admin, then bans the user if authorized using the banUser function and the checkIfAdmin function
 func banUserEndpoint(c *gin.Context) {
 	var body struct {
 		UserData struct { // Define the UserData structure or replace it with your actual structure
@@ -265,6 +312,12 @@ func banUserEndpoint(c *gin.Context) {
 	}
 }
 
+// reportDonationEndpoint handles the endpoint to report a donation.
+// Parameters:
+//   - c: the gin context, the request and response http.
+//
+// It accepts a user's id token and a donation id, verifies the token,
+// then adds the user's report to the donation.
 func reportDonationEndpoint(c *gin.Context) {
 	var body struct {
 		DonationID string `json:"donation_id"`
@@ -298,6 +351,8 @@ func reportDonationEndpoint(c *gin.Context) {
 	c.Status(http.StatusAccepted)
 }
 
+// main function initializes Firebase, Sentry, Firestore client, Auth client, and
+// sets up the server routes.
 func main() {
 	firebaseContext = context.Background()
 	firebaseCreds := option.WithCredentialsJSON([]byte(os.Getenv("FIREBASE_CREDENTIALS_JSON")))
@@ -352,7 +407,14 @@ func main() {
 	}
 }
 
-// Gets all donations available
+// getAllDonations retrieves all donation records from Firestore.
+// Parameters:
+//   - ctx: the context in which the function is invoked.
+//   - client: the Firestore client.
+// Return values:
+//   - Slice of all Donation objects retrieved.
+//   - error, if any occurred during retrieval.
+
 func getAllDonations(ctx context.Context, client *firestore.Client) ([]Donation, error) {
 	var donations []Donation
 	iter := client.Collection("donations").Documents(ctx) //.Documents(ctx) returns a iterator
@@ -381,6 +443,15 @@ func getAllDonations(ctx context.Context, client *firestore.Client) ([]Donation,
 	return donations, nil // nil-data was retrived without any errors
 }
 
+// getDonationByID retrieves a donation record by its ID from Firestore.
+// Parameters:
+//   - ctx: the context in which the function is invoked.
+//   - client: the Firestore client.
+//   - id: the ID of the donation to retrieve.
+//
+// Return values:
+//   - Donation object that corresponds to the provided ID.
+//   - error, if any occurred during retrieval.
 func getDonationByID(ctx context.Context, client *firestore.Client, id string) (Donation, error) {
 	var donation Donation
 	doc, err := client.Collection("donations").Doc(id).Get(ctx) // get a single donation from its id
@@ -408,6 +479,15 @@ func getDonationByID(ctx context.Context, client *firestore.Client, id string) (
 	return donation, nil
 }
 
+// getUserDataByID retrieves user data by the user's ID from Firestore.
+// Parameters:
+//   - ctx: the context in which the function is invoked.
+//   - client: the Firestore client.
+//   - id: the ID of the user to retrieve.
+//
+// Return values:
+//   - UserData object that corresponds to the provided ID.
+//   - error, if any occurred during retrieval.
 func getUserDataByID(ctx context.Context, client *firestore.Client, id string) (UserData, error) {
 	var userData UserData
 	doc, err := client.Collection("users").Doc(id).Get(ctx) // Get a single user from its id
@@ -432,6 +512,16 @@ func getUserDataByID(ctx context.Context, client *firestore.Client, id string) (
 	return userData, nil
 }
 
+// addDonation adds a new donation record to Firestore.
+// Parameters:
+//   - ctx: the context in which the function is invoked.
+//   - client: the Firestore client.
+//   - donation: the Donation object to add.
+//   - userId: the ID of the user making the donation.
+//
+// Return values:
+//   - ID of the new donation record.
+//   - error, if any occurred during the operation.
 func addDonation(ctx context.Context, client *firestore.Client, donation Donation, userId string) (string, error) {
 	docRef, _, err := client.Collection("donations").Add(ctx, map[string]interface{}{
 		"title":              donation.Title,
@@ -476,6 +566,15 @@ func addDonation(ctx context.Context, client *firestore.Client, donation Donatio
 	return docRef.ID, nil
 }
 
+// reportDonation adds a report to a specific donation record.
+// Parameters:
+//   - ctx: the context in which the function is invoked.
+//   - client: the Firestore client.
+//   - donationID: the ID of the donation to report.
+//   - userUID: the UID of the user making the report.
+//
+// Return values:
+//   - error, if any occurred during the operation.
 func reportDonation(ctx context.Context, client *firestore.Client, donationID string, userUID string) error {
 	doc, err := client.Collection("donations").Doc(donationID).Get(ctx) // Get the donation's data
 	if err != nil {
@@ -514,6 +613,14 @@ func reportDonation(ctx context.Context, client *firestore.Client, donationID st
 	return nil
 }
 
+// addUser adds a new user to Firestore.
+// Parameters:
+//   - ctx: the context in which the function is invoked.
+//   - client: the Firestore client.
+//   - userId: the ID of the user to add.
+//
+// Return values:
+//   - error, if any occurred during the operation.
 func addUser(ctx context.Context, client *firestore.Client, userId string) error {
 	userData, err := authClient.GetUser(ctx, userId)
 	if err != nil {
@@ -536,6 +643,14 @@ func addUser(ctx context.Context, client *firestore.Client, userId string) error
 	return nil
 }
 
+// banUser bans a user by removing their records from Firestore.
+// Parameters:
+//   - ctx: the context in which the function is invoked.
+//   - client: the Firestore client.
+//   - userId: the ID of the user to ban.
+//
+// Return values:
+//   - error, if any occurred during the operation.
 func banUser(ctx context.Context, client *firestore.Client, userId string) error {
 	// Get user data document reference
 	userDataRef := client.Doc("users/" + userId)
@@ -567,6 +682,15 @@ func banUser(ctx context.Context, client *firestore.Client, userId string) error
 	return nil
 }
 
+// checkIfAdmin checks if a user has admin privileges.
+// Parameters:
+//   - ctx: the context in which the function is invoked.
+//   - client: the Firestore client.
+//   - senderId: the ID of the user to check.
+//
+// Return values:
+//   - true if the user has admin privileges, false otherwise.
+//   - error, if any occurred during the check.
 func checkIfAdmin(ctx context.Context, client *firestore.Client, senderId string) (bool, error) {
 	// Get the user document
 	doc, err := client.Doc("users/" + senderId).Get(ctx)
