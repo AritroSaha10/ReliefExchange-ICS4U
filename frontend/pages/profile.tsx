@@ -11,6 +11,10 @@ import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime"
 import axios from "axios";
 import convertBackendRouteToURL from "lib/convertBackendRouteToURL";
+import DonationCard from "@components/DonationCard";
+import allTags from "lib/tag-types";
+import Link from "next/link";
+import Donation from "lib/types/donation";
 dayjs.extend(relativeTime)
 
 export default function UserProfile() {
@@ -43,7 +47,13 @@ export default function UserProfile() {
                         // Get each donation
                         try {
                             const res = await axios.get(convertBackendRouteToURL(`/donations/${post.ID}`));
-                            return res.data;
+
+                            const donation: Donation = {
+                                ...res.data,
+                                creation_timestamp: new Date(res.data.creation_timestamp)
+                            }
+
+                            return donation;
                         } catch (e) {
                             console.log(e);
                             return null;
@@ -51,6 +61,8 @@ export default function UserProfile() {
                     }));
 
                     data.posts = data.posts.filter((obj: any) => obj !== null)
+
+                    console.log(data.posts)
 
                     setUserData(data);
                     setSignedIn(true);
@@ -77,11 +89,12 @@ export default function UserProfile() {
         return (
             <Layout name="Your Profile">
                 <div className="p-10">
-                    <h1 className="text-4xl font-semibold text-white mb-4">Your Account</h1>
-                    <div className="flex flex-col md:flex-row w-full">
-                        <div className="w-full md:w-1/3 lg:w-1/4 bg-gray-800">
-                            <div className="flex flex-col items-center text-center">
-                                <Image src={increasePFPResolution(user.photoURL, 400)} width={150} height={150} alt="user profile picture" className="rounded-full" />
+                    <h1 className="text-4xl font-semibold text-white mb-4 lg:mb-8">Your Account</h1>
+                    <div className="flex flex-col md:flex-row w-full lg:p-8">
+                        <div className="w-full md:w-1/3 lg:w-1/4">
+                            <div className="flex flex-col">
+                                <Image src={increasePFPResolution(user.photoURL, 400)} width={150} height={150} alt="user profile picture" className="rounded-full mb-2" />
+
                                 <h3 className="text-2xl font-medium text-white">{user.displayName}</h3>
                                 <p className="text-md text-white"><span className="font-semibold">Registered since:</span> {dayjs().to(user.metadata.creationTime)}</p>
                                 <p className="text-md text-white"><span className="font-semibold">Last signed in: </span>{dayjs().to(user.metadata.lastSignInTime)}</p>
@@ -89,8 +102,29 @@ export default function UserProfile() {
                             </div>
                         </div>
 
-                        <div className="w-full md:w-2/3 lg:w-3/4 bg-slate-700">
-                            <h2 className="text-3xl font-semibold text-white">Donations</h2>
+                        <div className="w-full md:w-2/3 lg:w-3/4">
+                            <h2 className="text-3xl font-semibold text-white mb-2">Donations</h2>
+
+                            {userData.posts.length !== 0 && (
+                                <div className="flex flex-col self-center gap-4 lg:gap-6 w-full">
+                                    {userData.posts.map(donation => {
+                                        const tags = donation.tags ? donation.tags.map(tagName => allTags.find(tag => tag.name === tagName)) : []
+
+                                        return (
+                                            <DonationCard
+                                                title={donation.title}
+                                                date={donation.creation_timestamp}
+                                                subtitle={donation.description}
+                                                image={donation.img}
+                                                tags={tags}
+                                                href={`/donations/${donation.id}`}
+                                            />
+                                        )
+                                    })}
+                                </div>
+                            )}
+
+                            {userData.posts.length === 0 && <span className="text-gray-200 text-md">It seems you haven't opened any donations yet. Click <Link href="/donations/create" className="text-blue-400 hover:underline active:text-blue-500">Donate</Link> in the navbar to make one!</span>}
                         </div>
                     </div>
                 </div>
