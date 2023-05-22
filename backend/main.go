@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
+
 	"net/http"
 	"os"
 	"strings"
@@ -18,6 +18,7 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	_ "github.com/joho/godotenv/autoload"
+	log "github.com/sirupsen/logrus"
 	"google.golang.org/api/iterator"
 	"google.golang.org/api/option"
 )
@@ -32,6 +33,18 @@ var (
 	firestoreClient *firestore.Client
 	authClient      *auth.Client
 )
+
+func init() {
+	// Log as JSON instead of the default ASCII formatter.
+	log.SetFormatter(&log.JSONFormatter{})
+
+	// Output to stdout instead of the default stderr
+	// Can be any io.Writer, see below for File example
+	log.SetOutput(os.Stdout)
+
+	// Only log the warning severity or above.
+	log.SetLevel(log.WarnLevel)
+}
 
 // Donation represents a donation item.
 // It includes information about the item like title, description, location, image,
@@ -69,8 +82,10 @@ type UserData struct {
 func getDonationsListEndpoint(c *gin.Context) {
 	donations, err := getAllDonations(firebaseContext, firestoreClient)
 	if err != nil {
+		log.Error(err)
 		c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 	} else {
+		log.Info("Get donations successful.")
 		c.IndentedJSON(http.StatusOK, donations)
 	}
 }
@@ -84,8 +99,11 @@ func getDonationFromIDEndpoint(c *gin.Context) {
 	id := c.Param("id")
 	donation, err := getDonationByID(firebaseContext, firestoreClient, id)
 	if err != nil {
+		log.Warn("Donation not found, ID:", id)
+		log.Error(err.Error())
 		c.IndentedJSON(http.StatusNotFound, gin.H{"error": err.Error()})
 	} else {
+		log.Info("Get donation by ID successful.")
 		c.IndentedJSON(http.StatusOK, donation)
 	}
 }
@@ -99,9 +117,11 @@ func getUserDataFromIDEndpoint(c *gin.Context) {
 	id := c.Param("id")
 	userData, err := getUserDataByID(firebaseContext, firestoreClient, id)
 	if err != nil {
-		log.Println(err.Error())
+		log.Warn("User data not found, ID:", id)
+		log.Error(err.Error())
 		c.IndentedJSON(http.StatusNotFound, gin.H{"error": err.Error()})
 	} else {
+		log.Info("Get user data by ID successful.")
 		c.IndentedJSON(http.StatusOK, userData)
 	}
 }
@@ -112,31 +132,34 @@ func getUserDataFromIDEndpoint(c *gin.Context) {
 //
 // It accepts a donation and a user's id token, verifies the token,
 // and then uses the addDonation function to add the donation to the database.
+
 func postDonationEndpoint(c *gin.Context) {
 	var body struct {
 		DonationData Donation `json:"data"`
 		IDToken      string   `json:"token"`
 	}
 
-	if err := c.ShouldBindJSON(&body); err != nil { // stores request body info into the body varible, so that it matches feild in struct in json format
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()}) // if user not signed in, then will send error
+	if err := c.ShouldBindJSON(&body); err != nil {
+		log.Error(err.Error())
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	token, err := authClient.VerifyIDToken(firebaseContext, body.IDToken) // token is for user to verify with the server, after it is decoded, we have access to all feilds
+	token, err := authClient.VerifyIDToken(firebaseContext, body.IDToken)
 	if err != nil {
+		log.Warn("Failed to verify ID token")
 		c.IndentedJSON(http.StatusForbidden, gin.H{"error": "You are not authorized to make this donation."})
 		return
 	}
 
 	userUID := token.UID
-
-	docID, err := addDonation(firebaseContext, firestoreClient, body.DonationData, userUID) // create new donation object from struct
-	// add to the firestore databse
+	docID, err := addDonation(firebaseContext, firestoreClient, body.DonationData, userUID)
 	if err != nil {
+		log.Error(err.Error())
 		c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	} else {
+		log.Info("Post donation successful.")
 		c.IndentedJSON(http.StatusCreated, docID)
 	}
 }
@@ -153,6 +176,7 @@ func deleteDonationEndpoint(c *gin.Context) {
 	donationRef := firestoreClient.Collection("donations").Doc(id)
 	donationData, err := donationRef.Get(context.Background())
 	if err != nil {
+		log.Error(err.Error())
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
@@ -174,6 +198,7 @@ func deleteDonationEndpoint(c *gin.Context) {
 
 	token, err := authClient.VerifyIDToken(firebaseContext, tokenString)
 	if err != nil {
+		log.Error(err.Error())
 		c.IndentedJSON(http.StatusForbidden, gin.H{"error": "You are not authorized to delete this donation."})
 		return
 	}
@@ -188,6 +213,7 @@ func deleteDonationEndpoint(c *gin.Context) {
 
 	_, err = donationRef.Delete(context.Background()) // only need the err return value
 	if err != nil {
+		log.Error(err.Error())
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
@@ -205,13 +231,16 @@ func addUserEndpoint(c *gin.Context) {
 		IDToken string `json:"token"`
 	}
 
-	if err := c.ShouldBindJSON(&body); err != nil { // stores request body info into the body varible, so that it matches feild in struct in json format
+	if err := c.ShouldBindJSON(&body); err != nil {
+		log.Error(err.Error())
+		// stores request body info into the body varible, so that it matches feild in struct in json format
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()}) // if user not signed in, then will send error
 		return
 	}
 
 	token, err := authClient.VerifyIDToken(firebaseContext, body.IDToken) // token is for user to verify with the server, after it is decoded, we have access to all feilds
 	if err != nil {
+		log.Error(err.Error())
 		c.IndentedJSON(http.StatusForbidden, gin.H{"error": "You are not authorized to create this user"})
 		return
 	}
@@ -221,9 +250,11 @@ func addUserEndpoint(c *gin.Context) {
 	err = addUser(firebaseContext, firestoreClient, userUID) // create new donation object from struct
 	// add to the firestore databse
 	if err != nil {
+		log.Error(err.Error())
 		c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	} else {
+		log.Info("user added successfully")
 		c.IndentedJSON(http.StatusCreated, gin.H{"message": "User added successfully"})
 	}
 }
@@ -284,6 +315,7 @@ func banUserEndpoint(c *gin.Context) {
 	// get sending user token
 	token, err := authClient.VerifyIDToken(firebaseContext, body.IDToken)
 	if err != nil {
+		log.Error(err.Error())
 		c.IndentedJSON(http.StatusForbidden, gin.H{"error": "You are not authorized to create this user"})
 		return
 	}
@@ -294,6 +326,7 @@ func banUserEndpoint(c *gin.Context) {
 	// Check if the user trying to perform the ban is an admin
 	isAdmin, err := checkIfAdmin(firebaseContext, firestoreClient, token.UID)
 	if err != nil {
+		log.Error(err.Error())
 		c.IndentedJSON(http.StatusForbidden, gin.H{"error": "internal server error"})
 		return
 	}
@@ -302,12 +335,14 @@ func banUserEndpoint(c *gin.Context) {
 		// if sending user is an admin delete all the donations of the user to ban including their data and account
 		err = banUser(firebaseContext, firestoreClient, uuidToBan)
 		if err != nil {
+			log.Error(err.Error())
 			c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": "There was an error processing the ban"})
 			return
 		}
 
 		c.IndentedJSON(http.StatusOK, gin.H{"status": "User banned successfully"})
 	} else {
+		log.Error(err.Error())
 		c.IndentedJSON(http.StatusForbidden, gin.H{"error": "You are not authorized to ban this user"})
 	}
 }
@@ -332,6 +367,7 @@ func reportDonationEndpoint(c *gin.Context) {
 
 	token, err := authClient.VerifyIDToken(firebaseContext, body.IDToken)
 	if err != nil {
+		log.Error(err.Error())
 		c.IndentedJSON(http.StatusForbidden, gin.H{"error": "You are not authorized to delete this donation."})
 		return
 	}
@@ -339,7 +375,9 @@ func reportDonationEndpoint(c *gin.Context) {
 	userUID := token.UID
 	err = reportDonation(firebaseContext, firestoreClient, body.DonationID, userUID)
 	if err != nil {
+		log.Error(err.Error())
 		if err.Error() == "User has already sent a report" {
+
 			c.IndentedJSON(http.StatusConflict, gin.H{"error": err.Error()})
 		} else {
 			log.Println(err.Error())
@@ -349,11 +387,13 @@ func reportDonationEndpoint(c *gin.Context) {
 	}
 
 	c.Status(http.StatusAccepted)
+	log.Info("report successful")
 }
 
 // main function initializes Firebase, Sentry, Firestore client, Auth client, and
 // sets up the server routes.
 func main() {
+
 	firebaseContext = context.Background()
 	firebaseCreds := option.WithCredentialsJSON([]byte(os.Getenv("FIREBASE_CREDENTIALS_JSON")))
 
@@ -424,6 +464,7 @@ func getAllDonations(ctx context.Context, client *firestore.Client) ([]Donation,
 			break
 		}
 		if err != nil {
+			log.Error(err.Error())
 			return nil, err // no data was retrieved-nil, but there was an error -err
 		}
 		var donation Donation
@@ -435,11 +476,13 @@ func getAllDonations(ctx context.Context, client *firestore.Client) ([]Donation,
 		donation.CreationTimestamp = doc.Data()["creation_timestamp"].(time.Time)
 
 		if err != nil {
+			log.Error(err.Error())
 			return nil, err
 		}
 		donation.ID = doc.Ref.ID // sets donation struct id to the one in the firebase
 		donations = append(donations, donation)
 	}
+	log.Info("donations:%v", donations)
 	return donations, nil // nil-data was retrived without any errors
 }
 
@@ -456,10 +499,12 @@ func getDonationByID(ctx context.Context, client *firestore.Client, id string) (
 	var donation Donation
 	doc, err := client.Collection("donations").Doc(id).Get(ctx) // get a single donation from its id
 	if err != nil {
+		log.Error(err.Error())
 		return donation, err // returns empty donation struct
 	}
 	err = doc.DataTo(&donation)
 	if err != nil {
+		log.Error(err.Error())
 		return Donation{}, err
 	}
 
@@ -476,6 +521,7 @@ func getDonationByID(ctx context.Context, client *firestore.Client, id string) (
 	}
 
 	donation.ID = doc.Ref.ID // ID is stored in the Ref feild, so DataTo, does not store id in the donations object
+	log.Info("donation: %v", donation)
 	return donation, nil
 }
 
@@ -492,10 +538,12 @@ func getUserDataByID(ctx context.Context, client *firestore.Client, id string) (
 	var userData UserData
 	doc, err := client.Collection("users").Doc(id).Get(ctx) // Get a single user from its id
 	if err != nil {
+		log.Error(err.Error())
 		return userData, err // returns empty user struct
 	}
 	err = doc.DataTo(&userData)
 	if err != nil {
+		log.Error(err.Error())
 		return UserData{}, err
 	}
 
@@ -509,6 +557,7 @@ func getUserDataByID(ctx context.Context, client *firestore.Client, id string) (
 	}
 
 	userData.UID = doc.Ref.ID // ID is stored in the Ref feild, so DataTo, does not store id in the user data object
+	log.Info("userData: %v", userData)
 	return userData, nil
 }
 
@@ -537,6 +586,7 @@ func addDonation(ctx context.Context, client *firestore.Client, donation Donatio
 	// Get the user's document
 	userDoc, err := client.Doc("users/" + userId).Get(ctx)
 	if err != nil {
+		log.Error(err.Error())
 		return "", err
 	}
 
@@ -558,12 +608,15 @@ func addDonation(ctx context.Context, client *firestore.Client, donation Donatio
 		"donations_made": userDoc.Data()["donations_made"].(int64),
 	}, firestore.MergeAll) // mergeall ensures that only the posts feild is changed
 	if err != nil {
+		log.Error(err.Error())
 		return "", err
 	}
 
 	if err != nil {
+		log.Error(err.Error())
 		return "", err
 	}
+	log.Info("docRef.Id: %v", docRef.ID)
 	return docRef.ID, nil
 }
 
@@ -579,6 +632,7 @@ func addDonation(ctx context.Context, client *firestore.Client, donation Donatio
 func reportDonation(ctx context.Context, client *firestore.Client, donationID string, userUID string) error {
 	doc, err := client.Collection("donations").Doc(donationID).Get(ctx) // Get the donation's data
 	if err != nil {
+		log.Error(err.Error())
 		return err
 	}
 
@@ -595,6 +649,7 @@ func reportDonation(ctx context.Context, client *firestore.Client, donationID st
 	// Check whether they've already made a report
 	for _, report := range currentReports {
 		if report == userUID {
+			log.Info("User has already sent a report")
 			return errors.New("User has already sent a report")
 		}
 	}
@@ -608,6 +663,7 @@ func reportDonation(ctx context.Context, client *firestore.Client, donationID st
 		},
 	})
 	if err != nil {
+		log.Error(err.Error())
 		return err
 	}
 
@@ -625,6 +681,7 @@ func reportDonation(ctx context.Context, client *firestore.Client, donationID st
 func addUser(ctx context.Context, client *firestore.Client, userId string) error {
 	userData, err := authClient.GetUser(ctx, userId)
 	if err != nil {
+		log.Error(err.Error())
 		return err
 	}
 
@@ -638,7 +695,7 @@ func addUser(ctx context.Context, client *firestore.Client, userId string) error
 		"registered_date": time.Unix(userData.UserMetadata.CreationTimestamp/1000, 0),
 	})
 	if err != nil {
-		log.Println(err.Error())
+		log.Error(err.Error())
 		return err
 	}
 	return nil
@@ -659,24 +716,35 @@ func banUser(ctx context.Context, client *firestore.Client, userId string) error
 	// Get user data
 	userDataDoc, err := userDataRef.Get(ctx)
 	if err != nil {
+		log.Error("failed getting user data: %w", err.Error())
 		return fmt.Errorf("failed getting user data: %w", err)
 	}
 
-	// get the document references from the user data
-	var posts []firestore.DocumentRef
-	if err := userDataDoc.DataTo(&posts); err != nil {
-		return fmt.Errorf("failed getting posts from user data: %w", err)
+	// Extract posts field from user data
+	rawPosts, ok := userDataDoc.Data()["posts"].([]interface{})
+	if !ok {
+		log.Error(err.Error())
+		return fmt.Errorf("failed extracting posts field from user data")
 	}
 
-	// Delete each post
-	for _, postRef := range posts {
+	// Convert each raw post to a *firestore.DocumentRef
+
+	for _, rawPost := range rawPosts {
+		postRef, ok := rawPost.(*firestore.DocumentRef)
+		if !ok {
+			log.Error(err.Error())
+			return fmt.Errorf("failed converting raw post to *firestore.DocumentRef")
+		}
 		if _, err := postRef.Delete(ctx); err != nil {
-			return fmt.Errorf("failed deleting post %v: %w", postRef.ID, err)
+			log.Warning("Can't Delete post %v", err.Error())
+			log.Println("Cant delete post")
+			continue
 		}
 	}
 
 	// Delete user data
 	if _, err := userDataRef.Delete(ctx); err != nil {
+		log.Error(err.Error())
 		return fmt.Errorf("failed deleting user data: %w", err)
 	}
 
@@ -696,6 +764,7 @@ func checkIfAdmin(ctx context.Context, client *firestore.Client, senderId string
 	// Get the user document
 	doc, err := client.Doc("users/" + senderId).Get(ctx)
 	if err != nil {
+		log.Error(err.Error())
 		return false, err
 	}
 
@@ -703,8 +772,9 @@ func checkIfAdmin(ctx context.Context, client *firestore.Client, senderId string
 	data := doc.Data()
 	isAdmin, ok := data["admin"].(bool)
 	if !ok {
+		log.Error("admin field not found or is not a bool %v", err.Error())
 		return false, fmt.Errorf("admin field not found or is not a bool")
 	}
-
+	log.Info("isAdmin: %v", isAdmin)
 	return isAdmin, nil
 }
