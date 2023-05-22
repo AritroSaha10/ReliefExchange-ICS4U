@@ -301,10 +301,8 @@ func confirmCAPTCHAToken(c *gin.Context) {
 // checks if the user performing the ban is an admin, then bans the user if authorized using the banUser function and the checkIfAdmin function
 func banUserEndpoint(c *gin.Context) {
 	var body struct {
-		UserData struct { // Define the UserData structure or replace it with your actual structure
-			UUID string `json:"uuid"`
-		}
-		IDToken string `json:"token"`
+		UserToBan string `json:"userToBan"`
+		Token     string `json:"token"`
 	}
 
 	if err := c.ShouldBindJSON(&body); err != nil {
@@ -313,7 +311,7 @@ func banUserEndpoint(c *gin.Context) {
 	}
 
 	// get sending user token
-	token, err := authClient.VerifyIDToken(firebaseContext, body.IDToken)
+	token, err := authClient.VerifyIDToken(firebaseContext, body.Token)
 	if err != nil {
 		log.Error(err.Error())
 		c.IndentedJSON(http.StatusForbidden, gin.H{"error": "You are not authorized to create this user"})
@@ -321,8 +319,8 @@ func banUserEndpoint(c *gin.Context) {
 	}
 
 	// get uuid of user to ban
-	uuidToBan := body.UserData.UUID
-
+	uuidToBan := body.UserToBan
+	log.Info(uuidToBan)
 	// Check if the user trying to perform the ban is an admin
 	isAdmin, err := checkIfAdmin(firebaseContext, firestoreClient, token.UID)
 	if err != nil {
@@ -650,7 +648,7 @@ func reportDonation(ctx context.Context, client *firestore.Client, donationID st
 	for _, report := range currentReports {
 		if report == userUID {
 			log.Info("User has already sent a report")
-			return errors.New("User has already sent a report")
+			return errors.New("user has already sent a report")
 		}
 	}
 
