@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 
 	"net/http"
@@ -572,12 +571,12 @@ func getUserDataByID(ctx context.Context, client *firestore.Client, id string) (
 	}
 
 	// Set values that aren't set in the DataTo function
-	var ok bool
-	userData.DisplayName, ok = doc.Data()["display_name"].(string)
-	userData.RegistrationTimestamp, ok = doc.Data()["registered_date"].(time.Time)
-	userData.DonationsMade, ok = doc.Data()["donations_made"].(int64)
-	if !ok {
-		log.Println("WARN: User data may have not been converted properly.")
+	var ok1, ok2, ok3 bool
+	userData.DisplayName, ok1 = doc.Data()["display_name"].(string)
+	userData.RegistrationTimestamp, ok2 = doc.Data()["registered_date"].(time.Time)
+	userData.DonationsMade, ok3 = doc.Data()["donations_made"].(int64)
+	if !(ok1 && ok2 && ok3) {
+		log.Warn("user data may have not been converted properly")
 	}
 
 	userData.UID = doc.Ref.ID // ID is stored in the Ref feild, so DataTo, does not store id in the user data object
@@ -606,10 +605,17 @@ func addDonation(ctx context.Context, client *firestore.Client, donation Donatio
 		"tags":               donation.Tags,
 		"reports":            make([]string, 0),
 	})
+	if err != nil {
+		err = fmt.Errorf("error while adding donation: %w", err)
+		log.Error(err.Error())
+		return "", err
+	}
+
 	// Get current posts and append new post
 	// Get the user's document
 	userDoc, err := client.Doc("users/" + userId).Get(ctx)
 	if err != nil {
+		err = fmt.Errorf("error while getting user document (addDonation): %w", err)
 		log.Error(err.Error())
 		return "", err
 	}
@@ -632,15 +638,12 @@ func addDonation(ctx context.Context, client *firestore.Client, donation Donatio
 		"donations_made": userDoc.Data()["donations_made"].(int64),
 	}, firestore.MergeAll) // mergeall ensures that only the posts feild is changed
 	if err != nil {
+		err = fmt.Errorf("error while updating user document (addDonation): %w", err)
 		log.Error(err.Error())
 		return "", err
 	}
 
-	if err != nil {
-		log.Error(err.Error())
-		return "", err
-	}
-	log.Info("docRef.Id: %v", docRef.ID)
+	log.Info("ID of new donation: %v", docRef.ID)
 	return docRef.ID, nil
 }
 
@@ -673,8 +676,9 @@ func reportDonation(ctx context.Context, client *firestore.Client, donationID st
 	// Check whether they've already made a report
 	for _, report := range currentReports {
 		if report == userUID {
-			log.Info("User has already sent a report")
-			return errors.New("user has already sent a report")
+			err := fmt.Errorf("user has already sent a report")
+			log.Error(err)
+			return err
 		}
 	}
 
@@ -687,6 +691,7 @@ func reportDonation(ctx context.Context, client *firestore.Client, donationID st
 		},
 	})
 	if err != nil {
+		err = fmt.Errorf("failed adding report to donation doc: %w", err)
 		log.Error(err.Error())
 		return err
 	}
@@ -705,6 +710,7 @@ func reportDonation(ctx context.Context, client *firestore.Client, donationID st
 func addUser(ctx context.Context, client *firestore.Client, userId string) error {
 	userData, err := authClient.GetUser(ctx, userId)
 	if err != nil {
+		err = fmt.Errorf("failed getting user data from auth server: %w", err)
 		log.Error(err.Error())
 		return err
 	}
@@ -719,6 +725,7 @@ func addUser(ctx context.Context, client *firestore.Client, userId string) error
 		"registered_date": time.Unix(userData.UserMetadata.CreationTimestamp/1000, 0),
 	})
 	if err != nil {
+		err = fmt.Errorf("failed creating user data doc: %w", err)
 		log.Error(err.Error())
 		return err
 	}
@@ -740,50 +747,54 @@ func banUser(ctx context.Context, client *firestore.Client, userId string) error
 	// Get user data
 	userDataDoc, err := userDataRef.Get(ctx)
 	if err != nil {
-		log.Error("failed getting user data: %w", err.Error())
-		return fmt.Errorf("failed getting user data: %w", err)
+		err = fmt.Errorf("failed getting user data: %w", err)
+		log.Error(err.Error())
+		return err
 	}
 
 	// Extract posts field from user data
 	rawPosts, ok := userDataDoc.Data()["posts"].([]interface{})
 	if !ok {
+		err = fmt.Errorf("failed extracting posts field from user data")
 		log.Error(err.Error())
-		return fmt.Errorf("failed extracting posts field from user data")
+		return err
 	}
 
 	// Convert each raw post to a *firestore.DocumentRef
 	for _, rawPost := range rawPosts {
 		postRef, ok := rawPost.(*firestore.DocumentRef)
 		if !ok {
-			log.Error(err.Error())
-			return fmt.Errorf("failed converting raw post to *firestore.DocumentRef")
+			log.Warn("failed converting raw post to *firestore.DocumentRef")
+			continue
 		}
 		if _, err := postRef.Delete(ctx); err != nil {
-			log.Warning("Can't Delete post %v", err.Error())
-			log.Println("Cant delete post")
+			log.Warn("failed deleting post: %w", err)
 			continue
 		}
 	}
 
 	// Delete user data
 	if _, err := userDataRef.Delete(ctx); err != nil {
+		err = fmt.Errorf("failed deleting user data: %w", err)
 		log.Error(err.Error())
-		return fmt.Errorf("failed deleting user data: %w", err)
+		return err
 	}
 
 	// Add them to the banned list
 	banDocRef := client.Doc("config/bans")
 	var banDocSnapshot *firestore.DocumentSnapshot
 	if banDocSnapshot, err = banDocRef.Get(ctx); err != nil {
+		err = fmt.Errorf("failed getting ban list: %w", err)
 		log.Error(err.Error())
-		return fmt.Errorf("failed getting ban list: %w", err)
+		return err
 	}
 
 	// Get ban list
 	var banList []string
 	if banList, ok = banDocSnapshot.Data()["users"].([]string); !ok {
-		log.Error("could not convert banned users list to []string")
-		return fmt.Errorf("could not convert banned users list to []string")
+		err = fmt.Errorf("could not convert banned users list to []string")
+		log.Error(err.Error())
+		return err
 	}
 	banList = append(banList, userId)
 
@@ -821,8 +832,9 @@ func checkIfBanned(ctx context.Context, client *firestore.Client, userId string)
 	var banListRaw []interface{}
 	var ok bool
 	if banListRaw, ok = banDocSnapshot.Data()["users"].([]interface{}); !ok {
-		log.Error("could not convert banned users list to []string")
-		return false, fmt.Errorf("could not convert banned users list to []string")
+		err = fmt.Errorf("could not convert banned users list to []string")
+		log.Error(err.Error())
+		return false, err
 	}
 
 	var banList []string
@@ -860,9 +872,11 @@ func checkIfAdmin(ctx context.Context, client *firestore.Client, senderId string
 	data := doc.Data()
 	isAdmin, ok := data["admin"].(bool)
 	if !ok {
-		log.Error("admin field not found or is not a bool %v", err.Error())
-		return false, fmt.Errorf("admin field not found or is not a bool")
+		err = fmt.Errorf("failed getting admin field from user doc: %w", err)
+		log.Error(err.Error())
+		return false, err
 	}
+
 	log.Info("isAdmin: %v", isAdmin)
 	return isAdmin, nil
 }
