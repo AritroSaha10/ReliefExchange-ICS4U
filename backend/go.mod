@@ -46,6 +46,9 @@ require (
 	github.com/sirupsen/logrus v1.9.2 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.2.9 // indirect
+	github.com/weathersource/go-errors v1.0.1 // indirect
+	github.com/weathersource/go-gsrv v1.0.1 // indirect
+	github.com/weathersource/go-mockfs v1.0.1 // indirect
 	go.opencensus.io v0.24.0 // indirect
 	golang.org/x/arch v0.0.0-20210923205945-b76863e36670 // indirect
 	golang.org/x/crypto v0.7.0 // indirect
