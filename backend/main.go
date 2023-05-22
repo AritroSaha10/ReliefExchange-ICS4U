@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	types "relief_exchange_backend/types"
 
 	"net/http"
 	"os"
@@ -45,34 +46,6 @@ func init() {
 
 	// Only log the warning severity or above.
 	log.SetLevel(log.WarnLevel)
-}
-
-// Donation represents a donation item.
-// It includes information about the item like title, description, location, image,
-// creation timestamp, owner's id, tags, and reports.
-type Donation struct {
-	ID                string    `json:"id"`
-	Title             string    `json:"title"`
-	Description       string    `json:"description"`
-	Location          string    `json:"location"`
-	Image             string    `json:"img"`
-	CreationTimestamp time.Time `json:"creation_timestamp"` // In UTC
-	OwnerId           string    `json:"owner_id"`
-	Tags              []string  `json:"tags"`
-	Reports           []string  `json:"reports"` // Includes the UIDs of every person who reported it
-}
-
-// UserData represents a user's data.
-// It includes display name, email, registration timestamp, admin status, user's posts,
-// UID and count of donations made.
-type UserData struct {
-	DisplayName           string                   `json:"display_name"`
-	Email                 string                   `json:"email"`
-	RegistrationTimestamp time.Time                `json:"registered_date"` // In UTC
-	Admin                 bool                     `json:"admin"`
-	Posts                 []*firestore.DocumentRef `json:"posts"`
-	UID                   string                   `json:"uid"`
-	DonationsMade         int64                    `json:"donations_made"`
 }
 
 // getDonationsListEndpoint handles the endpoint to fetch all donations.
@@ -136,8 +109,8 @@ func getUserDataFromIDEndpoint(c *gin.Context) {
 
 func postDonationEndpoint(c *gin.Context) {
 	var body struct {
-		DonationData Donation `json:"data"`
-		IDToken      string   `json:"token"`
+		DonationData types.Donation `json:"data"`
+		IDToken      string         `json:"token"`
 	}
 
 	if err := c.ShouldBindJSON(&body); err != nil {
@@ -478,8 +451,8 @@ func main() {
 //   - Slice of all Donation objects retrieved.
 //   - error, if any occurred during retrieval.
 
-func getAllDonations(ctx context.Context, client *firestore.Client) ([]Donation, error) {
-	var donations []Donation
+func getAllDonations(ctx context.Context, client *firestore.Client) ([]types.Donation, error) {
+	var donations []types.Donation
 	iter := client.Collection("donations").Documents(ctx) //.Documents(ctx) returns a iterator
 	for {
 		doc, err := iter.Next()
@@ -490,7 +463,7 @@ func getAllDonations(ctx context.Context, client *firestore.Client) ([]Donation,
 			log.Error(err.Error())
 			return nil, err // no data was retrieved-nil, but there was an error -err
 		}
-		var donation Donation
+		var donation types.Donation
 		err = doc.DataTo(&donation)
 
 		// Override some attributes that don't work with DataTo
@@ -518,8 +491,8 @@ func getAllDonations(ctx context.Context, client *firestore.Client) ([]Donation,
 // Return values:
 //   - Donation object that corresponds to the provided ID.
 //   - error, if any occurred during retrieval.
-func getDonationByID(ctx context.Context, client *firestore.Client, id string) (Donation, error) {
-	var donation Donation
+func getDonationByID(ctx context.Context, client *firestore.Client, id string) (types.Donation, error) {
+	var donation types.Donation
 	doc, err := client.Collection("donations").Doc(id).Get(ctx) // get a single donation from its id
 	if err != nil {
 		log.Error(err.Error())
@@ -528,7 +501,7 @@ func getDonationByID(ctx context.Context, client *firestore.Client, id string) (
 	err = doc.DataTo(&donation)
 	if err != nil {
 		log.Error(err.Error())
-		return Donation{}, err
+		return types.Donation{}, err
 	}
 
 	// Override some attributes that don't work with DataTo
@@ -557,8 +530,8 @@ func getDonationByID(ctx context.Context, client *firestore.Client, id string) (
 // Return values:
 //   - UserData object that corresponds to the provided ID.
 //   - error, if any occurred during retrieval.
-func getUserDataByID(ctx context.Context, client *firestore.Client, id string) (UserData, error) {
-	var userData UserData
+func getUserDataByID(ctx context.Context, client *firestore.Client, id string) (types.UserData, error) {
+	var userData types.UserData
 	doc, err := client.Collection("users").Doc(id).Get(ctx) // Get a single user from its id
 	if err != nil {
 		log.Error(err.Error())
@@ -567,7 +540,7 @@ func getUserDataByID(ctx context.Context, client *firestore.Client, id string) (
 	err = doc.DataTo(&userData)
 	if err != nil {
 		log.Error(err.Error())
-		return UserData{}, err
+		return types.UserData{}, err
 	}
 
 	// Set values that aren't set in the DataTo function
@@ -594,7 +567,7 @@ func getUserDataByID(ctx context.Context, client *firestore.Client, id string) (
 // Return values:
 //   - ID of the new donation record.
 //   - error, if any occurred during the operation.
-func addDonation(ctx context.Context, client *firestore.Client, donation Donation, userId string) (string, error) {
+func addDonation(ctx context.Context, client *firestore.Client, donation types.Donation, userId string) (string, error) {
 	docRef, _, err := client.Collection("donations").Add(ctx, map[string]interface{}{
 		"title":              donation.Title,
 		"description":        donation.Description,
