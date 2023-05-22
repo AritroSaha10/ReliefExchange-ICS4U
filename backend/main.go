@@ -4,6 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	endpoints "relief_exchange_backend/endpoints"
+	globals "relief_exchange_backend/globals"
 	types "relief_exchange_backend/types"
 
 	"net/http"
@@ -15,26 +17,15 @@ import (
 
 	"cloud.google.com/go/firestore"
 	firebase "firebase.google.com/go"
-	"firebase.google.com/go/auth"
 	"github.com/getsentry/sentry-go"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	_ "github.com/joho/godotenv/autoload"
 	log "github.com/sirupsen/logrus"
-	"google.golang.org/api/iterator"
 	"google.golang.org/api/option"
 )
 
 const SERVICE_ACCOUNT_FILENAME = "ics4u0-project-firebase-key.json"
-
-// firebaseContext and firebaseApp are global variables for firebase context and application.
-// firestoreClient and authClient are clients for firestore and authentication respectively.
-var (
-	firebaseContext context.Context
-	firebaseApp     *firebase.App
-	firestoreClient *firestore.Client
-	authClient      *auth.Client
-)
 
 func init() {
 	// Log as JSON instead of the default ASCII formatter.
@@ -48,22 +39,6 @@ func init() {
 	log.SetLevel(log.WarnLevel)
 }
 
-// getDonationsListEndpoint handles the endpoint to fetch all donations.
-// Parameters:
-//   - c: the gin context, the request and response http.
-//
-// It sends a list of all donations in the database to the client.
-func getDonationsListEndpoint(c *gin.Context) {
-	donations, err := getAllDonations(firebaseContext, firestoreClient)
-	if err != nil {
-		log.Error(err)
-		c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-	} else {
-		log.Info("Get donations successful.")
-		c.IndentedJSON(http.StatusOK, donations)
-	}
-}
-
 // getDonationFromIDEndpoint handles the endpoint to fetch a donation by id using the getDonationById function
 // Parameters:
 //   - c: the gin context, the request and response http.
@@ -71,7 +46,7 @@ func getDonationsListEndpoint(c *gin.Context) {
 // It sends the requested donation to the client.
 func getDonationFromIDEndpoint(c *gin.Context) {
 	id := c.Param("id")
-	donation, err := getDonationByID(firebaseContext, firestoreClient, id)
+	donation, err := getDonationByID(globals.FirebaseContext, globals.FirestoreClient, id)
 	if err != nil {
 		log.Warn("Donation not found, ID:", id)
 		log.Error(err.Error())
@@ -89,7 +64,7 @@ func getDonationFromIDEndpoint(c *gin.Context) {
 // It sends the requested user's data to the client.
 func getUserDataFromIDEndpoint(c *gin.Context) {
 	id := c.Param("id")
-	userData, err := getUserDataByID(firebaseContext, firestoreClient, id)
+	userData, err := getUserDataByID(globals.FirebaseContext, globals.FirestoreClient, id)
 	if err != nil {
 		log.Warn("User data not found, ID:", id)
 		log.Error(err.Error())
@@ -119,7 +94,7 @@ func postDonationEndpoint(c *gin.Context) {
 		return
 	}
 
-	token, err := authClient.VerifyIDToken(firebaseContext, body.IDToken)
+	token, err := globals.AuthClient.VerifyIDToken(globals.FirebaseContext, body.IDToken)
 	if err != nil {
 		log.Warn("Failed to verify ID token")
 		c.IndentedJSON(http.StatusForbidden, gin.H{"error": "You are not authorized to make this donation."})
@@ -127,7 +102,7 @@ func postDonationEndpoint(c *gin.Context) {
 	}
 
 	userUID := token.UID
-	docID, err := addDonation(firebaseContext, firestoreClient, body.DonationData, userUID)
+	docID, err := addDonation(globals.FirebaseContext, globals.FirestoreClient, body.DonationData, userUID)
 	if err != nil {
 		log.Error(err.Error())
 		c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -147,7 +122,7 @@ func postDonationEndpoint(c *gin.Context) {
 func deleteDonationEndpoint(c *gin.Context) {
 	id := c.Param("id")
 
-	donationRef := firestoreClient.Collection("donations").Doc(id)
+	donationRef := globals.FirestoreClient.Collection("donations").Doc(id)
 	donationData, err := donationRef.Get(context.Background())
 	if err != nil {
 		log.Error(err.Error())
@@ -170,7 +145,7 @@ func deleteDonationEndpoint(c *gin.Context) {
 
 	tokenString := strings.TrimPrefix(authHeader, "Bearer ")
 
-	token, err := authClient.VerifyIDToken(firebaseContext, tokenString)
+	token, err := globals.AuthClient.VerifyIDToken(globals.FirebaseContext, tokenString)
 	if err != nil {
 		log.Error(err.Error())
 		c.IndentedJSON(http.StatusForbidden, gin.H{"error": "You are not authorized to delete this donation."})
@@ -179,7 +154,7 @@ func deleteDonationEndpoint(c *gin.Context) {
 
 	userUID := token.UID
 
-	isAdmin, _ := checkIfAdmin(firebaseContext, firestoreClient, userUID)
+	isAdmin, _ := checkIfAdmin(globals.FirebaseContext, globals.FirestoreClient, userUID)
 	if donationData.Data()["owner_id"].(string) != userUID && (!isAdmin) {
 		c.JSON(http.StatusForbidden, gin.H{"error": "You are not authorized to delete this donation."})
 		return
@@ -212,7 +187,7 @@ func addUserEndpoint(c *gin.Context) {
 		return
 	}
 
-	token, err := authClient.VerifyIDToken(firebaseContext, body.IDToken) // token is for user to verify with the server, after it is decoded, we have access to all feilds
+	token, err := globals.AuthClient.VerifyIDToken(globals.FirebaseContext, body.IDToken) // token is for user to verify with the server, after it is decoded, we have access to all feilds
 	if err != nil {
 		log.Error(err.Error())
 		c.IndentedJSON(http.StatusForbidden, gin.H{"error": "You are not authorized to create this user"})
@@ -221,7 +196,7 @@ func addUserEndpoint(c *gin.Context) {
 
 	userUID := token.UID
 
-	err = addUser(firebaseContext, firestoreClient, userUID) // create new donation object from struct
+	err = addUser(globals.FirebaseContext, globals.FirestoreClient, userUID) // create new donation object from struct
 	// add to the firestore databse
 	if err != nil {
 		log.Error(err.Error())
@@ -285,7 +260,7 @@ func banUserEndpoint(c *gin.Context) {
 	}
 
 	// get sending user token
-	token, err := authClient.VerifyIDToken(firebaseContext, body.Token)
+	token, err := globals.AuthClient.VerifyIDToken(globals.FirebaseContext, body.Token)
 	if err != nil {
 		log.Error(err.Error())
 		c.IndentedJSON(http.StatusForbidden, gin.H{"error": "You are not authorized to create this user"})
@@ -296,7 +271,7 @@ func banUserEndpoint(c *gin.Context) {
 	uuidToBan := body.UserToBan
 	log.Info(uuidToBan)
 	// Check if the user trying to perform the ban is an admin
-	isAdmin, err := checkIfAdmin(firebaseContext, firestoreClient, token.UID)
+	isAdmin, err := checkIfAdmin(globals.FirebaseContext, globals.FirestoreClient, token.UID)
 	if err != nil {
 		log.Error(err.Error())
 		c.IndentedJSON(http.StatusForbidden, gin.H{"error": "internal server error"})
@@ -305,7 +280,7 @@ func banUserEndpoint(c *gin.Context) {
 
 	if isAdmin {
 		// if sending user is an admin delete all the donations of the user to ban including their data and account
-		err = banUser(firebaseContext, firestoreClient, uuidToBan)
+		err = banUser(globals.FirebaseContext, globals.FirestoreClient, uuidToBan)
 		if err != nil {
 			log.Error(err.Error())
 			c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": "There was an error processing the ban"})
@@ -329,7 +304,7 @@ func checkIfBannedEndpoint(c *gin.Context) {
 	userUID := c.Query("uid")
 
 	// Get the result from the helper function
-	isBanned, err := checkIfBanned(firebaseContext, firestoreClient, userUID)
+	isBanned, err := checkIfBanned(globals.FirebaseContext, globals.FirestoreClient, userUID)
 	if err != nil {
 		log.Error(err.Error())
 		c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
@@ -358,7 +333,7 @@ func reportDonationEndpoint(c *gin.Context) {
 		return
 	}
 
-	token, err := authClient.VerifyIDToken(firebaseContext, body.IDToken)
+	token, err := globals.AuthClient.VerifyIDToken(globals.FirebaseContext, body.IDToken)
 	if err != nil {
 		log.Error(err.Error())
 		c.IndentedJSON(http.StatusForbidden, gin.H{"error": "You are not authorized to delete this donation."})
@@ -366,7 +341,7 @@ func reportDonationEndpoint(c *gin.Context) {
 	}
 
 	userUID := token.UID
-	err = reportDonation(firebaseContext, firestoreClient, body.DonationID, userUID)
+	err = reportDonation(globals.FirebaseContext, globals.FirestoreClient, body.DonationID, userUID)
 	if err != nil {
 		log.Error(err.Error())
 		if err.Error() == "User has already sent a report" {
@@ -387,7 +362,7 @@ func reportDonationEndpoint(c *gin.Context) {
 // sets up the server routes.
 func main() {
 
-	firebaseContext = context.Background()
+	globals.FirebaseContext = context.Background()
 	firebaseCreds := option.WithCredentialsJSON([]byte(os.Getenv("FIREBASE_CREDENTIALS_JSON")))
 
 	err := sentry.Init(sentry.ClientOptions{
@@ -398,18 +373,17 @@ func main() {
 		log.Fatalf("Error initializing Sentry: %s", err)
 	}
 
-	app, err := firebase.NewApp(firebaseContext, nil, firebaseCreds)
+	globals.FirebaseApp, err = firebase.NewApp(globals.FirebaseContext, nil, firebaseCreds)
 	if err != nil {
 		log.Fatalf("Error initializing Firebase app: %v\n", err)
 	}
-	firebaseApp = app
 
-	firestoreClient, err = firebaseApp.Firestore(firebaseContext)
+	globals.FirestoreClient, err = globals.FirebaseApp.Firestore(globals.FirebaseContext)
 	if err != nil {
 		log.Fatalf("Error initializing Firestore client: %v\n", err)
 	}
 
-	authClient, err = firebaseApp.Auth(firebaseContext)
+	globals.AuthClient, err = globals.FirebaseApp.Auth(globals.FirebaseContext)
 	if err != nil {
 		log.Fatalf("Error initializing Firebase Auth client: %v\n", err)
 	}
@@ -425,7 +399,7 @@ func main() {
 		MaxAge:           12 * time.Hour,
 	}))
 
-	r.GET("/donations/list", getDonationsListEndpoint)
+	r.GET("/donations/list", endpoints.GetDonationsList)
 	r.GET("/donations/:id", getDonationFromIDEndpoint)
 	r.GET("/users/:id", getUserDataFromIDEndpoint)
 	r.GET("/users/banned", checkIfBannedEndpoint)
@@ -441,45 +415,6 @@ func main() {
 	if err != nil {
 		return
 	}
-}
-
-// getAllDonations retrieves all donation records from Firestore.
-// Parameters:
-//   - ctx: the context in which the function is invoked.
-//   - client: the Firestore client.
-// Return values:
-//   - Slice of all Donation objects retrieved.
-//   - error, if any occurred during retrieval.
-
-func getAllDonations(ctx context.Context, client *firestore.Client) ([]types.Donation, error) {
-	var donations []types.Donation
-	iter := client.Collection("donations").Documents(ctx) //.Documents(ctx) returns a iterator
-	for {
-		doc, err := iter.Next()
-		if err == iterator.Done {
-			break
-		}
-		if err != nil {
-			log.Error(err.Error())
-			return nil, err // no data was retrieved-nil, but there was an error -err
-		}
-		var donation types.Donation
-		err = doc.DataTo(&donation)
-
-		// Override some attributes that don't work with DataTo
-		donation.Image = doc.Data()["img"].(string)
-		donation.OwnerId = doc.Data()["owner_id"].(string)
-		donation.CreationTimestamp = doc.Data()["creation_timestamp"].(time.Time)
-
-		if err != nil {
-			log.Error(err.Error())
-			return nil, err
-		}
-		donation.ID = doc.Ref.ID // sets donation struct id to the one in the firebase
-		donations = append(donations, donation)
-	}
-	log.Info("donations:%v", donations)
-	return donations, nil // nil-data was retrived without any errors
 }
 
 // getDonationByID retrieves a donation record by its ID from Firestore.
@@ -681,7 +616,7 @@ func reportDonation(ctx context.Context, client *firestore.Client, donationID st
 // Return values:
 //   - error, if any occurred during the operation.
 func addUser(ctx context.Context, client *firestore.Client, userId string) error {
-	userData, err := authClient.GetUser(ctx, userId)
+	userData, err := globals.AuthClient.GetUser(ctx, userId)
 	if err != nil {
 		err = fmt.Errorf("failed getting user data from auth server: %w", err)
 		log.Error(err.Error())
