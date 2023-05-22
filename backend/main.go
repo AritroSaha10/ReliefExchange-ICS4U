@@ -11,6 +11,8 @@ import (
 	"strings"
 	"time"
 
+	"golang.org/x/exp/slices"
+
 	"cloud.google.com/go/firestore"
 	firebase "firebase.google.com/go"
 	"firebase.google.com/go/auth"
@@ -345,6 +347,27 @@ func banUserEndpoint(c *gin.Context) {
 	}
 }
 
+// banUserEndpoint handles the endpoint to check if a user is banned.
+// Parameters:
+//   - c: the gin context, the request and response http.
+//
+// It accepts a user's id token and the id of the user to be checked, and checks
+// if they have been banned on the platform.
+func checkIfBannedEndpoint(c *gin.Context) {
+	userUID := c.Query("uid")
+
+	// Get the result from the helper function
+	isBanned, err := checkIfBanned(firebaseContext, firestoreClient, userUID)
+	if err != nil {
+		log.Error(err.Error())
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
+		return
+	}
+
+	// Return result to user
+	c.IndentedJSON(http.StatusOK, gin.H{"banned": isBanned})
+}
+
 // reportDonationEndpoint handles the endpoint to report a donation.
 // Parameters:
 //   - c: the gin context, the request and response http.
@@ -433,12 +456,15 @@ func main() {
 	r.GET("/donations/list", getDonationsListEndpoint)
 	r.GET("/donations/:id", getDonationFromIDEndpoint)
 	r.GET("/users/:id", getUserDataFromIDEndpoint)
+	r.GET("/users/banned", checkIfBannedEndpoint)
+
 	r.POST("/confirmCAPTCHA", confirmCAPTCHAToken)
 	r.POST("/donations/new", postDonationEndpoint)
 	r.POST("/users/new", addUserEndpoint)
 	r.POST("/users/ban", banUserEndpoint)
 	r.POST("/donations/report", reportDonationEndpoint)
 	r.POST("/donations/:id/delete", deleteDonationEndpoint)
+
 	err = r.Run()
 	if err != nil {
 		return
@@ -699,7 +725,7 @@ func addUser(ctx context.Context, client *firestore.Client, userId string) error
 	return nil
 }
 
-// banUser bans a user by removing their records from Firestore.
+// banUser bans a user by removing their records from Firestore and flagging their UID.
 // Parameters:
 //   - ctx: the context in which the function is invoked.
 //   - client: the Firestore client.
@@ -726,7 +752,6 @@ func banUser(ctx context.Context, client *firestore.Client, userId string) error
 	}
 
 	// Convert each raw post to a *firestore.DocumentRef
-
 	for _, rawPost := range rawPosts {
 		postRef, ok := rawPost.(*firestore.DocumentRef)
 		if !ok {
@@ -746,7 +771,72 @@ func banUser(ctx context.Context, client *firestore.Client, userId string) error
 		return fmt.Errorf("failed deleting user data: %w", err)
 	}
 
+	// Add them to the banned list
+	banDocRef := client.Doc("config/bans")
+	var banDocSnapshot *firestore.DocumentSnapshot
+	if banDocSnapshot, err = banDocRef.Get(ctx); err != nil {
+		log.Error(err.Error())
+		return fmt.Errorf("failed getting ban list: %w", err)
+	}
+
+	// Get ban list
+	var banList []string
+	if banList, ok = banDocSnapshot.Data()["users"].([]string); !ok {
+		log.Error("could not convert banned users list to []string")
+		return fmt.Errorf("could not convert banned users list to []string")
+	}
+	banList = append(banList, userId)
+
+	// Update the document with new banned user
+	banDocRef.Update(ctx, []firestore.Update{
+		{
+			Path:  "users",
+			Value: banList,
+		},
+	})
+
 	return nil
+}
+
+// checkIfBanned checks whether a user is banned by looking at the config docs in Firestore.
+// Parameters:
+//   - ctx: the context in which the function is invoked.
+//   - client: the Firestore client.
+//   - userId: the ID of the user to check.
+//
+// Return values:
+//   - bool, if they are banned or not
+//   - error, if any occurred during the operation.
+func checkIfBanned(ctx context.Context, client *firestore.Client, userId string) (bool, error) {
+	// Add them to the banned list
+	banDocRef := client.Doc("config/bans")
+	var banDocSnapshot *firestore.DocumentSnapshot
+	var err error
+	if banDocSnapshot, err = banDocRef.Get(ctx); err != nil {
+		log.Error(err.Error())
+		return false, fmt.Errorf("failed getting ban list: %w", err)
+	}
+
+	// Get ban list
+	var banListRaw []interface{}
+	var ok bool
+	if banListRaw, ok = banDocSnapshot.Data()["users"].([]interface{}); !ok {
+		log.Error("could not convert banned users list to []string")
+		return false, fmt.Errorf("could not convert banned users list to []string")
+	}
+
+	var banList []string
+	for _, rawBannedUID := range banListRaw {
+		if bannedUID, ok := rawBannedUID.(string); !ok {
+			log.Warn("could not convert a UID in banned list to string")
+			continue
+		} else {
+			banList = append(banList, bannedUID)
+		}
+	}
+
+	// Return whether uid in list
+	return slices.Contains(banList, userId), nil
 }
 
 // checkIfAdmin checks if a user has admin privileges.
