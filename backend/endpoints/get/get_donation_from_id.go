@@ -2,7 +2,6 @@ package get
 
 import (
 	"net/http"
-	"relief_exchange_backend/globals"
 	"relief_exchange_backend/helpers"
 
 	"github.com/gin-gonic/gin"
@@ -16,7 +15,7 @@ import (
 // It sends the requested donation to the client.
 func GetDonationByID(c *gin.Context) {
 	id := c.Param("id")
-	donation, err := helpers.GetDonationByID(globals.FirebaseContext, id)
+	donation, err := helpers.GetDonationByID(id)
 	if err != nil {
 		log.Warn("Donation not found, ID:", id)
 		log.Error(err.Error())

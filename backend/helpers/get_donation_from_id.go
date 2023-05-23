@@ -1,7 +1,6 @@
 package helpers
 
 import (
-	"context"
 	"fmt"
 	"relief_exchange_backend/globals"
 	"relief_exchange_backend/types"
@@ -19,9 +18,9 @@ import (
 // Return values:
 //   - Donation object that corresponds to the provided ID.
 //   - error, if any occurred during retrieval.
-func GetDonationByID(ctx context.Context, id string) (types.Donation, error) {
+func GetDonationByID(id string) (types.Donation, error) {
 	var donation types.Donation
-	doc, err := globals.FirestoreClient.Collection("donations").Doc(id).Get(ctx) // get a single donation from its id
+	doc, err := globals.FirestoreClient.Collection("donations").Doc(id).Get(globals.FirebaseContext) // get a single donation from its id
 	if err != nil {
 		log.Error(err.Error())
 		return donation, err // returns empty donation struct
