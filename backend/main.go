@@ -2,9 +2,9 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
-	endpoints "relief_exchange_backend/endpoints"
+	endpointsGet "relief_exchange_backend/endpoints/get"
+	endpointsPost "relief_exchange_backend/endpoints/post"
 	globals "relief_exchange_backend/globals"
 	types "relief_exchange_backend/types"
 
@@ -12,8 +12,6 @@ import (
 	"os"
 	"strings"
 	"time"
-
-	"golang.org/x/exp/slices"
 
 	"cloud.google.com/go/firestore"
 	firebase "firebase.google.com/go"
@@ -37,42 +35,6 @@ func init() {
 
 	// Only log the warning severity or above.
 	log.SetLevel(log.WarnLevel)
-}
-
-// getDonationFromIDEndpoint handles the endpoint to fetch a donation by id using the getDonationById function
-// Parameters:
-//   - c: the gin context, the request and response http.
-//
-// It sends the requested donation to the client.
-func getDonationFromIDEndpoint(c *gin.Context) {
-	id := c.Param("id")
-	donation, err := getDonationByID(globals.FirebaseContext, globals.FirestoreClient, id)
-	if err != nil {
-		log.Warn("Donation not found, ID:", id)
-		log.Error(err.Error())
-		c.IndentedJSON(http.StatusNotFound, gin.H{"error": err.Error()})
-	} else {
-		log.Info("Get donation by ID successful.")
-		c.IndentedJSON(http.StatusOK, donation)
-	}
-}
-
-// getUserDataFromIDEndpoint handles the endpoint to fetch a user's data by id using the getUserDataById Function
-// Parameters:
-//   - c: the gin context, the request and response http.
-//
-// It sends the requested user's data to the client.
-func getUserDataFromIDEndpoint(c *gin.Context) {
-	id := c.Param("id")
-	userData, err := getUserDataByID(globals.FirebaseContext, globals.FirestoreClient, id)
-	if err != nil {
-		log.Warn("User data not found, ID:", id)
-		log.Error(err.Error())
-		c.IndentedJSON(http.StatusNotFound, gin.H{"error": err.Error()})
-	} else {
-		log.Info("Get user data by ID successful.")
-		c.IndentedJSON(http.StatusOK, userData)
-	}
 }
 
 // postDonationEndpoint handles the endpoint to post a new donation.
@@ -208,40 +170,6 @@ func addUserEndpoint(c *gin.Context) {
 	}
 }
 
-// confirmCAPTCHAToken handles the endpoint to verify a CAPTCHA token.
-// Parameters:
-//   - c: the gin context, the request and response http.
-//
-// It sends a request to Google's reCAPTCHA API and returns whether the token is valid.
-func confirmCAPTCHAToken(c *gin.Context) {
-	var captchaResponseBody struct {
-		Success bool `json:"success"`
-	}
-
-	token := c.Query("token")
-
-	resp, err := http.Get("https://www.google.com/recaptcha/api/siteverify?secret=" + os.Getenv("RECAPTCHA_SECRET_KEY") + "&response=" + token)
-	if err != nil {
-		c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		c.AbortWithStatus(http.StatusInternalServerError)
-		return
-	}
-
-	err = json.NewDecoder(resp.Body).Decode(&captchaResponseBody)
-	if err != nil {
-		c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	c.IndentedJSON(http.StatusOK, gin.H{"human": captchaResponseBody.Success})
-}
-
 // banUserEndpoint handles the endpoint to ban a user.
 // Parameters:
 //   - c: the gin context, the request and response http.
@@ -292,27 +220,6 @@ func banUserEndpoint(c *gin.Context) {
 		log.Error(err.Error())
 		c.IndentedJSON(http.StatusForbidden, gin.H{"error": "You are not authorized to ban this user"})
 	}
-}
-
-// banUserEndpoint handles the endpoint to check if a user is banned.
-// Parameters:
-//   - c: the gin context, the request and response http.
-//
-// It accepts a user's id token and the id of the user to be checked, and checks
-// if they have been banned on the platform.
-func checkIfBannedEndpoint(c *gin.Context) {
-	userUID := c.Query("uid")
-
-	// Get the result from the helper function
-	isBanned, err := checkIfBanned(globals.FirebaseContext, globals.FirestoreClient, userUID)
-	if err != nil {
-		log.Error(err.Error())
-		c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
-		return
-	}
-
-	// Return result to user
-	c.IndentedJSON(http.StatusOK, gin.H{"banned": isBanned})
 }
 
 // reportDonationEndpoint handles the endpoint to report a donation.
@@ -399,12 +306,12 @@ func main() {
 		MaxAge:           12 * time.Hour,
 	}))
 
-	r.GET("/donations/list", endpoints.GetDonationsList)
-	r.GET("/donations/:id", getDonationFromIDEndpoint)
-	r.GET("/users/:id", getUserDataFromIDEndpoint)
-	r.GET("/users/banned", checkIfBannedEndpoint)
+	r.GET("/donations/list", endpointsGet.GetDonationsList)
+	r.GET("/donations/:id", endpointsGet.GetDonationByID)
+	r.GET("/users/:id", endpointsGet.GetUserDataByID)
+	r.GET("/users/banned", endpointsGet.GetIfBanned)
 
-	r.POST("/confirmCAPTCHA", confirmCAPTCHAToken)
+	r.POST("/confirmCAPTCHA", endpointsPost.ValidateCAPTCHAToken)
 	r.POST("/donations/new", postDonationEndpoint)
 	r.POST("/users/new", addUserEndpoint)
 	r.POST("/users/ban", banUserEndpoint)
@@ -415,81 +322,6 @@ func main() {
 	if err != nil {
 		return
 	}
-}
-
-// getDonationByID retrieves a donation record by its ID from Firestore.
-// Parameters:
-//   - ctx: the context in which the function is invoked.
-//   - client: the Firestore client.
-//   - id: the ID of the donation to retrieve.
-//
-// Return values:
-//   - Donation object that corresponds to the provided ID.
-//   - error, if any occurred during retrieval.
-func getDonationByID(ctx context.Context, client *firestore.Client, id string) (types.Donation, error) {
-	var donation types.Donation
-	doc, err := client.Collection("donations").Doc(id).Get(ctx) // get a single donation from its id
-	if err != nil {
-		log.Error(err.Error())
-		return donation, err // returns empty donation struct
-	}
-	err = doc.DataTo(&donation)
-	if err != nil {
-		log.Error(err.Error())
-		return types.Donation{}, err
-	}
-
-	// Override some attributes that don't work with DataTo
-	data := doc.Data()
-	donation.Image = data["img"].(string)
-	donation.OwnerId = data["owner_id"].(string)
-	donation.CreationTimestamp = data["creation_timestamp"].(time.Time)
-
-	// Convert the empty interface types to actual strings
-	donation.Reports = make([]string, 0)
-	for _, reportRaw := range data["reports"].([]interface{}) {
-		donation.Reports = append(donation.Reports, fmt.Sprintf("%+v", reportRaw))
-	}
-
-	donation.ID = doc.Ref.ID // ID is stored in the Ref feild, so DataTo, does not store id in the donations object
-	log.Info("donation: %v", donation)
-	return donation, nil
-}
-
-// getUserDataByID retrieves user data by the user's ID from Firestore.
-// Parameters:
-//   - ctx: the context in which the function is invoked.
-//   - client: the Firestore client.
-//   - id: the ID of the user to retrieve.
-//
-// Return values:
-//   - UserData object that corresponds to the provided ID.
-//   - error, if any occurred during retrieval.
-func getUserDataByID(ctx context.Context, client *firestore.Client, id string) (types.UserData, error) {
-	var userData types.UserData
-	doc, err := client.Collection("users").Doc(id).Get(ctx) // Get a single user from its id
-	if err != nil {
-		log.Error(err.Error())
-		return userData, err // returns empty user struct
-	}
-	err = doc.DataTo(&userData)
-	if err != nil {
-		log.Error(err.Error())
-		return types.UserData{}, err
-	}
-
-	// Set values that aren't set in the DataTo function
-	var ok1, ok2, ok3 bool
-	userData.DisplayName, ok1 = doc.Data()["display_name"].(string)
-	userData.RegistrationTimestamp, ok2 = doc.Data()["registered_date"].(time.Time)
-	userData.DonationsMade, ok3 = doc.Data()["donations_made"].(int64)
-	if !(ok1 && ok2 && ok3) {
-		log.Warn("user data may have not been converted properly")
-	}
-
-	userData.UID = doc.Ref.ID // ID is stored in the Ref feild, so DataTo, does not store id in the user data object
-	log.Info("userData: %v", userData)
-	return userData, nil
 }
 
 // addDonation adds a new donation record to Firestore.
@@ -715,48 +547,6 @@ func banUser(ctx context.Context, client *firestore.Client, userId string) error
 	})
 
 	return nil
-}
-
-// checkIfBanned checks whether a user is banned by looking at the config docs in Firestore.
-// Parameters:
-//   - ctx: the context in which the function is invoked.
-//   - client: the Firestore client.
-//   - userId: the ID of the user to check.
-//
-// Return values:
-//   - bool, if they are banned or not
-//   - error, if any occurred during the operation.
-func checkIfBanned(ctx context.Context, client *firestore.Client, userId string) (bool, error) {
-	// Add them to the banned list
-	banDocRef := client.Doc("config/bans")
-	var banDocSnapshot *firestore.DocumentSnapshot
-	var err error
-	if banDocSnapshot, err = banDocRef.Get(ctx); err != nil {
-		log.Error(err.Error())
-		return false, fmt.Errorf("failed getting ban list: %w", err)
-	}
-
-	// Get ban list
-	var banListRaw []interface{}
-	var ok bool
-	if banListRaw, ok = banDocSnapshot.Data()["users"].([]interface{}); !ok {
-		err = fmt.Errorf("could not convert banned users list to []string")
-		log.Error(err.Error())
-		return false, err
-	}
-
-	var banList []string
-	for _, rawBannedUID := range banListRaw {
-		if bannedUID, ok := rawBannedUID.(string); !ok {
-			log.Warn("could not convert a UID in banned list to string")
-			continue
-		} else {
-			banList = append(banList, bannedUID)
-		}
-	}
-
-	// Return whether uid in list
-	return slices.Contains(banList, userId), nil
 }
 
 // checkIfAdmin checks if a user has admin privileges.
