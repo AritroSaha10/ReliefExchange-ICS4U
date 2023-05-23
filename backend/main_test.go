@@ -45,7 +45,7 @@ func TestMain(m *testing.M) {
 		aTimestamp, _  = ptypes.TimestampProto(aTime)
 		aTimestamp2, _ = ptypes.TimestampProto(aTime2)
 		dbPath         = "projects/projectID/databases/(default)"
-		path           = "projects/projectID/databases/(default)/documents/C/b"
+		path           = "projects/projectID/databases/(default)/documents/users/p48oQ0SAYPeqculMRp2UBNJl03d2"
 		pdoc           = &pb.Document{
 			Name:       path,
 			CreateTime: aTimestamp,
@@ -80,7 +80,7 @@ func TestAddDonation(t *testing.T) {
 		Title:             "testTitle",
 		Description:       "testDescription",
 		Location:          "testLocation",
-		Image:             "testImage",
+		Image:             "",
 		CreationTimestamp: time.Now().UTC(),
 		OwnerId:           "testOwnerId",
 		Tags:              []string{"tag1", "tag2"},
