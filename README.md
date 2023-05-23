@@ -13,40 +13,76 @@ ReliefExchange is a platform where **Generosity meets Community**. This website 
 * Profile that tracks your donations, and users registration and sign-in date 
 
 # Built With 
+- TypeScript
+    - React
+    - Next.js
+- Golang
+    - Gin
+- Firebase
+    - Firestore
+    - Authentication
+    - Storage
+- Vercel (Frontend)
+- Oracle Cloud Interface (Backend)
+    - 1x VM w/ 4 Ampere ARM cores
+    - Running as Docker container
+    - NGINX (reverse proxy for container)
+- GitHub Actions (CI/CD)
+    - Both using GitHub-hosted servers and self-runners on OCI
+- GitHub Container Registry (CI/CD)
+- Testing Frameworks
+    - React Testing Library
+    - Jest
+    - Cypress
+    - `go-test`
+    - `mockfs`
+- Sentry (error logging for full stack)
 
-* Languages 
-  * TypeScript
-  * Golang
-    * Gin 
-  * JavaScript
-    * Next.js 
-    * React.js  
+# Development Instructions
+ Make sure to change your working directory to the appropriate folder before running the commands.
 
+ ## Frontend
+ - Install dependencies using `npm install`
+ - Copy `.env.template` into `.env.local`, and populate the environment variables with your values
+ - Run the development server using `npm run dev`
+ - Build the production code using `npm run build`
+ - Run the production server locally using `npm run start`
+ - Run tests using `npm run test` and `npm run cypress`
 
-* Firebase Database 
-  * Firestore 
-  * Firebase auth 
-  * Firebase storage 
+ ## Backend
+ - Install dependencies using `go mod download && go mod verify`
+ - Copy `.env.template` into `.env`, and populate the environment variables with your values
+ - Run the development server using `go run .`
+ - Build the production binary using `go build .`
+ - Run the production binary as you would any other executable binary file
+ - Run tests using `go test`
 
-* Deployment 
-  * Vercel frontend 
-  * Oracle cloud backend 
-    * Ampere arm 
-    * NGINX proxy manager for reverse proxy
+ # Deployment Instructions
 
-* CICD 
-  * Github actions 
-    * Using githubs server and self hosted runner on oracle cloud 
-  * Github container registry
+ ## Frontend
+ You have a few choices to deploy the frontend code.
+ - Deploy to Vercel (what we do) or Netlify (not tested)
+ - Deploy to another server (learn more about this [here](https://nextjs.org/docs/pages/building-your-application/deploying))
+     - Please note that Static HTML Export is not possible for this project as we use Incremental Static Regeneration (ISR).
 
-* Testing frameworks
-  * Frontend 
-    * React Testing library 
-    * Jest
-    * Cypress 
-  * Backend 
-    * Go-test
-    * Mockfs  
+ ## Backend
+ A Dockerfile and example Docker Compose file is available in the root directory of the backend folder. You can deploy this on any AMD64 or ARM64 machine. The built Docker image is available at ghcr.io/aritrosaha10/reliefexchange-backend. Our deployment runs this image as a singular Docker container on Oracle Cloud Infrastruction (OCI), using the Ampere ARM cores. It is highly recommended to use a reverse proxy 
+ such as Traefik or NGINX.
 
-* Error Logging 
-  * Sentry 
+ ## Firebase
+ - Initialize a new Firebase project
+ - Add your own configuration data to the appropiate frontend and backend
+ - Set up:
+     - Firestore
+         - Copy-paste the security rules found [here](firebase/rules/firestore.cel)
+         - Create three collections:
+             - `config`
+                 - This should have one document called `bans`
+                     - This should have an array with the key of `users`
+             - `donations`
+             - `users`
+     - Authentication
+         - Add Google as a sign-in provider
+     - Storage
+         - Copy-paste the rules found [here](firebase/rules/storage.cel)
+         - Create a folder called `donations`
