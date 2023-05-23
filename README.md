@@ -66,8 +66,9 @@ ReliefExchange is a platform where **Generosity meets Community**. This website 
      - Please note that Static HTML Export is not possible for this project as we use Incremental Static Regeneration (ISR).
 
  ## Backend
- A Dockerfile and example Docker Compose file is available in the root directory of the backend folder. You can deploy this on any AMD64 or ARM64 machine. The built Docker image is available at ghcr.io/aritrosaha10/reliefexchange-backend. Our deployment runs this image as a singular Docker container on Oracle Cloud Infrastruction (OCI), using the Ampere ARM cores. It is highly recommended to use a reverse proxy 
- such as Traefik or NGINX.
+ A Dockerfile and example Docker Compose file is available in the root directory of the backend folder. You can deploy this on any AMD64 or ARM64 machine. The built Docker image is available at [ghcr.io/aritrosaha10/relief-exchange-backend](https://github.com/aritrosaha10/ReliefExchange-ICS4U/pkgs/container/relief-exchange-backend). 
+ 
+Our deployment runs this image as a singular Docker container on Oracle Cloud Infrastruction (OCI) behind a NGINX reverse proxy. It is highly recommended to use a reverse proxy such as Traefik or NGINX.
 
  ## Firebase
  - Initialize a new Firebase project
@@ -86,3 +87,6 @@ ReliefExchange is a platform where **Generosity meets Community**. This website 
      - Storage
          - Copy-paste the rules found [here](firebase/rules/storage.cel)
          - Create a folder called `donations`
+
+## Authors
+This project was worked on by Aritro Saha, Joshua Chou, and Taha Khan as a part of our ICS4U0 (Computer Science) final project. 
