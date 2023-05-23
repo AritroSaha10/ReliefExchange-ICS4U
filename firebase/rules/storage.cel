@@ -1,0 +1,11 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /donations/{imageId} {
+      // Only allow uploads of any image file that's less than 10MB
+      allow create: if request.resource.size < 10 * 1024 * 1024
+                   && request.resource.contentType.matches('image/.*');
+      allow get;
+    }
+  }
+}
