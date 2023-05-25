@@ -198,12 +198,12 @@ export default function DonationsIndex({ rawDonations }: { rawDonations: RawDona
                         ).filter(tag => tag !== undefined);
 
                         return (
-                            <DonationCard 
-                                title={donation.title} 
-                                date={donation.creation_timestamp} 
+                            <DonationCard
+                                title={donation.title}
+                                date={donation.creation_timestamp}
                                 subtitle={donation.description}
-                                image={donation.img} 
-                                tags={tags} 
+                                image={donation.img}
+                                tags={tags}
                                 href={`/donations/${donation.id}`}
                                 isAdmin={isAdmin}
                                 reportCount={donation.reports ? donation.reports.length : 0}
@@ -211,6 +211,17 @@ export default function DonationsIndex({ rawDonations }: { rawDonations: RawDona
                             />
                         )
                     })}
+
+                    {data.length === 0 && (
+                        <div className="flex flex-col items-center text-center">
+                            <h2 className="text-4xl text-white font-semibold mb-2">No Results Found</h2>
+                            <p className="text-xl text-gray-200 lg:w-3/4">
+                                Sorry, but we couldn&apos;t find any donations matching your search query. 
+                                Please adjust it accordingly or try again later. If you just created a donation 
+                                but it isn&apos;t showing up, please refresh after a few seconds.
+                            </p>
+                        </div>
+                    )}
                 </div>
             </div>
         </Layout>
