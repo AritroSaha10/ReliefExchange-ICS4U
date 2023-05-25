@@ -48,7 +48,7 @@ export default function SignIn() {
                 setSigningIn(true);
 
                 // Actually a redirect, handle sign-in
-                if (res.user.metadata.creationTime == res.user.metadata.lastSignInTime) {
+                if (res.user.metadata.creationTime === res.user.metadata.lastSignInTime) {
                     try {
                         await axios.post(convertBackendRouteToURL("/users/new"), {
                             token: await res.user.getIdToken()
