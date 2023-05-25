@@ -10,8 +10,6 @@ import (
 
 // BanUser bans a user by removing their records from Firestore and flagging their UID.
 // Parameters:
-//   - ctx: the context in which the function is invoked.
-//   - client: the Firestore client.
 //   - userId: the ID of the user to ban.
 //
 // Return values:
@@ -60,13 +58,6 @@ func BanUser(userId string) error {
 			log.Warn("failed deleting post: %w", err)
 			continue
 		}
-	}
-
-	// Delete user data
-	if _, err := userDataRef.Delete(globals.FirebaseContext); err != nil {
-		err = fmt.Errorf("failed deleting user data: %w", err)
-		log.Error(err.Error())
-		return err
 	}
 
 	// Add them to the banned list
