@@ -1,7 +1,6 @@
 package helpers
 
 import (
-	"context"
 	"fmt"
 	"relief_exchange_backend/globals"
 
@@ -12,19 +11,18 @@ import (
 
 // checkIfBanned checks whether a user is banned by looking at the config docs in Firestore.
 // Parameters:
-//   - ctx: the context in which the function is invoked.
 //   - client: the Firestore client.
 //   - userId: the ID of the user to check.
 //
 // Return values:
 //   - bool, if they are banned or not
 //   - error, if any occurred during the operation.
-func CheckIfBanned(ctx context.Context, userId string) (bool, error) {
+func CheckIfBanned(userId string) (bool, error) {
 	// Add them to the banned list
 	banDocRef := globals.FirestoreClient.Doc("config/bans")
 	var banDocSnapshot *firestore.DocumentSnapshot
 	var err error
-	if banDocSnapshot, err = banDocRef.Get(ctx); err != nil {
+	if banDocSnapshot, err = banDocRef.Get(globals.FirebaseContext); err != nil {
 		log.Error(err.Error())
 		return false, fmt.Errorf("failed getting ban list: %w", err)
 	}

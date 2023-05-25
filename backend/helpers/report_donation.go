@@ -16,6 +16,19 @@ import (
 // Return values:
 //   - error, if any occurred during the operation.
 func ReportDonation(donationID string, userUID string) error {
+	// Check if they're already banned
+	banned, err := CheckIfBanned(userUID)
+	if err != nil {
+		err = fmt.Errorf("err while checking if banned: %w", err)
+		log.Error(err.Error())
+		return err
+	}
+	if banned {
+		err := fmt.Errorf("user is already banned")
+		log.Error(err.Error())
+		return err
+	}
+
 	doc, err := globals.FirestoreClient.Collection("donations").Doc(donationID).Get(globals.FirebaseContext) // Get the donation's data
 	if err != nil {
 		log.Error(err.Error())

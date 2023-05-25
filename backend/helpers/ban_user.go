@@ -17,6 +17,19 @@ import (
 // Return values:
 //   - error, if any occurred during the operation.
 func BanUser(userId string) error {
+	// Check if they're already banned
+	banned, err := CheckIfBanned(userId)
+	if err != nil {
+		err = fmt.Errorf("err while checking if banned: %w", err)
+		log.Error(err.Error())
+		return err
+	}
+	if banned {
+		err := fmt.Errorf("user is already banned")
+		log.Error(err.Error())
+		return err
+	}
+
 	// Get user data document reference
 	userDataRef := globals.FirestoreClient.Doc("users/" + userId)
 
@@ -67,11 +80,17 @@ func BanUser(userId string) error {
 
 	// Get ban list
 	var banList []string
-	if banList, ok = banDocSnapshot.Data()["users"].([]string); !ok {
-		err = fmt.Errorf("could not convert banned users list to []string")
+	if rawBanList, ok := banDocSnapshot.Data()["users"].([]interface{}); !ok {
+		err = fmt.Errorf("could not convert banned users list to []interface{}")
 		log.Error(err.Error())
 		return err
+	} else {
+		for _, uid := range rawBanList {
+			banList = append(banList, uid.(string))
+		}
 	}
+
+	// Add user to ban list
 	banList = append(banList, userId)
 
 	// Update the document with new banned user

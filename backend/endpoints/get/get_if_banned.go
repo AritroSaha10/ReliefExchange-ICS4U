@@ -2,7 +2,6 @@ package get
 
 import (
 	"net/http"
-	"relief_exchange_backend/globals"
 	"relief_exchange_backend/helpers"
 
 	"github.com/gin-gonic/gin"
@@ -19,7 +18,7 @@ func GetIfBanned(c *gin.Context) {
 	userUID := c.Query("uid")
 
 	// Get the result from the helper function
-	isBanned, err := helpers.CheckIfBanned(globals.FirebaseContext, userUID)
+	isBanned, err := helpers.CheckIfBanned(userUID)
 	if err != nil {
 		log.Error(err.Error())
 		c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})

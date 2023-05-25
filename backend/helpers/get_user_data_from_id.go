@@ -1,7 +1,7 @@
 package helpers
 
 import (
-	"context"
+	"fmt"
 	"relief_exchange_backend/globals"
 	"relief_exchange_backend/types"
 	"time"
@@ -18,9 +18,22 @@ import (
 // Return values:
 //   - UserData object that corresponds to the provided ID.
 //   - error, if any occurred during retrieval.
-func GetUserDataByID(ctx context.Context, id string) (types.UserData, error) {
+func GetUserDataByID(id string) (types.UserData, error) {
+	// Check if they're already banned
+	banned, err := CheckIfBanned(id)
+	if err != nil {
+		err = fmt.Errorf("err while checking if banned: %w", err)
+		log.Error(err.Error())
+		return types.UserData{}, err
+	}
+	if banned {
+		err := fmt.Errorf("user is banned")
+		log.Error(err.Error())
+		return types.UserData{}, err
+	}
+
 	var userData types.UserData
-	doc, err := globals.FirestoreClient.Collection("users").Doc(id).Get(ctx) // Get a single user from its id
+	doc, err := globals.FirestoreClient.Collection("users").Doc(id).Get(globals.FirebaseContext) // Get a single user from its id
 	if err != nil {
 		log.Error(err.Error())
 		return userData, err // returns empty user struct

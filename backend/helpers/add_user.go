@@ -18,6 +18,19 @@ import (
 // Return values:
 //   - error, if any occurred during the operation.
 func AddUser(userId string) error {
+	// Check if they're already banned
+	banned, err := CheckIfBanned(userId)
+	if err != nil {
+		err = fmt.Errorf("err while checking if banned: %w", err)
+		log.Error(err.Error())
+		return err
+	}
+	if banned {
+		err := fmt.Errorf("user is already banned")
+		log.Error(err.Error())
+		return err
+	}
+
 	userData, err := globals.AuthClient.GetUser(globals.FirebaseContext, userId)
 	if err != nil {
 		err = fmt.Errorf("failed getting user data from auth server: %w", err)

@@ -2,7 +2,6 @@ package get
 
 import (
 	"net/http"
-	"relief_exchange_backend/globals"
 	"relief_exchange_backend/helpers"
 
 	"github.com/gin-gonic/gin"
@@ -16,7 +15,7 @@ import (
 // It sends the requested user's data to the client.
 func GetUserDataByID(c *gin.Context) {
 	id := c.Param("id")
-	userData, err := helpers.GetUserDataByID(globals.FirebaseContext, id)
+	userData, err := helpers.GetUserDataByID(id)
 	if err != nil {
 		log.Warn("User data not found, ID:", id)
 		log.Error(err.Error())

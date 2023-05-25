@@ -20,6 +20,19 @@ import (
 //   - ID of the new donation record.
 //   - error, if any occurred during the operation.
 func AddDonation(donation types.Donation, userId string) (string, error) {
+	// Check if they're already banned
+	banned, err := CheckIfBanned(userId)
+	if err != nil {
+		err = fmt.Errorf("err while checking if banned: %w", err)
+		log.Error(err.Error())
+		return "", err
+	}
+	if banned {
+		err := fmt.Errorf("user is already banned")
+		log.Error(err.Error())
+		return "", err
+	}
+
 	docRef, _, err := globals.FirestoreClient.Collection("donations").Add(globals.FirebaseContext, map[string]interface{}{
 		"title":              donation.Title,
 		"description":        donation.Description,
