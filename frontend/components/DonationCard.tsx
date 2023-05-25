@@ -12,7 +12,7 @@ export default function DonationCard({ title, date, image, subtitle, tags, href,
                 <div className="flex flex-col-reverse md:flex-row justify-center md:justify-between w-full items-center gap-1 lg:gap-2">
                     <div>
                         <h1 className="text-xl text-white text-center md:text-left font-semibold">{title}</h1>
-                        <div className='flex flex-wrap items-center gap-1 justify-center text-sm text-gray-200'>
+                        <div className='flex flex-wrap items-center gap-1 text-sm text-gray-200'>
                             <span className='text-center md:text-left'>
                                 {date.toLocaleDateString("en-CA", {
                                     day: "numeric",
