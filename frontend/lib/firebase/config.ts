@@ -1,6 +1,6 @@
 const firebaseConfig = {
     apiKey: "AIzaSyDpTBi9KDh0jJvnQqxRiNJGZBVJQy8VZP4",
-    authDomain: "ics4u-project.firebaseapp.com",
+    authDomain: "reliefexchange.aritrosaha.ca",
     projectId: "ics4u-project",
     storageBucket: "ics4u-project.appspot.com",
     messagingSenderId: "42306297294",

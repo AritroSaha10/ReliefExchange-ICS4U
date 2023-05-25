@@ -33,7 +33,7 @@ export async function middleware(request: NextRequest, event: NextFetchEvent) {
 
     const data = await (await fetch(new URL(`auth_helpers/${path}`, baseUrl))).text();
     const response = new NextResponse(data);
-    response.headers.append("Content-Type", (path.includes(".js") ? "text/javascript;" : "text/html;") + " charset=utf-8")
+    response.headers.set("Content-Type", (path.includes(".js") ? "text/javascript;" : "text/html;") + " charset=utf-8")
 
     return response;
 }
