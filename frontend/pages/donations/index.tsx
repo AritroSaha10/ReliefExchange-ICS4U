@@ -184,7 +184,7 @@ export default function DonationsIndex({ rawDonations }: { rawDonations: RawDona
                         </div>
 
                         <div className="flex flex-wrap gap-2 self-center justify-center">
-                            <Dropdown title="Sort by" selectedItem={sortBy} setSelectedItem={setSortBy} options={isAdmin ? sortByOptions.concat(adminSortByOptions) : sortByOptions} openOverlap={false} />
+                            <Dropdown title="Sort by" selectedItem={sortBy} setSelectedItem={setSortBy} options={isAdmin ? sortByOptions.concat(adminSortByOptions) : sortByOptions} openOverlap={true} />
                             <FilterDropdown title="Filter by date" selectedItems={filterByDate} setSelectedItems={setFilterByDate} options={filterByDateOptions} />
                             <FilterDropdown title="Filter by tags" selectedItems={filterByTags} setSelectedItems={setFilterByTags} options={tagsOptions} />
                         </div>
