@@ -76,6 +76,7 @@ export default function CreateDonation() {
         captchaRef.current.reset();
         if (!token) {
             alert("Please complete the CAPTCHA and try again.");
+            setSubmitting(false);
             return;
         }
         try {
