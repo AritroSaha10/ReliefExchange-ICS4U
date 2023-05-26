@@ -66,7 +66,7 @@ export default function FilterDropdown({ title, selectedItems, setSelectedItems,
 
 interface PropTypes {
     title: string,
-    selectedItems: number[],
+    selectedItems: any,
     setSelectedItems: Function,
     options: any[],
 }
