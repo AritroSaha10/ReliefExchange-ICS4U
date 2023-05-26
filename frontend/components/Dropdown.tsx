@@ -2,11 +2,20 @@ import { Fragment } from 'react'
 import { Menu, Transition } from '@headlessui/react'
 import { BsChevronDown } from "react-icons/bs"
 
+/**
+ * Converts a list of class names into one className string
+ * @param classes List of classes
+ * @returns className string
+ */
 function classNames(...classes) {
     return classes.filter(Boolean).join(' ')
 }
 
-export default function Dropdown({ title, selectedItem, setSelectedItem, options, openOverlap }) {
+/**
+ * A customizable Dropdown that updates state of a parent component.
+ * @param props All the props of the component. 
+ */
+export default function Dropdown({ title, selectedItem, setSelectedItem, options, openOverlap }: PropTypes) {
     // Default to True if not provided
     openOverlap = typeof openOverlap === "boolean" ? openOverlap : false;
 
@@ -52,4 +61,12 @@ export default function Dropdown({ title, selectedItem, setSelectedItem, options
             </Transition>
         </Menu>
     )
+}
+
+interface PropTypes {
+    title: string,
+    selectedItem: {[key: string]: any},
+    setSelectedItem: Function,
+    options: any[],
+    openOverlap?: Boolean
 }
