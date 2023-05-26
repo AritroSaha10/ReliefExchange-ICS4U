@@ -68,5 +68,5 @@ interface PropTypes {
     title: string,
     selectedItems: any,
     setSelectedItems: Function,
-    options: any[],
+    options: any,
 }

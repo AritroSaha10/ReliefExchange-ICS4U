@@ -65,8 +65,8 @@ export default function Dropdown({ title, selectedItem, setSelectedItem, options
 
 interface PropTypes {
     title: string,
-    selectedItem: {[key: string]: any},
+    selectedItem: any,
     setSelectedItem: Function,
-    options: any[],
+    options: any,
     openOverlap?: Boolean
 }
