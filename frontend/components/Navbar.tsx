@@ -5,6 +5,7 @@ import auth from "../lib/firebase/auth";
 
 import { GoThreeBars } from "react-icons/go"
 
+// Links available to everyone (not signed out + signed out)
 const baseLinks = [
     {
         name: "Home",
@@ -20,6 +21,7 @@ const baseLinks = [
     },
 ];
 
+// Links available to those who are signed in
 const signedInLinks = [
     {
         name: "Donate",
@@ -41,6 +43,7 @@ const signedInLinks = [
     },
 ];
 
+// Links that are only available to those who aren't signed in
 const signedOutLinks = [
     {
         name: "Sign In / Register",
@@ -50,7 +53,11 @@ const signedOutLinks = [
     },
 ];
 
-export default function Header() {
+/**
+ * The navbar of the website, includes all the important links. 
+ */
+export default function Navbar() {
+    // Important state variables
     const [showDropdown, setShowDropdown] = useState(false);
     const [isSignedIn, setSignedIn] = useState(false);
 
@@ -60,6 +67,7 @@ export default function Header() {
             setSignedIn(user !== null);
         });
 
+        // Unsubscribe on component dismount
         return () => unsubscribe();
     }, []);
 

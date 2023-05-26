@@ -1,14 +1,14 @@
 import Image from "next/image";
 import { useEffect, useState } from "react"
+import { useRouter } from "next/router";
+
+import { signOut } from "firebase/auth";
 
 import Layout from "@components/Layout";
 import auth from "@lib/firebase/auth";
 
-import { signOut } from "firebase/auth";
-
-import { useRouter } from "next/router";
-
 export default function SignOut() {
+    // Necessary hook for redirecting user
     const router = useRouter();
 
     /**
@@ -21,7 +21,7 @@ export default function SignOut() {
         }).finally(() => {
             router.push("/")
         });
-    }, []);
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     return (
         <Layout name="Sign Out">

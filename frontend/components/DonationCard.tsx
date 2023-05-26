@@ -1,9 +1,14 @@
-import DonationTag from 'lib/types/tag';
 import Image from 'next/image'
 import Link from 'next/link'
 import { FiFlag } from 'react-icons/fi';
 import removeMd from "remove-markdown"
 
+import DonationTag from '@lib/types/tag';
+
+/**
+ * A Donation card that shows brief information about a donation. 
+ * @returns Donation component with data provided.
+ */
 export default function DonationCard({ title, date, image, subtitle, tags, href, isAdmin, reportCount }: { title: string, date: Date, image?: string, subtitle: string, tags: DonationTag[], href: string, isAdmin: boolean, reportCount: number }) {
     return (
         <div className="flex flex-col md:flex-row md:justify-start items-center gap-4 rounded-xl p-2 lg:p-6 duration-300 bg-slate-700">

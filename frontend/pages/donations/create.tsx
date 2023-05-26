@@ -58,7 +58,7 @@ export default function CreateDonation() {
         });
 
         return () => unsubscribe();
-    }, []);
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     /**
      * Handle the submit event for the main form

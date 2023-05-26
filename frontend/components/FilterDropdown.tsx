@@ -6,7 +6,12 @@ function classNames(...classes) {
     return classes.filter(Boolean).join(' ')
 }
 
-export default function FilterDropdown({ title, selectedItems, setSelectedItems, options }) {
+/**
+ * A customizable Dropdown that updates state of a parent component, specifically for
+ * filtering data.
+ * @param props All the props of the component. 
+ */
+export default function FilterDropdown({ title, selectedItems, setSelectedItems, options }: PropTypes) {
     return (
         <Menu as="div" className="relative inline-block text-left w-36">
             <div>
@@ -57,4 +62,11 @@ export default function FilterDropdown({ title, selectedItems, setSelectedItems,
             </Transition>
         </Menu>
     )
+}
+
+interface PropTypes {
+    title: string,
+    selectedItems: any,
+    setSelectedItems: Function,
+    options: any,
 }

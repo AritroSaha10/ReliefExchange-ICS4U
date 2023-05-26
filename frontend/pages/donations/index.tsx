@@ -116,7 +116,7 @@ export default function DonationsIndex({ rawDonations }: { rawDonations: RawDona
         })
 
         return () => unsubscribe();
-    }, [])
+    }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
     /**
      * Apply the sorting and filtering criteria on the original data from API.

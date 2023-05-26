@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { getCookie, hasCookie, setCookie } from 'cookies-next';
 import Dropdown from "./Dropdown";
 
+// All the languages supported for auto-translation
 const languages = [
     { label: 'English', value: '/auto/en' },
     { label: 'French', value: '/auto/fr' },
@@ -13,12 +14,17 @@ const languages = [
     { label: 'Polski', value: '/auto/pl' }
 ];
 
+// Language list, converted into a format suitable for the Dropdown class
 const languagesDropdown = languages.map(obj => ({
     ...obj,
     name: obj.label
 }))
 
+/**
+ * The footer of the website, with the ability to translate the page.
+ */
 export default function Footer() {
+    // State to remember the selected language
     const [selectedLanguage, setSelectedLanguage] = useState(languages[0].value)
 
     /**
@@ -39,26 +45,39 @@ export default function Footer() {
                     'google_translate_element');
             };
 
+            // Use the cookie value if the user wanted to translate it to another language before
             if (hasCookie('googtrans')) {
                 setSelectedLanguage(getCookie('googtrans').toString())
             }
             else {
+                // Auto-translate to english on default
                 setSelectedLanguage('/auto/en')
             }
         } catch (e) {
+            // Silently log error
             console.error("Error while configuring auto-translate: ", e)
         }
     }, [])
 
-    const langChange = (e) => {
+    /**
+     * Change the language to translate to
+     * @param lang The language code to translate to
+     */
+    const langChange = (lang) => {
         if (hasCookie('googtrans')) {
-            setCookie('googtrans', decodeURI(e))
-            setSelectedLanguage(e)
+            // Change the cookie if it already exists
+            // Make sure to decode the URI in case if it was encoded
+            // automatically by the browser from last time
+            setCookie('googtrans', decodeURI(lang))
+            setSelectedLanguage(lang)
         }
         else {
-            setCookie('googtrans', e)
-            setSelectedLanguage(e)
+            // Set a new cookie if it doesn't exist
+            setCookie('googtrans', lang)
+            setSelectedLanguage(lang)
         }
+
+        // Reload the page for the new language to show
         window.location.reload()
     }
 
