@@ -17,6 +17,7 @@ import (
 //   - error, if any occurred during the operation.
 func ReportDonation(donationID string, userUID string) error {
 	// Check if they're already banned
+	//banned users cannot report donations.
 	banned, err := CheckIfBanned(userUID)
 	if err != nil {
 		err = fmt.Errorf("err while checking if banned: %w", err)
@@ -54,7 +55,7 @@ func ReportDonation(donationID string, userUID string) error {
 		}
 	}
 
-	// Add their UID to the donation, and update the doc
+	// Add their UID to report list of donation, and update the doc
 	newReports := append(currentReports, userUID)
 	_, err = globals.FirestoreClient.Collection("donations").Doc(donationID).Update(globals.FirebaseContext, []firestore.Update{
 		{

@@ -15,6 +15,7 @@ import (
 // Return values:
 //   - error, if any occurred during the operation.
 func BanUser(userId string) error {
+
 	// Check if they're already banned
 	banned, err := CheckIfBanned(userId)
 	if err != nil {
@@ -24,6 +25,17 @@ func BanUser(userId string) error {
 	}
 	if banned {
 		err := fmt.Errorf("user is already banned")
+		log.Error(err.Error())
+		return err
+	}
+	isAdmin, err := CheckIfAdmin(userId)
+	if err != nil {
+		err = fmt.Errorf("err while checking if admin: %w", err)
+		log.Error(err.Error())
+		return err
+	}
+	if isAdmin {
+		err := fmt.Errorf("Cannot ban an admin")
 		log.Error(err.Error())
 		return err
 	}
@@ -40,6 +52,12 @@ func BanUser(userId string) error {
 	}
 
 	// Extract posts field from user data
+	// Note: .([]interface{}) is a type assertion that checks if the value returned is a slice of interfaces,
+	// The attributes in doc.Data() are assumed to be either of an unknown type or a slice of unknown type.
+	// If it were a single unknown type, we could directly convert it to the desired type.
+	// However, we can't directly convert a slice of unknown type to a slice of a specific type.
+	// Therefore, we have convert every element in the slice to the desired type,
+	// and then add it to a new slice of the desired type.
 	rawPosts, ok := userDataDoc.Data()["posts"].([]interface{})
 	if !ok {
 		err = fmt.Errorf("failed extracting posts field from user data")

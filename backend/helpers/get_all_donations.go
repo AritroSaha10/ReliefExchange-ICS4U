@@ -21,6 +21,8 @@ func GetAllDonations() ([]types.Donation, error) {
 	var donations []types.Donation
 	iter := globals.FirestoreClient.Collection("donations").Documents(globals.FirebaseContext) //.Documents(ctx) returns a iterator
 	for {
+		// doc is the firestore document, err stores any potential errors in the iterator (such as if it is finished),
+		//iter.Next() goes to the next document in the iter varible defined above.
 		doc, err := iter.Next()
 		if err == iterator.Done {
 			break

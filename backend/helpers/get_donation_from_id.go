@@ -33,10 +33,14 @@ func GetDonationByID(id string) (types.Donation, error) {
 
 	// Override some attributes that don't work with DataTo
 	data := doc.Data()
-	donation.Image = data["img"].(string)
-	donation.OwnerId = data["owner_id"].(string)
-	donation.CreationTimestamp = data["creation_timestamp"].(time.Time)
+	var ok_img, ok_id, ok_time bool
 
+	donation.Image, ok_img = data["img"].(string)
+	donation.OwnerId, ok_id = data["owner_id"].(string)
+	donation.CreationTimestamp, ok_time = data["creation_timestamp"].(time.Time)
+	if !(ok_img && ok_id && ok_time) {
+		log.Warn("user data may have not been converted properly")
+	}
 	// Convert the empty interface types to actual strings
 	donation.Reports = make([]string, 0)
 	for _, reportRaw := range data["reports"].([]interface{}) {

@@ -28,18 +28,20 @@ func CheckIfBanned(userId string) (bool, error) {
 	}
 
 	// Get ban list
+	//getting the raw ban list (from firestore)
+
 	var banListRaw []interface{}
 	var ok bool
 	if banListRaw, ok = banDocSnapshot.Data()["users"].([]interface{}); !ok {
-		err = fmt.Errorf("could not convert banned users list to []string")
+		err = fmt.Errorf("ban users list is not of type []interface{}")
 		log.Error(err.Error())
 		return false, err
 	}
-
+	//converting raw ban list to actual ban list (string)
 	var banList []string
 	for _, rawBannedUID := range banListRaw {
 		if bannedUID, ok := rawBannedUID.(string); !ok {
-			log.Warn("could not convert a UID in banned list to string")
+			log.Warn("UID in banned list is not a string")
 			continue
 		} else {
 			banList = append(banList, bannedUID)

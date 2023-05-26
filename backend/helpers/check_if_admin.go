@@ -25,6 +25,7 @@ func CheckIfAdmin(senderId string) (bool, error) {
 
 	// Get the data and access the 'isAdmin' field
 	data := doc.Data()
+
 	isAdmin, ok := data["admin"].(bool)
 	if !ok {
 		err = fmt.Errorf("failed getting admin field from user doc: %w", err)
