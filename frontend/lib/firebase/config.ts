@@ -1,3 +1,4 @@
+// The configuration data for the firebase project.
 const firebaseConfig = {
     apiKey: "AIzaSyDpTBi9KDh0jJvnQqxRiNJGZBVJQy8VZP4",
     authDomain: "reliefexchange.aritrosaha.ca",

@@ -2,8 +2,14 @@ import Head from "next/head"
 
 import Navbar from "./Navbar"
 import Footer from "./Footer"
+import { ReactNode } from "react";
 
-export default function Layout({ name, children }: { name: string, children: any }) {
+/**
+ * The layout used for every page, used to add navbar, footer, and open graph data.
+ * @param props The props for the layout
+ */
+export default function Layout({ name, children }: { name: string, children: ReactNode }) {
+    // Basic information for OpenGraph
     const title = `${name} | Relief Exchange`;
     const description = "Relief Exchange is a platform where generosity meets community. Learn more at our website.";
 
