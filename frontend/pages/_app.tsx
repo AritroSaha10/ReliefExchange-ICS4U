@@ -19,7 +19,7 @@ export default function App({ Component, pageProps }) {
     useEffect(() => {
         // Subscribe to authentication state changes
         const unsubscribe = onAuthStateChanged(auth, user => {
-            // Only check ban state if user are logged in
+            // Only check ban state if user is logged in
             if (user && Object.keys(user).length !== 0) {
                 // Kick the user off if they're banned
                 const run = async () => {

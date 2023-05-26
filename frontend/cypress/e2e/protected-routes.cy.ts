@@ -9,7 +9,7 @@ describe('Protected Routes', () => {
 
   it('should redirect me back if I am not logged in', () => {
     cy.on('window:alert', (txt) => {
-      //Mocha assertions
+      // Mocha assertions
       expect(txt).to.contains('You need to be signed in to access this page. Redirecting...');
     })
 

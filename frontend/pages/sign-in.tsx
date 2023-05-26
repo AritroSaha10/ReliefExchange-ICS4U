@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import Layout from "@components/Layout";
 import auth from "@lib/firebase/auth";
 
-import { GoogleAuthProvider, setPersistence, signInWithPopup, browserLocalPersistence, onAuthStateChanged, getRedirectResult, signInWithRedirect } from "firebase/auth";
+import { GoogleAuthProvider, setPersistence, browserLocalPersistence, onAuthStateChanged, getRedirectResult, signInWithRedirect } from "firebase/auth";
 
 import GoogleLogo from "@media/social-media-logos/google.png";
 import { useRouter } from "next/router";

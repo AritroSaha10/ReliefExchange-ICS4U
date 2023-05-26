@@ -15,7 +15,6 @@ import convertBackendRouteToURL from "@lib/convertBackendRouteToURL";
 import auth from "@lib/firebase/auth";
 import allTags from "@lib/tag-types";
 import Donation from "@lib/types/donation";
-import UserData from "@lib/types/userData";
 import Tag from "@lib/types/tag";
 import increasePFPResolution from "@lib/increasePFPResolution";
 import UserDataWithDonations from "@lib/types/userDataWithDonations"
