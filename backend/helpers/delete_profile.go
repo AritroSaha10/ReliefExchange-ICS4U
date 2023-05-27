@@ -53,6 +53,26 @@ func DeleteProfile(userId string) error {
 			continue
 		}
 	}
+	// Deleting the user's document
+	_, err = userDataRef.Delete(globals.FirebaseContext)
+	if err != nil {
+		log.Warn("Failed deleting user: %w", err)
+		return err
+	}
+
+	// // Delete user from Firebase Auth PROBLEM WITH FIREBASEAPP BEING NIL
+	// ctx := context.Background()
+	// client, err := globals.FirebaseApp.Auth(ctx)
+	// if err != nil {
+	// 	log.Errorf("error getting Auth client: %v\n", err)
+	// 	return err
+	// }
+
+	// err = client.DeleteUser(ctx, userId)
+	// if err != nil {
+	// 	log.Errorf("error deleting user: %v\n", err)
+	// 	return err
+	// }
 
 	return nil
 }

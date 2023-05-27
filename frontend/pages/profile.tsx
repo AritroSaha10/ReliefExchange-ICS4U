@@ -29,7 +29,11 @@ const increasePFPResolution = (url: string, newRes: Number) => (
     url.replace("s96-c", `s${newRes.toFixed(0)}-c`)
 )
 
+
 export default function UserProfile() {
+
+    const [performingAction, setPerformingAction] = useState(false);
+    
     const [loadingAuth, setLoadingAuth] = useState(true);
     const [user, setUser] = useState<User>(null);
     const [userData, setUserData] = useState<{ [key: string]: any }>();
@@ -95,6 +99,27 @@ export default function UserProfile() {
 
         return () => unsubscribe();
     }, [router]);
+    const DeleteProfile = async () => {
+        if (confirm("Are you sure you want to delete your account? You won't be able to recover it.")) {
+            setPerformingAction(true)
+
+            try {
+                await axios.post(convertBackendRouteToURL(`/users/delete`), {
+                    profToDelete:user.uid,
+                    token:await user.getIdToken()
+                    
+                })
+
+                alert("Your account has been deleted. Redirecting you to the home page...")
+                router.push("/")
+            } catch (e) {
+                console.error(e)
+                alert("Something went wrong while deleting your account. Please try again later.")
+            }
+
+            setPerformingAction(false)
+        }
+    }
 
     if (!loadingAuth && signedIn) {
         return (
@@ -110,6 +135,11 @@ export default function UserProfile() {
                                 <p className="text-md text-white"><span className="font-semibold">Registered since:</span> {dayjs().to(user.metadata.creationTime)}</p>
                                 <p className="text-md text-white"><span className="font-semibold">Last signed in: </span>{dayjs().to(user.metadata.lastSignInTime)}</p>
                                 <p className="text-md text-white"><span className="font-semibold">Donations made: </span>{userData.donations_made}</p>
+                                <button
+                                className="flex items-center text-red-500 hover:text-red-600 active:text-red-700 disabled:text-red-900 duration-150"
+                                disabled={performingAction}
+                                onClick={() => DeleteProfile()}
+                                    >Delete Account</button>
                             </div>
                         </div>
 
