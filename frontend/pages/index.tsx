@@ -1,4 +1,3 @@
-import Head from 'next/head';
 import Link from 'next/link';
 import Image from 'next/image';
 import Layout from '../components/Layout';
@@ -10,17 +9,21 @@ import auth from '../lib/firebase/auth';
 import HeroImage from "@media/hero.jpg";
 import KeepDonateStock from "@media/keep-donate-stock.jpg"
 
+/**
+ * The index page. Gives the user some information about the website, and includes a few
+ * call to actions (depending on user's auth state).
+ */
 export default function Home() {
+  // Used to show different buttons on Hero depending on auth state
   const [isSignedIn, setSignedIn] = useState(false);
 
-  /**
-   * Refresh auth data on change
-   */
   useEffect(() => {
+    // Subscribe to authentication state changes
     const unsubscribe = onAuthStateChanged(auth, user => {
       setSignedIn(user !== null);
     });
 
+    // Unsubscribe on component unmount
     return () => unsubscribe();
   }, []);
 

@@ -1,44 +1,41 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
+import Link from "next/link";
 import Image from "next/image";
 
 import { User, onAuthStateChanged } from "firebase/auth";
-import auth from "@lib/firebase/auth";
-import Layout from "@components/Layout";
-
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime"
 import axios from "axios";
-import convertBackendRouteToURL from "lib/convertBackendRouteToURL";
+
+import Layout from "@components/Layout";
 import DonationCard from "@components/DonationCard";
-import allTags from "lib/tag-types";
-import Link from "next/link";
-import Donation from "lib/types/donation";
-dayjs.extend(relativeTime)
+import convertBackendRouteToURL from "@lib/convertBackendRouteToURL";
+import auth from "@lib/firebase/auth";
+import allTags from "@lib/tag-types";
+import Donation from "@lib/types/donation";
+import Tag from "@lib/types/tag";
+import increasePFPResolution from "@lib/increasePFPResolution";
+import UserDataWithDonations from "@lib/types/userDataWithDonations"
+
+dayjs.extend(relativeTime) // Allows us to calculate relative time easily
 
 /**
- * Increase the resolution of a Google profile picture link. 
- * This is necessary since it's always 96px x 96px with no way to
- * request a higher resolution picture.
- * @param url The original image src link
- * @param newRes The new resolution in pixels (2-dimensional res not allowed)
- * @returns An altered src link with higher resolution
+ * The user profile page. Displays information about the user such as registration date and name,
+ * as well as all the donations they've made. Only accessible whether they are signed in.
  */
-const increasePFPResolution = (url: string, newRes: Number) => (
-    url.replace("s96-c", `s${newRes.toFixed(0)}-c`)
-)
-
-
 export default function UserProfile() {
-
-    const [performingAction, setPerformingAction] = useState(false);
-    
+    // Whether we are currently waiting for user data from Firebase
     const [loadingAuth, setLoadingAuth] = useState(true);
+    // The authenticated user's data directly from Firebase auth 
     const [user, setUser] = useState<User>(null);
-    const [userData, setUserData] = useState<{ [key: string]: any }>();
+    // The user data from Firestore / the data we specically store
+    const [userData, setUserData] = useState<UserDataWithDonations>();
+    // Whether the user is signed in or not
     const [signedIn, setSignedIn] = useState<boolean>(false);
 
+    // Router object to control current path state
     const router = useRouter();
 
     /**
@@ -46,7 +43,9 @@ export default function UserProfile() {
      * as this gets the data of both the user and their donations.
      */
     useEffect(() => {
+        // Subscribes to authentication state change from Firebase
         const unsubscribe = onAuthStateChanged(auth, newUser => {
+            // Only run if user is signed in
             if (newUser && Object.keys(newUser).length !== 0) {
                 // Set user data
                 setUser(newUser);
@@ -54,16 +53,20 @@ export default function UserProfile() {
                 // Attempt to get the user's data from the backend
                 axios.get(convertBackendRouteToURL(`/users/${newUser.uid}`)).then(async res => {
                     let data = res.data;
+                    // Empty arrays evaluate to null from Firebase, when
+                    // they really should just be empty arrays.
                     if (data.posts === null) {
                         data.posts = []
                     }
 
-                    // Get data of each donation and replace the posts key with it
+                    // Get data of each donation and replace the post's key with it
                     data.posts = await Promise.all(data.posts.map(async (post: { ID: string }) => {
                         // Get each donation
                         try {
+                            // Get raw donation
                             const res = await axios.get(convertBackendRouteToURL(`/donations/${post.ID}`));
 
+                            // Convert the ISO string date to an actual date object 
                             const donation: Donation = {
                                 ...res.data,
                                 creation_timestamp: new Date(res.data.creation_timestamp)
@@ -71,32 +74,40 @@ export default function UserProfile() {
 
                             return donation;
                         } catch (e) {
-                            console.log(e);
+                            // Store a null object in the array, which we remove later
+                            console.warn("Couldn't get a donation from database: ", e);
                             return null;
                         }
                     }));
 
+                    // Filter out all the donations we couldn't fetch
                     data.posts = data.posts.filter((obj: any) => obj !== null)
+
+                    // Sort by date descending
                     data.posts.sort((a: Donation, b: Donation) => -(a.creation_timestamp.getTime() - b.creation_timestamp.getTime()))
 
+                    // Update state
                     setUserData(data);
                     setSignedIn(true);
                 }).catch(err => {
+                    // Let the user know of the error and push them back to their previous page
                     console.error(err);
                     alert("Something went wrong while loading your user profile. Please try again later. Redirecting you to the home page...");
-                    router.push("/");
+                    router.back();
                 })
             } else {
-                // User not logged in, throw them back to the front page
+                // Let the user know and push them back to their previous page
                 setUser(null);
                 setSignedIn(false);
                 alert("You need to be signed in to access this page. Redirecting...");
-                router.push("/");
+                router.back();
             }
 
+            // Update state to reflect new changes in auth state
             setLoadingAuth(false);
         });
 
+        // Unsubscribe from auth state changes on page unmount
         return () => unsubscribe();
     }, [router]);
     const DeleteProfile = async () => {
@@ -122,6 +133,7 @@ export default function UserProfile() {
     }
 
     if (!loadingAuth && signedIn) {
+        // Only show this page if the user is signed in
         return (
             <Layout name="Your Profile">
                 <div className="p-10">
@@ -134,7 +146,7 @@ export default function UserProfile() {
                                 <h3 className="text-2xl font-medium text-white">{user.displayName}</h3>
                                 <p className="text-md text-white"><span className="font-semibold">Registered since:</span> {dayjs().to(user.metadata.creationTime)}</p>
                                 <p className="text-md text-white"><span className="font-semibold">Last signed in: </span>{dayjs().to(user.metadata.lastSignInTime)}</p>
-                                <p className="text-md text-white"><span className="font-semibold">Donations made: </span>{userData.donations_made}</p>
+                                <p className="text-md text-white"><span className="font-semibold">Donations made: </span>{userData.donations_made.toString()}</p>
                                 <button
                                 className="flex items-center text-red-500 hover:text-red-600 active:text-red-700 disabled:text-red-900 duration-150"
                                 disabled={performingAction}
@@ -149,7 +161,8 @@ export default function UserProfile() {
                             {userData.posts.length !== 0 && (
                                 <div className="flex flex-col self-center gap-4 lg:gap-6 w-full">
                                     {userData.posts.map(donation => {
-                                        const tags = (
+                                        // Convert the tag names into tag objects
+                                        const tags: Tag[] = (
                                             donation.tags ? donation.tags.map(tagName => allTags.find(tag => tag.name === tagName)) : []
                                         ).filter(tag => tag !== undefined);
 
@@ -170,13 +183,24 @@ export default function UserProfile() {
                                 </div>
                             )}
 
-                            {userData.posts.length === 0 && <span className="text-gray-200 text-md">It seems you haven&apos;t opened any donations yet. Click <Link href="/donations/create" className="text-blue-400 hover:underline active:text-blue-500">Donate</Link> in the navbar to make one!</span>}
+                            {userData.posts.length === 0 && (
+                                <span className="text-gray-200 text-md">
+                                    It seems you haven&apos;t opened any donations yet. 
+                                    Click <Link href="/donations/create" className="text-blue-400 hover:underline active:text-blue-500">
+                                        Donate
+                                    </Link> 
+                                    in the navbar to make one!
+                                </span>
+                            )}
                         </div>
                     </div>
                 </div>
             </Layout>
         )
     } else {
-        <span className="text-2xl text-center text-gray-200 font-semibold">Loading...</span>
+        // Show some loading text as we wait for the user data to load
+        return (
+            <span className="text-2xl text-center text-gray-200 font-semibold my-4">Loading...</span>
+        )
     }
 }

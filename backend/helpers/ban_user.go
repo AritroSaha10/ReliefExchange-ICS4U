@@ -15,7 +15,6 @@ import (
 // Return values:
 //   - error, if any occurred during the operation.
 func BanUser(userId string) error {
-
 	// Check if they're already banned
 	banned, err := CheckIfBanned(userId)
 	if err != nil {
@@ -28,6 +27,8 @@ func BanUser(userId string) error {
 		log.Error(err.Error())
 		return err
 	}
+
+	// Check if they're an admin
 	isAdmin, err := CheckIfAdmin(userId)
 	if err != nil {
 		err = fmt.Errorf("err while checking if admin: %w", err)
@@ -35,7 +36,7 @@ func BanUser(userId string) error {
 		return err
 	}
 	if isAdmin {
-		err := fmt.Errorf("Cannot ban an admin")
+		err := fmt.Errorf("cannot ban an admin")
 		log.Error(err.Error())
 		return err
 	}

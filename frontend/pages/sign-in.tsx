@@ -4,31 +4,40 @@ import { useEffect, useState } from "react"
 import Layout from "@components/Layout";
 import auth from "@lib/firebase/auth";
 
-import { GoogleAuthProvider, setPersistence, signInWithPopup, browserLocalPersistence, onAuthStateChanged, getRedirectResult, signInWithRedirect } from "firebase/auth";
+import { GoogleAuthProvider, setPersistence, browserLocalPersistence, onAuthStateChanged, getRedirectResult, signInWithRedirect } from "firebase/auth";
 
 import GoogleLogo from "@media/social-media-logos/google.png";
 import { useRouter } from "next/router";
 import axios from "axios";
 import convertBackendRouteToURL from "lib/convertBackendRouteToURL";
 
+/**
+ * The sign-in page. Handles the sign-in flow. Only accessible if the user isn't signed in.
+ */
 export default function SignIn() {
+    // State and hooks necessary for sign-in.
     const router = useRouter();
     const [signingIn, setSigningIn] = useState(false)
 
     /**
-     * Prompt the user to sign in 
+     * Prompt the user to sign in using their Google account.
      */
     const continueWithGoogle = async () => {
         try {
+            // Toggle sign-in so they can't click the button multiple times
             setSigningIn(true);
-            // Set persistence
+
+            // Set the auth persistance so they don't have to sign in multiple times
             await setPersistence(auth, browserLocalPersistence);
 
-            // Redirect the user to sign-in
+            // Set up authentication provider (in this case, Google)
             const provider = new GoogleAuthProvider();
             provider.addScope("email");
+
+            // Redirect the user to sign-in page
             await signInWithRedirect(auth, provider);
         } catch (e) {
+            // Log the error and let the user know
             console.error(e);
             alert("Something went wrong. Please try again.");
         }
@@ -40,16 +49,20 @@ export default function SignIn() {
     useEffect(() => {
         // Make sure to run this when the user first signs in
         (async () => {
+            // Create the provider class just like it was created when starting the log in flow
             const provider = new GoogleAuthProvider();
             provider.addScope("email");
 
+            // Manage the results if there was a redirect
             const res = await getRedirectResult(auth);
             if (res !== null) {
+                // Disable sign-in button to prevent them starting another login flow
                 setSigningIn(true);
 
                 // Actually a redirect, handle sign-in
                 if (res.user.metadata.creationTime === res.user.metadata.lastSignInTime) {
                     try {
+                        // Create a document for their user data in our Firestore DB if user is new
                         await axios.post(convertBackendRouteToURL("/users/new"), {
                             token: await res.user.getIdToken()
                         })
@@ -58,8 +71,11 @@ export default function SignIn() {
                     }
                 }
 
+                // Redirect them to the home page
                 router.push("/");
             } else {
+                // No previous log-in flow, let them use the page as normal (if they aren't logged in)
+
                 // While we should technically be providing an unsubscribe function to React,
                 // it's not possible since this is in an async function. It must be in this async
                 // function since we first must wait for the result from the redirect
@@ -67,13 +83,14 @@ export default function SignIn() {
                 // since this will only run once anyways. I think...
                 onAuthStateChanged(auth, user => {
                     if (user) {
+                        // Redirect to home page if they're already signed in
                         alert("You are already signed in! Redirecting...");
                         router.push("/");
                     }
                 });
             }
         })();
-    }, []);
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     return (
         <Layout name="Sign In">
