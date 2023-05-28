@@ -6,7 +6,7 @@ import { useRouter } from "next/router";
 
 import axios from "axios";
 import { ParsedUrlQuery } from 'querystring'
-import { ReactMarkdown } from "react-markdown";
+import ReactMarkdown from "react-markdown";
 import { User, onAuthStateChanged } from "firebase/auth";
 
 import Layout from "@components/Layout";
