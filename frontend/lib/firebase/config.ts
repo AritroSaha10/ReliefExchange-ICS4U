@@ -1,7 +1,7 @@
 // The configuration data for the firebase project.
 const firebaseConfig = {
     apiKey: "AIzaSyDpTBi9KDh0jJvnQqxRiNJGZBVJQy8VZP4",
-    authDomain: "reliefexchange.aritrosaha.ca",
+    authDomain: process.env.NODE_ENV === "production" ? "reliefexchange.aritrosaha.ca" : "ics4u-project.firebaseapp.com",
     projectId: "ics4u-project",
     storageBucket: "ics4u-project.appspot.com",
     messagingSenderId: "42306297294",
