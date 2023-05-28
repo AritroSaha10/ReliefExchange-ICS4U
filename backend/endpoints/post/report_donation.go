@@ -16,34 +16,35 @@ import (
 // It accepts a user's id token and a donation id, verifies the token,
 // then adds the user's report to the donation.
 func ReportDonation(c *gin.Context) {
-	//define body to store request information
+	// Define body to store request information
 	var body struct {
 		DonationID string `json:"donation_id"`
 		IDToken    string `json:"token"`
 	}
-	//Attempt to bind the request to the body, so golang can use the donation_id and sender token
+	// Attempt to bind the request to the body, so golang can use the donation_id and sender token
 	if err := c.ShouldBindJSON(&body); err != nil { // Transfers request body so that fields match the struct
 		log.Println(err.Error())
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	//verify the token with the server
-	//the function checks if the token is valid and returns the decoded token
+
+	// Verify the token with the server
+	// Function checks if the token is valid and returns the decoded token
 	token, err := globals.AuthClient.VerifyIDToken(globals.FirebaseContext, body.IDToken)
 	if err != nil {
 		log.Error(err.Error())
 		c.IndentedJSON(http.StatusForbidden, gin.H{"error": "You are not authorized to report this donation."})
 		return
 	}
-	//extract sender id from the token
+	// Extract sender id from the token
 	userUID := token.UID
-	//report the donation using the donationid and the senderid
+
+	// Report the donation using the donationid and the senderid
 	err = helpers.ReportDonation(body.DonationID, userUID)
-	//if user has already sent a report to this donation, do not continue and send an error to the frontend
+	// If user has already sent a report to this donation, do not continue and send an error to the frontend
 	if err != nil {
 		log.Error(err.Error())
 		if err.Error() == "User has already sent a report" {
-
 			c.IndentedJSON(http.StatusConflict, gin.H{"error": err.Error()})
 		} else {
 			//if there was some other error, send back a internal server error to the frontend

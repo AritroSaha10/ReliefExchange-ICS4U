@@ -28,8 +28,8 @@ func CheckIfBanned(userId string) (bool, error) {
 	}
 
 	// Get ban list
-	//getting the raw ban list (from firestore)
 
+	// Get raw ban list directly from Firestore
 	var banListRaw []interface{}
 	var ok bool
 	if banListRaw, ok = banDocSnapshot.Data()["users"].([]interface{}); !ok {
@@ -37,7 +37,8 @@ func CheckIfBanned(userId string) (bool, error) {
 		log.Error(err.Error())
 		return false, err
 	}
-	//converting raw ban list to actual ban list (string)
+
+	// Convert raw ban list of type []interface{} to type []string
 	var banList []string
 	for _, rawBannedUID := range banListRaw {
 		if bannedUID, ok := rawBannedUID.(string); !ok {

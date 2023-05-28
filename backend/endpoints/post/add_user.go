@@ -25,9 +25,11 @@ func AddUser(c *gin.Context) {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()}) // if user not signed in, then will send error
 		return
 	}
-	// Attempt to verify the ID token
 
-	token, err := globals.AuthClient.VerifyIDToken(globals.FirebaseContext, body.IDToken) // token is for user to verify with the server, after it is decoded, we have access to all feilds
+	// Attempt to verify the ID token
+	// Token is provided for user to verify themselves with the server
+	// After it is decoded, we have access to all fields
+	token, err := globals.AuthClient.VerifyIDToken(globals.FirebaseContext, body.IDToken)
 	if err != nil {
 		log.Error(err.Error())
 		c.IndentedJSON(http.StatusForbidden, gin.H{"error": "You are not authorized to create this user"})
@@ -38,7 +40,7 @@ func AddUser(c *gin.Context) {
 
 	// Attempt to add the user to the database using the AddUser functions
 	err = helpers.AddUser(userUID)
-	// add to the firestore databse
+	// Add to the firestore databse
 	if err != nil {
 		log.Error(err.Error())
 		c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
