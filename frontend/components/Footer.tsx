@@ -43,16 +43,16 @@ export default function Footer() {
                     layout: google.translate.TranslateElement.InlineLayout.SIMPLE
                 },
                     'google_translate_element');
-            };
 
-            // Use the cookie value if the user wanted to translate it to another language before
-            if (hasCookie('googtrans')) {
-                setSelectedLanguage(getCookie('googtrans').toString())
-            }
-            else {
-                // Auto-translate to english on default
-                setSelectedLanguage('/auto/en')
-            }
+                // Use the cookie value if the user wanted to translate it to another language before
+                if (hasCookie('googtrans')) {
+                    setSelectedLanguage(getCookie('googtrans').toString())
+                }
+                else {
+                    // Auto-translate to english on default
+                    setSelectedLanguage('/auto/en')
+                }
+            };
         } catch (e) {
             // Silently log error
             console.error("Error while configuring auto-translate: ", e)
