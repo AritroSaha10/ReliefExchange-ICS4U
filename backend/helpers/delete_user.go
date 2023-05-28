@@ -8,14 +8,14 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// BanUser bans a user by removing their records from Firestore and flagging their UID.
+// DeleteUser removes a user by removing their records from Firestore and
+// their auth data in Firebase Authentication.
 // Parameters:
-//   - userId: the ID of the user to ban.
+//   - userId: the ID of the user to delete
 //
 // Return values:
 //   - error, if any occurred during the operation.
-func DeleteProfile(userId string) error {
-
+func DeleteUser(userId string) error {
 	// Get user data document reference
 	userDataRef := globals.FirestoreClient.Doc("users/" + userId)
 
@@ -41,7 +41,7 @@ func DeleteProfile(userId string) error {
 		return err
 	}
 
-	// Convert each raw post to a *firestore.DocumentRef
+	// Convert each raw post to a *firestore.DocumentRef and delete them
 	for _, rawPost := range rawPosts {
 		postRef, ok := rawPost.(*firestore.DocumentRef)
 		if !ok {
@@ -53,26 +53,20 @@ func DeleteProfile(userId string) error {
 			continue
 		}
 	}
-	// Deleting the user's document
+
+	// Delete user's data from Firestore
 	_, err = userDataRef.Delete(globals.FirebaseContext)
 	if err != nil {
-		log.Warn("Failed deleting user: %w", err)
+		log.Warn("failed deleting user: %w", err)
 		return err
 	}
 
-	// // Delete user from Firebase Auth PROBLEM WITH FIREBASEAPP BEING NIL
-	// ctx := context.Background()
-	// client, err := globals.FirebaseApp.Auth(ctx)
-	// if err != nil {
-	// 	log.Errorf("error getting Auth client: %v\n", err)
-	// 	return err
-	// }
-
-	// err = client.DeleteUser(ctx, userId)
-	// if err != nil {
-	// 	log.Errorf("error deleting user: %v\n", err)
-	// 	return err
-	// }
+	// Delete user from Firebase Auth
+	err = globals.AuthClient.DeleteUser(globals.FirebaseContext, userId)
+	if err != nil {
+		log.Errorf("error deleting user: %v\n", err)
+		return err
+	}
 
 	return nil
 }
