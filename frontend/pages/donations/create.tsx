@@ -1,33 +1,41 @@
-import Layout from "@components/Layout";
-import { useState, useEffect, useRef } from "react";
-import { getIdToken, onAuthStateChanged, User } from "firebase/auth";
-import auth from "@lib/firebase/auth";
+import { useState, useEffect, useRef, FormEventHandler } from "react";
 import { useRouter } from "next/router";
-import Multiselect from 'multiselect-react-dropdown';
-import ReCAPTCHA from "react-google-recaptcha"
+import dynamic from "next/dynamic";
+
 import axios from "axios";
-import React from "react";
+import { getIdToken, onAuthStateChanged, User } from "firebase/auth";
+import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
+import ReCAPTCHA from "react-google-recaptcha"
+import Multiselect from 'multiselect-react-dropdown';
+import * as commands from "@uiw/react-md-editor/lib/commands";
+
+import auth from "@lib/firebase/auth";
+import Layout from "@components/Layout";
+import storage from "@lib/firebase/storage";
+import allTags from "@lib/tag-types";
+import convertBackendRouteToURL from "@lib/convertBackendRouteToURL";
+
 import { AiOutlineCloudUpload } from "react-icons/ai"
 import { BsImage } from "react-icons/bs"
-import dynamic from "next/dynamic";
-import * as commands from "@uiw/react-md-editor/lib/commands";
-import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
-import storage from "@lib/firebase/storage";
-import allTags from "lib/tag-types";
 
 import "@uiw/react-md-editor/markdown-editor.css";
 import "@uiw/react-markdown-preview/markdown.css";
-import convertBackendRouteToURL from "lib/convertBackendRouteToURL";
 
+// Don't try to render this component on the server
 const MDEditor = dynamic(
     () => import("@uiw/react-md-editor").then((mod) => mod.default),
     { ssr: false }
 );
 
+/**
+ * Donation Creation page, where signed-in users can create donations that show up on the index.
+ */
 export default function CreateDonation() {
+    // Necessary hooks
     const router = useRouter();
     const captchaRef = useRef(null);
 
+    // All state variables for form elements and user data
     const [loadingAuth, setLoadingAuth] = useState(true);
     const [user, setUser] = useState<User>(null);
     const [signedIn, setSignedIn] = useState<boolean>(false);
@@ -36,13 +44,16 @@ export default function CreateDonation() {
     const [submitting, setSubmitting] = useState(false);
     const [featuredImage, setFeaturedImage] = useState<FileList | []>([]);
 
+    // Site key for using Google ReCAPTCHA v2
     const RECAPTCHA_SITE_KEY = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
 
     /**
      * Refresh user data on auth change
      */
     useEffect(() => {
+        // Subscribe to auth state changes
         const unsubscribe = onAuthStateChanged(auth, newUser => {
+            // Only run if user is signed-in
             if (newUser && Object.keys(newUser).length !== 0) {
                 // Set user data
                 setUser(newUser);
@@ -50,13 +61,17 @@ export default function CreateDonation() {
             } else {
                 setUser(null);
                 setSignedIn(false);
+
+                // Throw user back to homepage
                 alert("You need to be signed in to access this page. Redirecting...");
                 router.push("/");
             }
 
+            // Update state
             setLoadingAuth(false);
         });
 
+        // Unsubscribe from auth state changes on page dismount to avoid zombie auth state subscribers
         return () => unsubscribe();
     }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -65,13 +80,15 @@ export default function CreateDonation() {
      * @param e Event handler data for a form
      * @returns Nothing.
      */
-    const onSubmit: React.FormEventHandler<HTMLFormElement> = async (e) => {
+    const onSubmit: FormEventHandler<HTMLFormElement> = async (e) => {
+        // Convert form data to keys and don't refresh page
         const formData = Object.fromEntries((new FormData(e.currentTarget)).entries());
         e.preventDefault();
 
+        // Freeze submit button
         setSubmitting(true);
 
-        // Confirming the CAPTCHA
+        // Confirm the CAPTCHA with the server
         const token = captchaRef.current.getValue();
         captchaRef.current.reset();
         if (!token) {
@@ -80,27 +97,36 @@ export default function CreateDonation() {
             return;
         }
         try {
+            // Send request to server to get result of CAPTCHA
             const res = await axios.post(convertBackendRouteToURL(`/confirmCAPTCHA?token=${token}`))
             if (!res.data.human) throw "User was detected to be a bot by ReCAPTCHA."
         } catch (e) {
+            // Handle error, let user know of problem
             alert("Something went wrong. Please try again.");
             console.error(e);
             setSubmitting(false);
+
+            // Don't proceed with rest of donation adding process
             return
         }
 
         // CAPTCHA confirmed, now upload the image to Firebase Storage
         let imgLink = ""
         if (featuredImage.length !== 0) {
+            // Create a reference to an image with a random name
             const imgRef = ref(storage, `donations/${crypto.randomUUID()}.jpg`);
 
             try {
+                // Try uploading the image and getting its public URL
                 const imgSnapshot = await uploadBytes(imgRef, featuredImage[0]);
                 imgLink = await getDownloadURL(imgSnapshot.ref);
             } catch (e) {
+                // Let user know of specific issue
                 alert("Something went wrong while uploading your image. Please try again, and make sure that your image is <=10MB.");
                 console.error(e);
                 setSubmitting(false);
+
+                // Don't proceed with rest of process
                 return
             }
         }
@@ -132,12 +158,12 @@ export default function CreateDonation() {
             alert("Your donation was successfully submitted! Redirecting you to its page...");
             router.push(`/donations/${apiRes.data}`);
         } catch (e) {
-            alert("Something went wrong while submitted your donation. Please try again.");
+            // Let user know of issue
+            alert("Something went wrong while submitting your donation. Please try again.");
             console.error(e);
-            setSubmitting(false);
-            return;
         }
 
+        // Unfreeze submit button
         setSubmitting(false);
     }
 

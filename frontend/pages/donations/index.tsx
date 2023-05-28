@@ -13,6 +13,8 @@ import DonationCard from "@components/DonationCard";
 import { onAuthStateChanged } from "firebase/auth";
 import auth from "@lib/firebase/auth";
 
+// All the options that the user can sort by, complete with functions
+// for extensibility
 const sortByOptions = [
     {
         name: "Sort by",
@@ -41,6 +43,8 @@ const sortByOptions = [
     },
 ]
 
+// All the options that admins can sort by, complete with functions
+// for extensibility
 const adminSortByOptions = [
     {
         name: "Reports (asc.)",
@@ -54,6 +58,7 @@ const adminSortByOptions = [
     },
 ]
 
+// All the date options the user can filter by
 const filterByDateOptions = {
     1: {
         name: "< 1 day ago",
@@ -77,21 +82,29 @@ const filterByDateOptions = {
     },
 }
 
+// All the tag options the user can filter by, retrieved by converting the tags array
+// into a dict
 const tagsOptions = allTags.reduce((a, v) => ({ ...a, [v.id]: v }), {})
 
+/**
+ * Part of Next.js, fetches all donation data.
+ */
 export const getStaticProps: GetStaticProps = async (context) => {
+    // Request the backend for the donation list
     const rawDonations: RawDonation[] = (await axios.get(convertBackendRouteToURL("/donations/list"))).data
 
     const props = { rawDonations }
-    return { props, revalidate: 1 }
+    return { props, revalidate: 1 } // Revalidate the data cache 1s after page load
 }
 
 export default function DonationsIndex({ rawDonations }: { rawDonations: RawDonation[] }) {
+    // Convert the ISO string timestamps in the raw donations to Date objects
     const originalDonations: Donation[] = rawDonations.map(rawDonation => ({
         ...rawDonation,
         creation_timestamp: new Date(rawDonation.creation_timestamp)
     }))
 
+    // Necessary state and ref hooks
     const searchBoxRef = useRef<HTMLInputElement>()
     const [data, setData] = useState<Donation[]>(originalDonations)
     const [sortBy, setSortBy] = useState(sortByOptions[0])
@@ -104,12 +117,14 @@ export default function DonationsIndex({ rawDonations }: { rawDonations: RawDona
      */
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, user => {
+            // Only run if user is signed in
             if (user && Object.keys(user).length !== 0) {
                 // Attempt to get the user's data from the backend
                 axios.get(convertBackendRouteToURL(`/users/${user.uid}`)).then(async res => {
                     // Get admin attribute from data
                     setIsAdmin(res.data && !!res.data.admin);
                 }).catch(err => {
+                    // Silently log error
                     console.error(err);
                 })
             }

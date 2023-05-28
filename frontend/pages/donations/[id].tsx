@@ -1,32 +1,39 @@
-import axios from "axios";
 import Image from "next/image";
-
+import Link from "next/link";
+import { useEffect, useState } from "react";
 import { GetStaticPaths, GetStaticProps } from 'next'
-import { ParsedUrlQuery } from 'querystring'
-import Donation from "lib/types/donation";
-import Layout from "@components/Layout";
-import { ReactMarkdown } from "react-markdown/lib/react-markdown";
+import { useRouter } from "next/router";
 
-import UserData from "lib/types/userData";
-import RawDonation from "lib/types/rawDonation";
-import DonationWithUserData from "lib/types/donationWithUserData";
+import axios from "axios";
+import { ParsedUrlQuery } from 'querystring'
+import { ReactMarkdown } from "react-markdown";
+import { User, onAuthStateChanged } from "firebase/auth";
+
+import Layout from "@components/Layout";
+import Donation from "@lib/types/donation";
+import auth from "@lib/firebase/auth";
+import UserData from "@lib/types/userData";
+import RawDonation from "@lib/types/rawDonation";
+import DonationWithUserData from "@lib/types/donationWithUserData";
+import convertBackendRouteToURL from "@lib/convertBackendRouteToURL";
 
 import { BiLeftArrowAlt } from "react-icons/bi"
 import { FiFlag, FiTrash } from "react-icons/fi"
 import { FaBan } from "react-icons/fa"
 
-import Link from "next/link";
-import { useEffect, useState } from "react";
-import { User, onAuthStateChanged } from "firebase/auth";
-import { useRouter } from "next/router";
-import auth from "@lib/firebase/auth";
-import convertBackendRouteToURL from "lib/convertBackendRouteToURL";
 
+/**
+ * The specific parameters that we need to get from the URL
+ */
 interface IParams extends ParsedUrlQuery {
     id: string
 }
 
+/**
+ * Part of Next.js, gets all of the possible paths this page can have on the server.
+ */
 export const getStaticPaths: GetStaticPaths = async () => {
+    // Get all the raw donations and extract the UIDs
     const rawDonations: RawDonation[] = (await axios.get(convertBackendRouteToURL("/donations/list"))).data
     const arr: string[] = rawDonations.map(donation => donation.id)
 
@@ -36,40 +43,58 @@ export const getStaticPaths: GetStaticPaths = async () => {
                 params: { id },
             }
         }),
-        fallback: "blocking"
+        fallback: "blocking" // If there's a new donation, run getStaticProps on it and cache its results instead of 404
     }
 }
 
+/**
+ * Part of Next.js, fetches the data for a specific page on the server.
+ */
 export const getStaticProps: GetStaticProps = async (context) => {
+    // Cast the parameters for the page request to our params interface
     const { id } = context.params as IParams
 
     try {
+        // Get raw donation
         const rawDonation: RawDonation = (await axios.get(convertBackendRouteToURL(`/donations/${id}`))).data
+
+        // Add user data to donation
         const rawDonationWithUserData = {
             ...rawDonation,
             owner: (await axios.get(convertBackendRouteToURL(`/users/${rawDonation.owner_id}`))).data
         }
 
+        // Return it as a page prop, refreshing cache 1s after a page is served
         const props = { rawDonation: rawDonationWithUserData }
         return { props, revalidate: 1 }
     } catch (e) {
         if (e.response.status === 404) {
+            // Donation doesn't exist
             return {
                 notFound: true
             }
         } else {
+            // Throw the error again for us to see in logs
             throw e
         }
     }
 }
 
+/**
+ * The donation specific page, to show more information about a specific donation as well as allow them to contact the donator.
+ */
 export default function DonationSpecificPage({ rawDonation }) {
     const router = useRouter()
+
+    // Convert the raw donation to an actual donation by converting the ISO string to
+    // a date object. This is done since the Date object is not serializable and cannot
+    // be sent in a JSON object as getStaticProps does.
     const donation: DonationWithUserData = {
         ...rawDonation,
         creation_timestamp: new Date(rawDonation.creation_timestamp)
     }
 
+    // State vars
     const [user, setUser] = useState<User>(null);
     const [isAdmin, setIsAdmin] = useState(false);
     const [performingAction, setPerformingAction] = useState(false);
@@ -78,9 +103,11 @@ export default function DonationSpecificPage({ rawDonation }) {
      * Sends a request to send a report regarding this post.
      */
     const sendReport = async () => {
+        // Freeze other actions while performing this
         setPerformingAction(true)
 
         try {
+            // Try sending a request to report
             await axios.post(convertBackendRouteToURL("/donations/report"), {
                 donation_id: donation.id,
                 token: await user.getIdToken()
@@ -88,6 +115,7 @@ export default function DonationSpecificPage({ rawDonation }) {
 
             alert("The post has been successfully reported. Thank you for helping us keep ReliefExchange clean.")
         } catch (e) {
+            // Alert user of error and proceed
             if (e.response.status === 409) {
                 alert("You have already reported this post. You cannot report it again.");
             } else {
@@ -96,6 +124,7 @@ export default function DonationSpecificPage({ rawDonation }) {
             }
         }
 
+        // Unfreeze actions once done
         setPerformingAction(false)
     }
 
@@ -103,23 +132,29 @@ export default function DonationSpecificPage({ rawDonation }) {
      * Sends a request to delete the post. Can only be run if the user is the owner of the post or an admin.
      */
     const deletePost = async () => {
+        // Confirm with the user that they actually want to delete it
         if (confirm("Are you sure you want to delete this post? You won't be able to recover it.")) {
+            // Freeze other actions
             setPerformingAction(true)
-
+            
             try {
+                // Try sending a request to delete, with proper authorization
                 await axios.post(convertBackendRouteToURL(`/donations/${donation.id}/delete`), {}, {
                     headers: {
                         Authorization: `Bearer ${await user.getIdToken()}`,
                     },
                 })
 
+                // Redirect them back to front donations page
                 alert("The post has been deleted. Redirecting you to the donations index page...")
                 router.push("/donations")
             } catch (e) {
+                // Alert user of issues
                 console.error(e)
                 alert("Something went wrong while deleting this post. Please try again later.")
             }
 
+            // Unfreeze actions
             setPerformingAction(false)
         }
     }
@@ -128,23 +163,29 @@ export default function DonationSpecificPage({ rawDonation }) {
      * Sends a request to ban the user.
      */
     const banUser = async () => {
+        // Confirm with user to actually ban them
         if (confirm("Are you sure you want to ban this user? This will delete all their posts as well.")) {
+            // Freeze donations
             setPerformingAction(true)
 
             try {
+                // Try sending request to ban user
                 alert("This will take a while. Please wait...")
                 await axios.post(convertBackendRouteToURL(`/users/ban`), {
                     userToBan: donation.owner_id,
                     token: await user.getIdToken()
                 })
 
+                // Alert user of success and redirect back to donations home
                 alert("The user has been banned. Redirecting you to the donations index page...")
                 router.push("/donations")
             } catch (e) {
+                // Alert user of error
                 console.error(e)
                 alert("Something went wrong while banning this user. Please try again later.")
             }
 
+            // Unfreeze other actions
             setPerformingAction(false)
         }
     }
@@ -154,22 +195,27 @@ export default function DonationSpecificPage({ rawDonation }) {
      */
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, newUser => {
+            // Only run if user is signed in
             if (newUser && Object.keys(newUser).length !== 0) {
                 // Set user data
                 setUser(newUser);
 
+                // Check if user is admin by getting their user data
                 try {
                     axios.get(convertBackendRouteToURL(`/users/${newUser.uid}`)).then(res => {
                         setIsAdmin(!!res.data.admin)
                     })
                 } catch (e) {
+                    // Silently record the error
                     console.error(e)
                 }
             } else {
+                // Not signed in, set to null
                 setUser(null);
             }
         });
 
+        // Unsubscribe from auth state changes on component dismount
         return () => unsubscribe();
     }, []);
 
