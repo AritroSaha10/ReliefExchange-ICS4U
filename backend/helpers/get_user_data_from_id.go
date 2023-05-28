@@ -45,11 +45,11 @@ func GetUserDataByID(id string) (types.UserData, error) {
 	}
 
 	// Set values that aren't set in the DataTo function
-	var ok1, ok2, ok3 bool
-	userData.DisplayName, ok1 = doc.Data()["display_name"].(string)
-	userData.RegistrationTimestamp, ok2 = doc.Data()["registered_date"].(time.Time)
-	userData.DonationsMade, ok3 = doc.Data()["donations_made"].(int64)
-	if !(ok1 && ok2 && ok3) {
+	var ok_name, ok_date, ok_donations_made bool
+	userData.DisplayName, ok_name = doc.Data()["display_name"].(string)
+	userData.RegistrationTimestamp, ok_date = doc.Data()["registered_date"].(time.Time)
+	userData.DonationsMade, ok_donations_made = doc.Data()["donations_made"].(int64)
+	if !(ok_name && ok_date && ok_donations_made) {
 		log.Warn("user data may have not been converted properly")
 	}
 

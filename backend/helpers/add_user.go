@@ -26,31 +26,34 @@ func AddUser(userId string) error {
 		return err
 	}
 	if banned {
+		// If the user is already banned, log and return an error
 		err := fmt.Errorf("user is already banned")
 		log.Error(err.Error())
 		return err
 	}
-
+	//Get user data from auth server
 	userData, err := globals.AuthClient.GetUser(globals.FirebaseContext, userId)
 	if err != nil {
 		err = fmt.Errorf("failed getting user data from auth server: %w", err)
 		log.Error(err.Error())
 		return err
 	}
-
+	// Create a new document in Firestore for the user with the provided data
 	_, err = globals.FirestoreClient.Doc("users/"+userId).Create(globals.FirebaseContext, map[string]interface{}{
 		"display_name":    userData.DisplayName,
 		"email":           userData.Email,
 		"admin":           false,
-		"posts":           []firestore.DocumentRef{},
+		"posts":           []firestore.DocumentRef{}, //the posts made by the user
 		"uid":             userId,
 		"donations_made":  0,
 		"registered_date": time.Unix(userData.UserMetadata.CreationTimestamp/1000, 0),
 	})
 	if err != nil {
+		// Log and return the error if there was a problem creating the user's document
 		err = fmt.Errorf("failed creating user data doc: %w", err)
 		log.Error(err.Error())
 		return err
 	}
+	// If everything went well, return nil indicating no errors
 	return nil
 }

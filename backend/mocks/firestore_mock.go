@@ -5,6 +5,7 @@
 package mocks
 
 import (
+	
 	reflect "reflect"
 
 	firestore "cloud.google.com/go/firestore"
@@ -85,3 +86,4 @@ func (mr *MockFirestoreDocIteratorMockRecorder) Next() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Next", reflect.TypeOf((*MockFirestoreDocIterator)(nil).Next))
 }
+

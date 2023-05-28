@@ -21,13 +21,13 @@ func AddDonation(c *gin.Context) {
 		DonationData types.Donation `json:"data"`
 		IDToken      string         `json:"token"`
 	}
-
+	// Bind the request body to the body struct, this stores the donation data and id token of the user to allow go to use.
 	if err := c.ShouldBindJSON(&body); err != nil {
 		log.Error(err.Error())
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-
+	// Verify the IdToken of the sender (user) with the server
 	token, err := globals.AuthClient.VerifyIDToken(globals.FirebaseContext, body.IDToken)
 	if err != nil {
 		log.Warn("Failed to verify ID token")
@@ -36,7 +36,12 @@ func AddDonation(c *gin.Context) {
 	}
 
 	userUID := token.UID
+
+	// Use addDonation function to add the donation, passing in the donationData and the uid
 	docID, err := helpers.AddDonation(body.DonationData, userUID)
+
+	// If there's an error adding the donation, send back err msg to frontend,
+	// otherwise send back docId for the frontend to use
 	if err != nil {
 		log.Error(err.Error())
 		c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

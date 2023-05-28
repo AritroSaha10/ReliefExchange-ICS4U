@@ -28,6 +28,19 @@ func BanUser(userId string) error {
 		return err
 	}
 
+	// Check if they're an admin
+	isAdmin, err := CheckIfAdmin(userId)
+	if err != nil {
+		err = fmt.Errorf("err while checking if admin: %w", err)
+		log.Error(err.Error())
+		return err
+	}
+	if isAdmin {
+		err := fmt.Errorf("cannot ban an admin")
+		log.Error(err.Error())
+		return err
+	}
+
 	// Get user data document reference
 	userDataRef := globals.FirestoreClient.Doc("users/" + userId)
 
@@ -40,6 +53,12 @@ func BanUser(userId string) error {
 	}
 
 	// Extract posts field from user data
+	// Note: .([]interface{}) is a type assertion that checks if the value returned is a slice of interfaces,
+	// The attributes in doc.Data() are assumed to be either of an unknown type or a slice of unknown type.
+	// If it were a single unknown type, we could directly convert it to the desired type.
+	// However, we can't directly convert a slice of unknown type to a slice of a specific type.
+	// Therefore, we have convert every element in the slice to the desired type,
+	// and then add it to a new slice of the desired type.
 	rawPosts, ok := userDataDoc.Data()["posts"].([]interface{})
 	if !ok {
 		err = fmt.Errorf("failed extracting posts field from user data")
