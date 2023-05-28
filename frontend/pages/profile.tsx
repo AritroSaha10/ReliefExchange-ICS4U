@@ -4,7 +4,7 @@ import { useRouter } from "next/router";
 import Link from "next/link";
 import Image from "next/image";
 
-import { User, onAuthStateChanged } from "firebase/auth";
+import { User, onAuthStateChanged, signOut } from "firebase/auth";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime"
 import axios from "axios";
@@ -28,6 +28,8 @@ dayjs.extend(relativeTime) // Allows us to calculate relative time easily
 export default function UserProfile() {
     // Whether we are currently waiting for user data from Firebase
     const [loadingAuth, setLoadingAuth] = useState(true);
+    // Whether we are currently deleting the user's data
+    const [deletingUser, setDeletingUser] = useState(false);
     // The authenticated user's data directly from Firebase auth 
     const [user, setUser] = useState<User>(null);
     // The user data from Firestore / the data we specically store
@@ -37,6 +39,32 @@ export default function UserProfile() {
 
     // Router object to control current path state
     const router = useRouter();
+
+    /**
+     * Deletes all of the user's data from our website.
+     */
+    const deleteProfile = async () => {
+        if (confirm("Are you sure you want to delete your account? You won't be able to recover it.")) {
+            setDeletingUser(true)
+
+            // Try sending a request to delete the user's data to the backend
+            try {
+                await axios.post(convertBackendRouteToURL(`/users/delete`), {
+                    token: await user.getIdToken()
+                })
+
+                signOut(auth)
+
+                alert("Your account has been deleted. Redirecting you to the home page...")
+                router.push("/")
+            } catch (e) {
+                console.error(e)
+                alert("Something went wrong while deleting your account. Please try again later.")
+            }
+
+            setDeletingUser(false)
+        }
+    }
 
     /**
      * Refreshes user data on auth state change. Different from other versions of auth state change code,
@@ -126,6 +154,14 @@ export default function UserProfile() {
                                 <p className="text-md text-white"><span className="font-semibold">Registered since:</span> {dayjs().to(user.metadata.creationTime)}</p>
                                 <p className="text-md text-white"><span className="font-semibold">Last signed in: </span>{dayjs().to(user.metadata.lastSignInTime)}</p>
                                 <p className="text-md text-white"><span className="font-semibold">Donations made: </span>{userData.donations_made.toString()}</p>
+                                
+                                <button
+                                    className="flex items-center text-red-500 hover:text-red-600 active:text-red-700 disabled:text-red-900 duration-150"
+                                    disabled={deletingUser}
+                                    onClick={() => deleteProfile()}
+                                >
+                                    Delete Account
+                                </button>
                             </div>
                         </div>
 

@@ -9,19 +9,20 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// AddUser handles the endpoint to add a new user using the addUser function.
+// DeleteUser handles the endpoint to delete all of a user's data
+// using the deleteUser function.
 // Parameters:
 //   - c: the gin context, the request and response http.
 //
-// It accepts a user's id token, verifies the token, and then adds the user to the database.
-func AddUser(c *gin.Context) {
+// It accepts a user's id token, verifies the token, and then deletes all of their data.
+func DeleteUser(c *gin.Context) {
 	var body struct {
 		IDToken string `json:"token"`
 	}
 	// Attempt to bind the JSON body of the request to the struct
 	if err := c.ShouldBindJSON(&body); err != nil {
 		log.Error(err.Error())
-		// stores request body info into the body varible, so that it matches feild in struct in json format
+		// Stores request body info into the body varible, so that it matches field in struct in json format
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()}) // if user not signed in, then will send error
 		return
 	}
@@ -38,14 +39,14 @@ func AddUser(c *gin.Context) {
 	// Extract the user's UID from the token
 	userUID := token.UID
 
-	// Attempt to add the user to the database using the AddUser functions
-	err = helpers.AddUser(userUID)
+	// Attempt to delete the user using the DeleteUser function
+	err = helpers.DeleteUser(userUID)
 	if err != nil {
 		log.Error(err.Error())
 		c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	} else {
 		log.Info("user added successfully")
-		c.IndentedJSON(http.StatusCreated, gin.H{"message": "User added successfully"})
+		c.IndentedJSON(http.StatusCreated, gin.H{"message": "User deleted successfully"})
 	}
 }

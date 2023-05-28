@@ -68,6 +68,7 @@ func main() {
 	r.POST("/confirmCAPTCHA", endpointsPost.ValidateCAPTCHAToken)
 	r.POST("/donations/new", endpointsPost.AddDonation)
 	r.POST("/users/new", endpointsPost.AddUser)
+	r.POST("/users/delete", endpointsPost.DeleteUser)
 	r.POST("/users/ban", endpointsPost.BanUser)
 	r.POST("/donations/report", endpointsPost.ReportDonation)
 	r.POST("/donations/:id/delete", endpointsPost.DeleteDonation)
