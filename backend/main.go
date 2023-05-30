@@ -63,6 +63,7 @@ func main() {
 	r.GET("/donations/:id", endpointsGet.GetDonationByID)
 	r.GET("/users/:id", endpointsGet.GetUserDataByID)
 	r.GET("/users/banned", endpointsGet.GetIfBanned)
+	r.GET("/users/admin", endpointsGet.GetIfAdmin)
 
 	// Set up all POST endpoints
 	r.POST("/confirmCAPTCHA", endpointsPost.ValidateCAPTCHAToken)
