@@ -30,7 +30,7 @@ func EditDonation(newDonation types.Donation, currId string) error {
 		"title":              newDonation.Title,
 		"description":        newDonation.Description,
 		"location":           newDonation.Location,
-		"img":                newDonation.Image,
+		"img":                oldData.Data()["img"].(string), // Don't allow editing photos
 		"owner_id":           oldData.Data()["owner_id"].(string),
 		"creation_timestamp": newDonation.CreationTimestamp,
 		"tags":               newDonation.Tags,

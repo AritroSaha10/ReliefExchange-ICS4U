@@ -289,7 +289,7 @@ export default function DonationSpecificPage({ rawDonation }) {
                         {/* This makes sure that all external links in the description open another tab */}
                         <base target="_blank" />
 
-                        <ReactMarkdown skipHtml={true} className="text-white break-all">{donation.description}</ReactMarkdown>
+                        <ReactMarkdown className="text-white break-all">{donation.description}</ReactMarkdown>
 
                         <br />
 
