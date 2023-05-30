@@ -1,9 +1,11 @@
 import Link from "next/link";
+import Image from "next/image";
 import { useState, useEffect } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 import auth from "../lib/firebase/auth";
 
 import { GoThreeBars } from "react-icons/go"
+import Logo from "public/logo.png"
 
 // Links available to everyone (not signed out + signed out)
 const baseLinks = [
@@ -75,8 +77,8 @@ export default function Navbar() {
         <header className="bg-slate-800 py-2 lg:py-4 sticky">
             <div className="container px-4 mx-auto lg:flex lg:items-center">
                 <div className="flex justify-between items-center">
-                    <Link href="/">
-                        {/* <Image src={Logo} alt="logo" width={50} height={50} /> */}
+                    <Link href="/" className="flex gap-2 items-center">
+                        <Image src={Logo} alt="logo" width={50} height={50} className="rounded-xl" />
                         <span className="text-2xl font-mono tracking-wider font-bold text-white">ReliefExchange</span>
                     </Link>
 
