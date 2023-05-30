@@ -1,3 +1,5 @@
+// [1] Stack Overflow.(2015). "Go Gin framework CORS," Stack Overflow [Online].
+// Available: https://stackoverflow.com/questions/29418478/go-gin-framework-cors.  [Accessed: 16-May-2023].
 package main
 
 import (
@@ -49,6 +51,7 @@ func main() {
 	r := gin.Default()
 
 	// Set up CORS middleware for all requests
+	//citations.txt: [2]
 	r.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"*"},
 		AllowMethods:     []string{"GET", "POST", "DELETE"},
