@@ -66,6 +66,7 @@ func main() {
 	r.GET("/donations/:id", endpointsGet.GetDonationByID)
 	r.GET("/users/:id", endpointsGet.GetUserDataByID)
 	r.GET("/users/banned", endpointsGet.GetIfBanned)
+	r.GET("/users/admin", endpointsGet.GetIfAdmin)
 
 	// Set up all POST endpoints
 	r.POST("/confirmCAPTCHA", endpointsPost.ValidateCAPTCHAToken)
@@ -74,6 +75,7 @@ func main() {
 	r.POST("/users/delete", endpointsPost.DeleteUser)
 	r.POST("/users/ban", endpointsPost.BanUser)
 	r.POST("/donations/report", endpointsPost.ReportDonation)
+	r.POST("/donations/edit", endpointsPost.EditDonation)
 	r.POST("/donations/:id/delete", endpointsPost.DeleteDonation)
 
 	// Start the server

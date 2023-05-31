@@ -1,3 +1,5 @@
+// @cite "Add Data | Firebase." Google, 2023. [Online].
+// Available: https://firebase.google.com/docs/firestore/manage-data/add-data. [Accessed: 20- May- 2023].
 package helpers
 
 import (

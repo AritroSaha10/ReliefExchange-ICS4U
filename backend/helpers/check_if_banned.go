@@ -1,3 +1,5 @@
+// @cite "How to insert a reference type field on Firestore with Golang." Stack Overflow, 2021. [Online].
+// Available: https://stackoverflow.com/questions/69797221/how-to-insert-a-reference-type-field-on-firestore-with-golang. [Accessed: 18- May- 2023].
 package helpers
 
 import (

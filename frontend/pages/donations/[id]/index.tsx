@@ -19,7 +19,7 @@ import convertBackendRouteToURL from "@lib/convertBackendRouteToURL";
 
 import { BiLeftArrowAlt } from "react-icons/bi"
 import { FiFlag, FiTrash } from "react-icons/fi"
-import { FaBan } from "react-icons/fa"
+import { FaBan, FaPencilAlt } from "react-icons/fa"
 
 
 /**
@@ -136,7 +136,7 @@ export default function DonationSpecificPage({ rawDonation }) {
         if (confirm("Are you sure you want to delete this post? You won't be able to recover it.")) {
             // Freeze other actions
             setPerformingAction(true)
-            
+
             try {
                 // Try sending a request to delete, with proper authorization
                 await axios.post(convertBackendRouteToURL(`/donations/${donation.id}/delete`), {}, {
@@ -258,25 +258,37 @@ export default function DonationSpecificPage({ rawDonation }) {
 
                         {donation.img ? <Image src={donation.img} alt="Featured image" height={500} width={500} className="rounded-md object-cover object-center" /> : <></>}
 
-                        {user && isAdmin && (
-                            <div className="flex gap-2 justify-between mb-2 w-full">
-                                <button
-                                    className="flex items-center text-red-500 hover:text-red-600 active:text-red-700 disabled:text-red-900 duration-150"
-                                    disabled={performingAction}
-                                    onClick={() => banUser()}
+                        <div className="flex gap-2 justify-between mb-2 w-full">
+                            {user && (user.uid === donation.owner_id || isAdmin) && (
+                                <Link
+                                    className="flex items-center text-blue-500 hover:text-blue-600 active:text-blue-700 duration-150"
+                                    href={`/donations/${rawDonation.id}/edit`}
                                 >
-                                    <FaBan className="mr-1" />
-                                    Ban User
-                                </button>
+                                    <FaPencilAlt className="mr-1" />
+                                    Edit
+                                </Link>
+                            )}
 
-                                <span
-                                    className="flex items-center text-orange-500"
-                                >
-                                    Reports: {donation.reports.length}
-                                    <FiFlag className="ml-1" />
-                                </span>
-                            </div>
-                        )}
+                            {user && isAdmin && (
+                                <>
+                                    <button
+                                        className="flex items-center text-red-500 hover:text-red-600 active:text-red-700 disabled:text-red-900 duration-150"
+                                        disabled={performingAction}
+                                        onClick={() => banUser()}
+                                    >
+                                        <FaBan className="mr-1" />
+                                        Ban User
+                                    </button>
+
+                                    <span
+                                        className="flex items-center text-orange-500"
+                                    >
+                                        Reports: {donation.reports.length}
+                                        <FiFlag className="ml-1" />
+                                    </span>
+                                </>
+                            )}
+                        </div>
                     </div>
 
                     <div className="lg:ml-5 flex flex-col items-center lg:items-start">
@@ -289,7 +301,7 @@ export default function DonationSpecificPage({ rawDonation }) {
                         {/* This makes sure that all external links in the description open another tab */}
                         <base target="_blank" />
 
-                        <ReactMarkdown skipHtml={true} className="text-white break-all">{donation.description}</ReactMarkdown>
+                        <ReactMarkdown className="text-white break-all">{donation.description}</ReactMarkdown>
 
                         <br />
 

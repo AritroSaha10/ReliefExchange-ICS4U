@@ -1,3 +1,6 @@
+//@cite "How can I read a header from an HTTP request in Golang?" Stack Overflow, 2017. [Online].
+//Available: https://stackoverflow.com/questions/46021330/how-can-i-read-a-header-from-an-http-request-in-golang. [Accessed: 15- May- 2023].
+
 package post
 
 import (
