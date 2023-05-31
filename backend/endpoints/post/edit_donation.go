@@ -1,3 +1,13 @@
+/*
+ * File: edit_donation.go
+ * -------------
+ * This module handles the edit donation endpoint in the server.
+ * It takes a gin context as a parameter, binds the request body to a struct,
+ * extracts the token, donation data and donation id from it, and verifies the token.
+ * If the token is valid and the owner id from the token matches the owner id in the donation data or the user is an admin,
+ * it calls the EditDonation helper function to edit the donation with the given donation id and the new donation data.
+ */
+
 package post
 
 import (

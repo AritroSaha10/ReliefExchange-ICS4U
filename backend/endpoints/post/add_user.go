@@ -1,3 +1,20 @@
+/*
+Package post contains endpoints for handling actions related to user management.
+This includes adding new users to the database, and verifying the authenticity
+of the user through token verification.
+
+This package includes the following import dependencies:
+
+	"net/http" : Provides HTTP client and server implementations
+	"relief_exchange_backend/globals" : Contains global variables or objects
+	"relief_exchange_backend/helpers" : Contains helper functions
+	"github.com/gin-gonic/gin" : Gin is a HTTP web framework written in Go
+	"github.com/sirupsen/logrus" : Logrus is a structured logger for Go
+
+The AddUser function handles the endpoint to add a new user. It verifies the user's
+ID token and adds the user to the database. If the user is added successfully,
+the function sends a success message, otherwise it returns an error.
+*/
 package post
 
 import (

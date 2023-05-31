@@ -1,5 +1,6 @@
 // @cite "Type Assertions vs Type Conversions in Go." LogRocket Blog, 2020. [Online].
 // Available: https://blog.logrocket.com/type-assertions-vs-type-conversions-go/. [Accessed: 12- May- 2023].
+// This is a file in the package-"helpers" that contains the CheckIfAdmin function.
 package helpers
 
 import (

@@ -1,3 +1,25 @@
+/*
+Package post contains endpoints for handling actions related to making donations.
+This includes adding new donations to the database, and verifying the authenticity
+of the donation user through token verification.
+
+This package includes the following import dependencies:
+
+	"net/http" : Provides HTTP client and server implementations
+	"relief_exchange_backend/globals" : Contains global variables or objects
+	"relief_exchange_backend/helpers" : Contains helper functions
+	"relief_exchange_backend/types" : Contains types that are used in the backend
+	"github.com/gin-gonic/gin" : Gin is a HTTP web framework written in Go
+	"github.com/sirupsen/logrus" : Logrus is a structured logger for Go
+
+The AddDonation function handles the endpoint to post a new donation. The function
+verifies the token of the user making the donation and adds the donation to the database.
+If the donation is added successfully, the function returns the document ID of the donation,
+otherwise it returns an error.
+@cite "Package iter." Pkg.go.dev, 2023. [Online].
+Available: https://pkg.go.dev/github.com/reiver/go-iter. [Accessed: 30- May- 2023].
+*/
+
 package post
 
 import (

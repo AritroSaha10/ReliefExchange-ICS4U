@@ -1,5 +1,6 @@
 package helpers
 
+// This is a file in the package-"helpers" that contains the GerUserDataByID function.
 import (
 	"fmt"
 	"relief_exchange_backend/globals"

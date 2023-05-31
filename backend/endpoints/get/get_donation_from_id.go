@@ -1,5 +1,7 @@
+// Package get provides functions for retrieving information.
 package get
 
+// This file is to modulize the code and contains the GetDonationByID function.
 import (
 	"net/http"
 	"relief_exchange_backend/helpers"

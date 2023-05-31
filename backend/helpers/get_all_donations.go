@@ -1,5 +1,6 @@
 // @cite "Package iter." Pkg.go.dev, 2023. [Online].
 // Available: https://pkg.go.dev/github.com/reiver/go-iter. [Accessed: 26- March- 2023].
+// This is a file in the package-"helpers" that contains the GetAllDonations function.
 package helpers
 
 import (

@@ -1,3 +1,12 @@
+/*
+ * File: report_donation.go
+ * -------------
+ * This module handles the report donation endpoint in the server.
+ * It takes a gin context as a parameter, binds the request body to a struct,
+ * extracts the token and donation id from it, and verifies the token.
+ * If the token is valid, it calls the ReportDonation helper function to report the donation with the given donation id.
+ */
+
 package post
 
 import (

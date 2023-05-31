@@ -1,5 +1,7 @@
 package get
 
+// This file is to modulize the code and contains the GetDonationsList function.
+
 import (
 	"net/http"
 

@@ -2,6 +2,7 @@
 // Available: https://stackoverflow.com/questions/69797221/how-to-insert-a-reference-type-field-on-firestore-with-golang. [Accessed: 26- April- 2023].
 package helpers
 
+// This is a file in the package-"helpers" that contains the DeleteUser function.
 import (
 	"fmt"
 	"relief_exchange_backend/globals"
