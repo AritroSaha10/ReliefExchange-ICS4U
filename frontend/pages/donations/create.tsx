@@ -9,8 +9,8 @@ import ReCAPTCHA from "react-google-recaptcha"
 import Multiselect from 'multiselect-react-dropdown';
 import * as commands from "@uiw/react-md-editor/lib/commands";
 
-import auth from "@lib/firebase/auth";
 import Layout from "@components/Layout";
+import auth from "@lib/firebase/auth";
 import storage from "@lib/firebase/storage";
 import allTags from "@lib/tag-types";
 import convertBackendRouteToURL from "@lib/convertBackendRouteToURL";

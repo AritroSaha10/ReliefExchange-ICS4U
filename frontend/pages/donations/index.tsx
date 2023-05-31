@@ -1,16 +1,19 @@
+import { useEffect, useRef, useState } from "react";
+import { GetStaticProps } from "next";
+
+import { onAuthStateChanged } from "firebase/auth";
+import axios from "axios";
+import { BiSearch } from "react-icons/bi";
+
 import Dropdown from "@components/Dropdown";
 import FilterDropdown from "@components/FilterDropdown";
 import Layout from "@components/Layout";
-import { useEffect, useRef, useState } from "react";
-import allTags from "lib/tag-types";
-import { BiSearch } from "react-icons/bi";
-import Donation from "lib/types/donation";
-import { GetStaticProps } from "next";
-import RawDonation from "lib/types/rawDonation";
-import axios from "axios";
-import convertBackendRouteToURL from "lib/convertBackendRouteToURL";
 import DonationCard from "@components/DonationCard";
-import { onAuthStateChanged } from "firebase/auth";
+
+import allTags from "@lib/tag-types";
+import Donation from "@lib/types/donation";
+import RawDonation from "@lib/types/rawDonation";
+import convertBackendRouteToURL from "@lib/convertBackendRouteToURL";
 import auth from "@lib/firebase/auth";
 
 // All the options that the user can sort by, complete with functions
@@ -162,6 +165,7 @@ export default function DonationsIndex({ rawDonations }: { rawDonations: RawDona
     // Make sure to re-filter and sort every time the criteria changes
     useEffect(() => {
         applySortAndFilter();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [sortBy, filterByDate, filterByTags])
 
     return (

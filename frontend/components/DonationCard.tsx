@@ -1,7 +1,8 @@
 import Image from 'next/image'
 import Link from 'next/link'
-import { FiFlag } from 'react-icons/fi';
+
 import removeMd from "remove-markdown"
+import { FiFlag } from 'react-icons/fi';
 
 import DonationTag from '@lib/types/tag';
 

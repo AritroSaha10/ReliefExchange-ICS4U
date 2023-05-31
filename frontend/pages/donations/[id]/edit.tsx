@@ -1,28 +1,23 @@
 import { useState, useEffect, useRef, FormEventHandler } from "react";
+import { GetStaticPaths, GetStaticProps } from "next";
 import { useRouter } from "next/router";
 import dynamic from "next/dynamic";
 
 import axios from "axios";
 import { getIdToken, onAuthStateChanged, User } from "firebase/auth";
-import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import ReCAPTCHA from "react-google-recaptcha"
 import Multiselect from 'multiselect-react-dropdown';
+import { ParsedUrlQuery } from "querystring";
 import * as commands from "@uiw/react-md-editor/lib/commands";
 
-import auth from "@lib/firebase/auth";
 import Layout from "@components/Layout";
-import storage from "@lib/firebase/storage";
+import auth from "@lib/firebase/auth";
 import allTags from "@lib/tag-types";
+import RawDonation from "@lib/types/rawDonation";
 import convertBackendRouteToURL from "@lib/convertBackendRouteToURL";
-
-import { AiOutlineCloudUpload } from "react-icons/ai"
-import { BsImage } from "react-icons/bs"
 
 import "@uiw/react-md-editor/markdown-editor.css";
 import "@uiw/react-markdown-preview/markdown.css";
-import { GetStaticPaths, GetStaticProps } from "next";
-import RawDonation from "@lib/types/rawDonation";
-import { ParsedUrlQuery } from "querystring";
 
 // Don't try to render this component on the server
 const MDEditor = dynamic(

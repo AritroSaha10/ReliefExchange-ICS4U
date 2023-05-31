@@ -1,15 +1,22 @@
 import Image from "next/image";
 import { useEffect, useState } from "react"
+import { useRouter } from "next/router";
 
 import Layout from "@components/Layout";
 import auth from "@lib/firebase/auth";
+import convertBackendRouteToURL from "@lib/convertBackendRouteToURL";
 
-import { GoogleAuthProvider, setPersistence, browserLocalPersistence, onAuthStateChanged, getRedirectResult, signInWithRedirect } from "firebase/auth";
+import { 
+    GoogleAuthProvider, 
+    setPersistence, 
+    browserLocalPersistence, 
+    onAuthStateChanged, 
+    getRedirectResult, 
+    signInWithRedirect 
+} from "firebase/auth";
+import axios from "axios";
 
 import GoogleLogo from "@media/social-media-logos/google.png";
-import { useRouter } from "next/router";
-import axios from "axios";
-import convertBackendRouteToURL from "lib/convertBackendRouteToURL";
 
 /**
  * The sign-in page. Handles the sign-in flow. Only accessible if the user isn't signed in.

@@ -10,9 +10,7 @@ import ReactMarkdown from "react-markdown";
 import { User, onAuthStateChanged } from "firebase/auth";
 
 import Layout from "@components/Layout";
-import Donation from "@lib/types/donation";
 import auth from "@lib/firebase/auth";
-import UserData from "@lib/types/userData";
 import RawDonation from "@lib/types/rawDonation";
 import DonationWithUserData from "@lib/types/donationWithUserData";
 import convertBackendRouteToURL from "@lib/convertBackendRouteToURL";
