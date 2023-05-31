@@ -88,5 +88,18 @@ Our deployment runs this image as a singular Docker container on Oracle Cloud In
          - Copy-paste the rules found [here](firebase/rules/storage.cel)
          - Create a folder called `donations`
 
+# User Testing 
+- Ibraheem Ahmed (May 5th 2023) 
+    - 8.5/10 
+    -  Could be more visually appealing (color scheme, logo, etc.) 
+    -  Captcha freezes sometimes and does not work 
+    -  Include user manual to increase functionality 
+
+- Umar Aamir (May 23rd 2023) 
+    - 9/10 
+    -  Make the login / register button in the header more clear 
+    -  Can only translate the page once (bug) 
+    - Add more/custom tags instead of simply "other"
+
 ## Authors
 This project was worked on by Aritro Saha, Joshua Chou, and Taha Khan as a part of our ICS4U0 (Computer Science) final project. 
