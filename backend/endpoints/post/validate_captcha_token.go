@@ -1,3 +1,5 @@
+// [1]Google Developers. (2021). "reCAPTCHA v2 | Google for Developers," Google Developers [Online].
+// Available: https://developers.google.com/recaptcha/docs/display. [Accessed: Day-Month-Year].
 package post
 
 import (
@@ -21,6 +23,7 @@ func ValidateCAPTCHAToken(c *gin.Context) {
 	// Extract the CAPTCHA token from the request query parameters.
 	token := c.Query("token")
 	// Send a GET request to the reCAPTCHA API with the secret key and the token.
+	// [1]
 	resp, err := http.Get("https://www.google.com/recaptcha/api/siteverify?secret=" + os.Getenv("RECAPTCHA_SECRET_KEY") + "&response=" + token)
 	// If an error occurred while sending the request, return a 500 Internal Server Error status.
 	if err != nil {
