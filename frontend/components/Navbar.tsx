@@ -7,7 +7,7 @@ import { GoThreeBars } from "react-icons/go"
 
 import auth from "../lib/firebase/auth";
 
-import Logo from "@public/logo.png"
+import Logo from "public/logo.png"
 
 // Links available to everyone (not signed out + signed out)
 const baseLinks = [
