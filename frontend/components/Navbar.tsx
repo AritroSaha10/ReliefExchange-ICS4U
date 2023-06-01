@@ -4,6 +4,7 @@
  * It also includes a logo and a responsive menu for mobile devices.
  * This component is responsible for rendering the header section of the website.
  * @author Aritro Saha
+ * @cite “Get started with Firebase Authentication on websites,” Google, https://firebase.google.com/docs/auth/web/start. 
  */
 
 import Link from "next/link";

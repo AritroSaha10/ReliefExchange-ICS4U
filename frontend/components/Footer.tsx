@@ -8,6 +8,9 @@
  * the 'languages' array. The component uses the 'useState' and 'useEffect' hooks from React.
  * 
  * @author Aritro Saha
+ * @cite Installation - Tailwind CSS, https://tailwindcss.com/docs/installation. 
+ * @cite “Headless ui,” Headless UI, https://headlessui.com/react/listbox. 
+ * @cite “React Icons,” React Icons, https://react-icons.github.io/react-icons/.
  */
 
 

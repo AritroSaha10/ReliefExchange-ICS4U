@@ -9,6 +9,9 @@
  * for each prop are also declared using PropTypes.
  * 
  * @author Aritro Saha
+ * @cite Installation - Tailwind CSS, https://tailwindcss.com/docs/installation. 
+ * @cite “Headless ui,” Headless UI, https://headlessui.com/react/listbox. 
+ * @cite “React Icons,” React Icons, https://react-icons.github.io/react-icons/.
  */
 
 import { Fragment } from 'react'
