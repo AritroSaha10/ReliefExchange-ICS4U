@@ -206,9 +206,12 @@ export default function UserProfile() {
                             {userData.posts.length === 0 && (
                                 <span className="text-gray-200 text-md">
                                     It seems you haven&apos;t opened any donations yet. 
-                                    Click <Link href="/donations/create" className="text-blue-400 hover:underline active:text-blue-500">
+                                    Click 
+                                    {" "}
+                                    <Link href="/donations/create" className="text-blue-400 hover:underline active:text-blue-500">
                                         Donate
                                     </Link> 
+                                    {" "}
                                     in the navbar to make one!
                                 </span>
                             )}
