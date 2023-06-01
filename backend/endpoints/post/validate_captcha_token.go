@@ -4,7 +4,8 @@
  * This module handles the validate captcha token endpoint in the server.
  * It validates the Google's reCAPTCHA token provided by the user in order to prevent bot interaction.
  * It is still incomplete and more logic is required to fully handle CAPTCHA validation.
- */
+ // @author Aritro Saha
+*/
 
 // [1]Google Developers. (2021). "reCAPTCHA v2 | Google for Developers," Google Developers [Online].
 // Available: https://developers.google.com/recaptcha/docs/display. [Accessed: Day-Month-Year].

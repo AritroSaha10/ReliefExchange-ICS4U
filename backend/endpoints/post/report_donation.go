@@ -5,7 +5,8 @@
  * It takes a gin context as a parameter, binds the request body to a struct,
  * extracts the token and donation id from it, and verifies the token.
  * If the token is valid, it calls the ReportDonation helper function to report the donation with the given donation id.
- */
+ // @author Aritro Saha
+*/
 
 package post
 

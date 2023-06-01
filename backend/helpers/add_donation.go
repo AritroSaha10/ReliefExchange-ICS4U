@@ -1,3 +1,4 @@
+// @authors Joshua Chou,Aritro Saha
 // @cite "How to insert document id as a field value Firestore with Go." Stack Overflow, 2020. [Online].
 // Available: https://stackoverflow.com/questions/61207401/how-to-insert-document-id-as-a-field-value-firestore-with-go. [Accessed: 27- April- 2023].
 

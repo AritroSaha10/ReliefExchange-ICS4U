@@ -2,6 +2,7 @@
 package get
 
 // This file is to modulize the code and contains the GetDonationByID function.
+// @author Joshua Chou
 import (
 	"net/http"
 	"relief_exchange_backend/helpers"

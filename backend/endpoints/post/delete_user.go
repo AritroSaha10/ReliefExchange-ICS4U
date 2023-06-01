@@ -6,6 +6,7 @@
  * extracts the token from it, and verifies the token.
  * If the token is valid, it calls the DeleteUser helper function to delete the user with the uid extracted from the token.
  */
+// @author Joshua Chou
 // @cite "Validating Google Sign In ID Token in Go." Stack Overflow, 2016. [Online].
 // Available: https://stackoverflow.com/questions/36716117/validating-google-sign-in-id-token-in-go. [Accessed: 27- May- 2023].
 package post

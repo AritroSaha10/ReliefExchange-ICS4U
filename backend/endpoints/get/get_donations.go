@@ -1,7 +1,7 @@
 package get
 
 // This file is to modulize the code and contains the GetDonationsList function.
-
+// @author Joshua Chou
 import (
 	"net/http"
 

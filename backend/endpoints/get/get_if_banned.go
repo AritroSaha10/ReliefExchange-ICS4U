@@ -1,7 +1,7 @@
 package get
 
 // This file is to modulize the code and contains the GetIfBanned function.
-
+// @author Aritro Saha
 import (
 	"net/http"
 	"relief_exchange_backend/helpers"

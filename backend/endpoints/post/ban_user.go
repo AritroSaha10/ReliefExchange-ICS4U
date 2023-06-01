@@ -7,6 +7,7 @@
  * checks if the token is valid and if the user who made the request is an admin.
  * If everything checks out, it calls the BanUser helper function to ban the user with the given userToBan id.
  */
+// @authors Joshua Chou,Aritro Saha
 package post
 
 import (

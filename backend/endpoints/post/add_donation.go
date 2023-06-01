@@ -16,8 +16,10 @@ The AddDonation function handles the endpoint to post a new donation. The functi
 verifies the token of the user making the donation and adds the donation to the database.
 If the donation is added successfully, the function returns the document ID of the donation,
 otherwise it returns an error.
+// @authors Joshua Chou,Aritro Saha
 @cite "Package iter." Pkg.go.dev, 2023. [Online].
 Available: https://pkg.go.dev/github.com/reiver/go-iter. [Accessed: 30- May- 2023].
+
 */
 
 package post

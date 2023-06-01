@@ -1,5 +1,6 @@
 package helpers
 
+// @author Joshua Chou
 // This is a file in the package-"helpers" that contains the GetDonationByID function.
 import (
 	"fmt"

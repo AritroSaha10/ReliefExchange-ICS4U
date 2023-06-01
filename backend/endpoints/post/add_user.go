@@ -14,6 +14,7 @@ This package includes the following import dependencies:
 The AddUser function handles the endpoint to add a new user. It verifies the user's
 ID token and adds the user to the database. If the user is added successfully,
 the function sends a success message, otherwise it returns an error.
+// @authors Joshua Chou,Aritro Saha
 */
 package post
 
