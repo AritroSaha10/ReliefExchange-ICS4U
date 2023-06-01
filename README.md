@@ -93,7 +93,8 @@ Our user testing results can be seen in [this document](USER_TESTING.md).
 
 # How to Navigate Github
 - In the navbar options below the repository title, the user can view the repository code, issues (assignments), and pull requests (new code requested to be added to the main branch of the project)
-- **<>Code tab:** In the code tab, the user can view the files and folders of the project that contain the project code by clicking on the folder or file icons. On the same page, the user can also view 
+- **<>Code tab:** In the code tab, the user can view the files and folders of the project that contain the project code by clicking on the folder or file icons. Once you have entered a file, there is a radio button on the top left of the file display that is labbelled "Blame". Click and "Blame" and you will see the commits (who worked on what lines of code in the file)
+
 - Branches: On the left side of the <>Code tab, you will see a dropdown with the label of the branch name, in our case it should say "master". By clicking on this dropdown, you can view the branches of the repository and switch between them. Each branch represents a different version or part of the project that is separately maintained.
 
 -Commits: On the right side of the screen, under the green "Code" button, you will see an option labeled "commits". Click on it to view all commits. Each commit represents a saved change to the code, and clicking on it will show you what changes were made, who made them, and when.
