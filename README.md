@@ -91,5 +91,8 @@ Our deployment runs this image as a singular Docker container on Oracle Cloud In
 # User Testing Results
 Our user testing results can be seen in [this document](USER_TESTING.md).
 
+# Navigating Github
+Our Github instructions can be seen in [this document](NAVIGATING_GITHUB.md)
+
 # Authors
 This project was worked on by Aritro Saha, Joshua Chou, and Taha Khan as a part of our ICS4U0 (Computer Science) final project. 
