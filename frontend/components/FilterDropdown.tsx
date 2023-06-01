@@ -1,10 +1,23 @@
+/**
+ * @file FilterDropdown component definition.
+ * 
+ * This file contains the implementation of the FilterDropdown component, which is a customizable
+ * dropdown menu that updates the state of a parent component, and is designed specifically for 
+ * filtering data. It utilizes the '@headlessui/react' and 'react-icons/bs' modules for the menu 
+ * and chevron icons respectively. The component accepts props for title, selectedItems, setSelectedItems, 
+ * and options. The selectedItems prop represents the currently selected items, setSelectedItems is 
+ * the function to update the selected items, and options is an object containing the available options 
+ * for filtering. The types of each prop are also declared in PropTypes.
+ * 
+ * @author Aritro Saha
+ */
+
 import { Fragment } from 'react'
+
 import { Menu, Transition } from '@headlessui/react'
 import { BsChevronDown } from "react-icons/bs"
 
-function classNames(...classes) {
-    return classes.filter(Boolean).join(' ')
-}
+import classNames from "@lib/classNames"
 
 /**
  * A customizable Dropdown that updates state of a parent component, specifically for

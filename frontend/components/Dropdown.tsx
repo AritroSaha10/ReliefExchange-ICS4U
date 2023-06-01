@@ -1,15 +1,22 @@
+/**
+ * @file Dropdown component definition.
+ * 
+ * This file contains the implementation of the Dropdown component, which is a customizable
+ * dropdown menu that updates the state of a parent component. It utilizes the '@headlessui/react'
+ * and 'react-icons/bs' modules for the menu and chevron icons respectively. The component accepts
+ * props for title, selectedItem, setSelectedItem, options, and openOverlap (optional). The
+ * openOverlap prop determines if the dropdown menu can overlap other elements when open. The types 
+ * for each prop are also declared using PropTypes.
+ * 
+ * @author Aritro Saha
+ */
+
 import { Fragment } from 'react'
+
 import { Menu, Transition } from '@headlessui/react'
 import { BsChevronDown } from "react-icons/bs"
 
-/**
- * Converts a list of class names into one className string
- * @param classes List of classes
- * @returns className string
- */
-function classNames(...classes) {
-    return classes.filter(Boolean).join(' ')
-}
+import classNames from '@lib/classNames'
 
 /**
  * A customizable Dropdown that updates state of a parent component.

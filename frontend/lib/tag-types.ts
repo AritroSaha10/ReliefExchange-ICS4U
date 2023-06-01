@@ -1,3 +1,8 @@
+
+/**
+ * @file All the possible tags for a donation, as well as their colors on the UI.
+ */
+
 import DonationTag from "./types/tag";
 
 // All the possible tags that can be added to a Donation.

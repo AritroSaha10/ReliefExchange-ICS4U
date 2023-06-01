@@ -1,3 +1,8 @@
+/**
+ * @file Has the component code for the the layout used for every page, used to add navbar, footer, and open graph data.
+ * @author Aritro Saha
+ */
+
 import Head from "next/head"
 import { ReactNode } from "react";
 

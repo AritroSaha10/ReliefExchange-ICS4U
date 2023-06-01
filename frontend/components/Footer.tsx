@@ -1,3 +1,16 @@
+/**
+ * @file Footer component definition.
+ * 
+ * This file contains the implementation of the Footer component, which represents the footer of
+ * the website. It includes functionality for translating the page using the Google Translate API.
+ * The component imports functions from 'cookies-next' for managing cookies and the 'Dropdown'
+ * component for selecting a language. The supported languages for auto-translation are defined in
+ * the 'languages' array. The component uses the 'useState' and 'useEffect' hooks from React.
+ * 
+ * @author Aritro Saha
+ */
+
+
 import { useEffect, useState } from "react";
 import { getCookie, hasCookie, setCookie } from 'cookies-next';
 import Dropdown from "./Dropdown";

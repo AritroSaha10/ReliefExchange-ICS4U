@@ -1,3 +1,11 @@
+/**
+ * @file The navbar component of the website, including all the important links.
+ * The navbar provides navigation functionality and displays links for various pages based on the user's authentication status.
+ * It also includes a logo and a responsive menu for mobile devices.
+ * This component is responsible for rendering the header section of the website.
+ * @author Aritro Saha
+ */
+
 import Link from "next/link";
 import Image from "next/image";
 import { useState, useEffect } from "react";
