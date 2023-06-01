@@ -1,10 +1,13 @@
-import Script from "next/script";
-import "../styles/globals.css";
 import { useEffect } from "react";
+import Script from "next/script";
+
 import { onAuthStateChanged, signOut } from "firebase/auth";
-import auth from "@lib/firebase/auth";
 import axios from "axios";
+
+import auth from "@lib/firebase/auth";
 import convertBackendRouteToURL from "@lib/convertBackendRouteToURL";
+
+import "../styles/globals.css";
 
 /**
  * App component, a part of Next.js that is used to initialize pages.

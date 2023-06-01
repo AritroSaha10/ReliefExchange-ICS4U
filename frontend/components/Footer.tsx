@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { useEffect, useState } from "react";
 import { getCookie, hasCookie, setCookie } from 'cookies-next';
 import Dropdown from "./Dropdown";

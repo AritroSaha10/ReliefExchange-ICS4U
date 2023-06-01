@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import Layout from '../components/Layout';
+import Layout from '../components/Layout'; // These must be relative paths so that the tests work
 
 import { useState, useEffect } from "react"
 import { onAuthStateChanged } from 'firebase/auth';

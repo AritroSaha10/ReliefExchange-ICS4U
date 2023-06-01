@@ -1,4 +1,3 @@
-import UserData from "./userData"
 import Donation from "./donation"
 
 /**

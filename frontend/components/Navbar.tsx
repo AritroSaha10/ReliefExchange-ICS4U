@@ -1,10 +1,12 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useState, useEffect } from "react";
+
 import { onAuthStateChanged } from "firebase/auth";
+import { GoThreeBars } from "react-icons/go"
+
 import auth from "../lib/firebase/auth";
 
-import { GoThreeBars } from "react-icons/go"
 import Logo from "public/logo.png"
 
 // Links available to everyone (not signed out + signed out)

@@ -1,8 +1,8 @@
 import Head from "next/head"
+import { ReactNode } from "react";
 
 import Navbar from "./Navbar"
 import Footer from "./Footer"
-import { ReactNode } from "react";
 
 /**
  * The layout used for every page, used to add navbar, footer, and open graph data.
