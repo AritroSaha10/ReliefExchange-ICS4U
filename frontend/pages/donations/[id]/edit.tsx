@@ -68,7 +68,7 @@ export default function EditDonation({ originalDonation }: { originalDonation: R
                 // Check whether user is admin to ensure they are allowed to access this page
                 axios.get(convertBackendRouteToURL(`/users/admin?uid=${newUser.uid}`)).then(res => {
                     // Don't allow if they're not an admin or original author
-                    if (newUser.uid !== originalDonation.id && !res.data["admin"]) {
+                    if (newUser.uid !== originalDonation.owner_id && !res.data["admin"]) {
                         alert("You cannot edit this post, as you are not its author. Redirecting...")
                         router.push("/")
                     } else {
@@ -160,7 +160,7 @@ export default function EditDonation({ originalDonation }: { originalDonation: R
                 token: idToken,
                 id: originalDonation.id
             });
-            alert("Your donation was successfully submitted! Redirecting you to its page...");
+            alert("Your donation was successfully edited! Redirecting you to its page...");
             router.push(`/donations/${apiRes.data}`);
         } catch (e) {
             // Let user know of issue
