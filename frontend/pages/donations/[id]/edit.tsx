@@ -1,3 +1,9 @@
+/**
+ * @file File for the donation edit page, which is only accessible to either admins
+ * or the author of the donation.
+ * @author Aritro Saha
+ */
+
 import { useState, useEffect, useRef, FormEventHandler } from "react";
 import { GetStaticPaths, GetStaticProps } from "next";
 import { useRouter } from "next/router";

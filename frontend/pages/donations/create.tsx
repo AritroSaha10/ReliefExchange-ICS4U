@@ -1,3 +1,10 @@
+/**
+ * @file File for the donation creation page, where users can submit a donation
+ * they'd like to make. It is accessible at /donations/create to logged-in users.
+ * More info about the component can be seen in its own dcumentation.
+ * @author Aritro Saha
+ */
+
 import { useState, useEffect, useRef, FormEventHandler } from "react";
 import { useRouter } from "next/router";
 import dynamic from "next/dynamic";

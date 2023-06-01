@@ -1,3 +1,9 @@
+/**
+ * @file File for the app component, which is used by Next.js to initialize pages.
+ * More info about the component can be seen in its own dcumentation.
+ * @author Aritro Saha
+ */
+
 import { useEffect } from "react";
 import Script from "next/script";
 

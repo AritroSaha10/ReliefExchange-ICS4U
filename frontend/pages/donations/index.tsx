@@ -1,3 +1,9 @@
+/**
+ * @file File for the the donation index page, which is accessible at /donations.
+ * More info about the component can be seen in its own dcumentation.
+ * @author Aritro Saha
+ */
+
 import { useEffect, useRef, useState } from "react";
 import { GetStaticProps } from "next";
 
@@ -100,6 +106,10 @@ export const getStaticProps: GetStaticProps = async (context) => {
     return { props, revalidate: 1 } // Revalidate the data cache 1s after page load
 }
 
+/**
+ * Component for the donations index page, which shows a list of all the donations posted
+ * on the website. It also allows users to search, sort, and filter by certain attributes.
+ */
 export default function DonationsIndex({ rawDonations }: { rawDonations: RawDonation[] }) {
     // Convert the ISO string timestamps in the raw donations to Date objects
     const originalDonations: Donation[] = rawDonations.map(rawDonation => ({

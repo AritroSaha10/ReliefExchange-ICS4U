@@ -1,3 +1,8 @@
+/**
+ * @file File for the sign-out page, which is accessible to logged-in users at /sign-out.
+ * @author Aritro Saha
+ */
+
 import { useEffect } from "react"
 import { useRouter } from "next/router";
 

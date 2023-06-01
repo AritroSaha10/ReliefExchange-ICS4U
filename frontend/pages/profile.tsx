@@ -1,3 +1,8 @@
+/**
+ * @file File for the profile page, which is accessible to logged-in users at /profile.
+ * More info about the component can be seen in its own dcumentation.
+ * @author Aritro Saha
+ */
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";

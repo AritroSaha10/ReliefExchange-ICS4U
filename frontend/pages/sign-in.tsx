@@ -1,3 +1,9 @@
+/**
+ * @file File for the sign-in page, which is accessible to non-logged-in users at /sign-in.
+ * More info about the component can be seen in its own dcumentation.
+ * @author Aritro Saha
+ */
+
 import Image from "next/image";
 import { useEffect, useState } from "react"
 import { useRouter } from "next/router";

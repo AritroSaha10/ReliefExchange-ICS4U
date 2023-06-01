@@ -1,3 +1,9 @@
+/**
+ * @file File for the index(landing) page, which is accessible at the / path.
+ * More info about the component can be seen in its own dcumentation.
+ * @author Aritro Saha
+ */
+
 import Link from 'next/link';
 import Image from 'next/image';
 import Layout from '../components/Layout'; // These must be relative paths so that the tests work
