@@ -1,3 +1,13 @@
+/*
+ * File: ban_user.go
+ * -------------
+ * This module handles the ban user endpoint in the server. It bans a user
+ * from the platform if the request maker has admin privileges.
+ * It takes a gin context as a parameter, extracts the token and userToBan from the request,
+ * checks if the token is valid and if the user who made the request is an admin.
+ * If everything checks out, it calls the BanUser helper function to ban the user with the given userToBan id.
+ */
+// @authors Joshua Chou,Aritro Saha
 package post
 
 import (

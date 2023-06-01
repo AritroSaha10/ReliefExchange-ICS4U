@@ -1,7 +1,9 @@
+// @authors Aritro Saha, Joshua Chou
 // @cite "Golang: Type Assertion." Better Programming, 2020. [Online].
 // Available: https://betterprogramming.pub/golang-type-assertion-d5517d81c366. [Accessed: 23- May- 2023].
 // @cite "Package firestore." Pkg.go.dev, 2023. [Online].
 // Available: https://pkg.go.dev/cloud.google.com/go/firestore. [Accessed: 22- May- 2023].
+// This is a file in the package-"helpers" that contains the BanUser function.
 package helpers
 
 import (

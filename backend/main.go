@@ -1,7 +1,7 @@
-// [1] Stack Overflow.(2015). "Go Gin framework CORS," Stack Overflow [Online].
+// @file main.go initializes the log objects, sentry, and routes used in the backend
+// @authors Aritro Saha, Joshua Chou
+// @cite [1] Stack Overflow.(2015). "Go Gin framework CORS," Stack Overflow [Online].
 // Available: https://stackoverflow.com/questions/29418478/go-gin-framework-cors.  [Accessed: 16-May-2023].
-
-// @cite https://middleware.io/blog/golang-logging/
 package main
 
 import (

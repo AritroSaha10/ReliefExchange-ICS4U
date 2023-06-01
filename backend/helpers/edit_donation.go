@@ -1,5 +1,7 @@
 package helpers
 
+// @author Aritro Saha
+// This is a file in the package-"helpers" that contains the EditDonation function.
 import (
 	"fmt"
 	"relief_exchange_backend/globals"
