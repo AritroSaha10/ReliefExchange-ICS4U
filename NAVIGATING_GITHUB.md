@@ -6,7 +6,7 @@
 
   - Commits: On the right side of the screen, under the green "Code" button, you will see an option labeled "commits". Click on it to view all commits. Each commit represents a saved change to the code, and clicking on it will show you what changes were made, who made them, and when.
 
-- **Issues: **  Contains the work breakdown of who should work on what assignment. The issue title is listed on the left and the assignee's profile picture is on the right. Issues also allow you to view reported bugs or feature requests. Issues are a way for contributors to communicate about the project. If you click on an issue, you'll see a discussion about it and any associated commit or pull request.
+- **Issues:**  Contains the work breakdown of who should work on what assignment. The issue title is listed on the left and the assignee's profile picture is on the right. Issues also allow you to view reported bugs or feature requests. Issues are a way for contributors to communicate about the project. If you click on an issue, you'll see a discussion about it and any associated commit or pull request.
 
 - **Pull Requests tab:** To view proposed changes to the code (pull requests), click on the "Pull requests" tab in the navbar. Here, you can view open and closed pull requests, review the proposed changes, and participate in discussions about those changes. If you have write access to the repository, you can also merge pull requests here.
 
