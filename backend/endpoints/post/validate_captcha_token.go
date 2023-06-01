@@ -8,7 +8,7 @@
 */
 
 // [1]Google Developers. (2021). "reCAPTCHA v2 | Google for Developers," Google Developers [Online].
-// Available: https://developers.google.com/recaptcha/docs/display. [Accessed: Day-Month-Year].
+// Available: https://developers.google.com/recaptcha/docs/display. [Accessed: 23-May-2023].
 package post
 
 import (
