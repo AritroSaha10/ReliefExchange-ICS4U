@@ -1,3 +1,7 @@
+/**
+ * @file An end-to-end test to ensure that the protected routes work as intended.
+ */
+
 describe('Protected Routes', () => {
   it('should not show up in the navigation bar', () => {
     // Start from the index page

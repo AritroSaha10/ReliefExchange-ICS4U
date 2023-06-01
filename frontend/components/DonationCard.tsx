@@ -1,3 +1,12 @@
+/**
+ * @file DonationCard component definition.
+ * This file contains the implementation of the DonationCard component, which is used to 
+ * display brief information about a donation. It includes the title, date, image (optional), 
+ * subtitle, tags, donation link, and additional functionalities for administrators. 
+ * @author Aritro Saha
+ * @cite Installation - Tailwind CSS, https://tailwindcss.com/docs/installation. 
+ */
+
 import Image from 'next/image'
 import Link from 'next/link'
 

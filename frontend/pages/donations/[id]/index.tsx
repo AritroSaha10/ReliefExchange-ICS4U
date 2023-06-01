@@ -1,3 +1,11 @@
+/**
+ * @file File for a donation-specific page, which is accessible at /donations/<DONATION_UID>.
+ * More info about the component can be seen in its own dcumentation.
+ * @author Aritro Saha
+ * @cite React, https://react.dev/. 
+ * @cite “Docs,” Docs | Next.js, https://nextjs.org/docs. 
+ */
+
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -79,7 +87,8 @@ export const getStaticProps: GetStaticProps = async (context) => {
 }
 
 /**
- * The donation specific page, to show more information about a specific donation as well as allow them to contact the donator.
+ * The donation specific page, to show more information about a specific donation 
+ * as well as allow them to contact the donator.
  */
 export default function DonationSpecificPage({ rawDonation }) {
     const router = useRouter()

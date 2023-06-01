@@ -1,3 +1,12 @@
+/**
+ * @file File for the app component, which is used by Next.js to initialize pages.
+ * More info about the component can be seen in its own dcumentation.
+ * @author Aritro Saha
+ * @cite “Docs,” Docs | Next.js, https://nextjs.org/docs. 
+ * @cite React, https://react.dev/. 
+ * @cite “Get started with Firebase Authentication on websites,” Google, https://firebase.google.com/docs/auth/web/start. 
+ */
+
 import { useEffect } from "react";
 import Script from "next/script";
 

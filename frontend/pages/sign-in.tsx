@@ -1,3 +1,11 @@
+/**
+ * @file File for the sign-in page, which is accessible to non-logged-in users at /sign-in.
+ * More info about the component can be seen in its own dcumentation.
+ * @author Aritro Saha
+ * @cite “Authenticate using google with javascript | Firebase,” Google, https://firebase.google.com/docs/auth/web/google-signin. 
+ * @cite “Best practices for using signinwithredirect on browsers that block third-party storage access | Firebase,” Google, https://firebase.google.com/docs/auth/web/redirect-best-practices. 
+ */
+
 import Image from "next/image";
 import { useEffect, useState } from "react"
 import { useRouter } from "next/router";
