@@ -1,21 +1,21 @@
-# How to Navigate Github
-- In the navbar options below the repository title, the user can view the repository code, issues (assignments), and pull requests (new code requested to be added to the main branch of the project)
-- **Code tab:** In the code tab, the user can view the files and folders of the project that contain the project code by clicking on the folder or file icons. Once you have entered a file, there is a radio button on the top left of the file display that is labbelled "Blame". Click and "Blame" and you will see the commits (who worked on what lines of code in the file)
+# A Guide to Navigating Github
 
-  - Branches: On the left side of the Code tab, you will see a dropdown with the label of the branch name, in our case it should say "master". By clicking on this dropdown, you can view the branches of the repository and switch between them. Each branch represents a different version or part of the project that is separately maintained.
+1. **Navbar Options**: Below the repository title, you'll find options to access the repository code, view issues, and pull requests.
 
-  - Commits: On the right side of the screen, under the green "Code" button, you will see an option labeled "commits". Click on it to view all commits. Each commit represents a saved change to the code, and clicking on it will show you what changes were made, who made them, and when.
+2. **Code Tab**: Here, you can browse the project's files and folders. Inside a file of code, you will see a radio button labelled "Blame" on the top left of the file. The 'Blame' function allows you to see who contributed to which parts of the file.
+    - **Branches**: A dropdown on the left side of the Code tab shows you the branches of the repository. Each branch represents a different version of the project.
+    - **Commits**: Listed under the green "Code" button is an option labelled "commits" are the commits - saved changes to the code. Clicking on them reveals the details of these changes.
 
-- **Issues:**  Contains the work breakdown of who should work on what assignment. The issue title is listed on the left and the assignee's profile picture is on the right. Issues also allow you to view reported bugs or feature requests. Issues are a way for contributors to communicate about the project. If you click on an issue, you'll see a discussion about it and any associated commit or pull request.
+3. **Issues Tab**: This section holds tasks for contributors and tracks reported bugs or feature requests. Discussions about each issue can be found and joined here.
 
-- **Pull Requests tab:** To view proposed changes to the code (pull requests), click on the "Pull requests" tab in the navbar. Here, you can view open and closed pull requests, review the proposed changes, and participate in discussions about those changes. If you have write access to the repository, you can also merge pull requests here.
+4. **Pull Requests Tab**: This is where you review proposed changes to the code. Open and closed pull requests can be viewed and discussed. Merging of pull requests is also done here if you have write access to the repository.
 
-- **Actions:** The Actions tab is where you can view the history of all the tasks that have been run in the repository, often for testing or deploying the code.
+5. **Actions Tab**: Actions is where the history of all tasks in the repository is kept. It's often used for testing or deploying code.
 
-- **Projects:** In the Projects tab, you can create and view project boards. These boards can be used to manage tasks, plan future work, or track progress on ongoing work.
+6. **Projects Tab**: In Projects, you can create and view project boards for task management, planning future work, or tracking ongoing work.
 
-- **Wiki:** The Wiki tab can be used to host documentation for the project. It’s a good place to look for more detailed information about how to use the project or contribute to it.
+7. **Wiki Tab**: The Wiki is for hosting project documentation. It is a resource for detailed information about the project and how to contribute to it.
 
-- **Security:** The Security tab provides an overview of the security policies of the project. It's also where you can view or report security vulnerabilities.
+8. **Security Tab**: Here, you can find an overview of the project's security policies and report security vulnerabilities.
 
-- **Insights:** Under the Insights tab, you will find statistics and analytical data related to the project. This includes things like a graph of commit activity, a list of contributors, and a dependency graph.
+9. **Insights Tab**: Insights provide statistics and analytical data about the project. You can find a graph of commit activity, a list of contributors, and a dependency graph here.
