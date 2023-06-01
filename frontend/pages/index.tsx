@@ -2,6 +2,9 @@
  * @file File for the index(landing) page, which is accessible at the / path.
  * More info about the component can be seen in its own dcumentation.
  * @author Aritro Saha
+ * @cite “Docs,” Docs | Next.js, https://nextjs.org/docs. 
+ * @cite React, https://react.dev/. 
+ * @cite “Get started with Firebase Authentication on websites,” Google, https://firebase.google.com/docs/auth/web/start. 
  */
 
 import Link from 'next/link';

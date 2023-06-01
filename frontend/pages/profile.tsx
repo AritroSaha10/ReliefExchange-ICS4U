@@ -2,6 +2,10 @@
  * @file File for the profile page, which is accessible to logged-in users at /profile.
  * More info about the component can be seen in its own dcumentation.
  * @author Aritro Saha
+ * @cite “Docs,” Docs | Next.js, https://nextjs.org/docs. 
+ * @cite React, https://react.dev/. 
+ * @cite “Get started with Firebase Authentication on websites,” Google, https://firebase.google.com/docs/auth/web/start. 
+ * @cite “Day.js · 2kB javascript date utility library,” Day.js, https://day.js.org/en/. 
  */
 
 import { useState, useEffect } from "react";

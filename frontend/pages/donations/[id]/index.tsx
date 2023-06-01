@@ -2,6 +2,8 @@
  * @file File for a donation-specific page, which is accessible at /donations/<DONATION_UID>.
  * More info about the component can be seen in its own dcumentation.
  * @author Aritro Saha
+ * @cite React, https://react.dev/. 
+ * @cite “Docs,” Docs | Next.js, https://nextjs.org/docs. 
  */
 
 import Image from "next/image";

@@ -1,6 +1,7 @@
 /**
  * @file File for the sign-out page, which is accessible to logged-in users at /sign-out.
  * @author Aritro Saha
+ * @cite “Authenticate using google with javascript | Firebase,” Google, https://firebase.google.com/docs/auth/web/google-signin. 
  */
 
 import { useEffect } from "react"

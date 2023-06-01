@@ -3,6 +3,10 @@
  * they'd like to make. It is accessible at /donations/create to logged-in users.
  * More info about the component can be seen in its own dcumentation.
  * @author Aritro Saha
+ * @cite “Docs,” Docs | Next.js, https://nextjs.org/docs. 
+ * @cite React, https://react.dev/. 
+ * @cite D. Omotayo, “How to implement ReCAPTCHA in a React application,” LogRocket Blog, https://blog.logrocket.com/implement-recaptcha-react-application/. 
+ * @cite “Upload files with cloud storage on web | cloud storage for firebase,” Google, https://firebase.google.com/docs/storage/web/upload-files. 
  */
 
 import { useState, useEffect, useRef, FormEventHandler } from "react";

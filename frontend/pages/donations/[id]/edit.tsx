@@ -2,6 +2,9 @@
  * @file File for the donation edit page, which is only accessible to either admins
  * or the author of the donation.
  * @author Aritro Saha
+ * @cite React, https://react.dev/. 
+ * @cite D. Omotayo, “How to implement ReCAPTCHA in a React application,” LogRocket Blog, https://blog.logrocket.com/implement-recaptcha-react-application/. 
+ * @cite “Docs,” Docs | Next.js, https://nextjs.org/docs. 
  */
 
 import { useState, useEffect, useRef, FormEventHandler } from "react";

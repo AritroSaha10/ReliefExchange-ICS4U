@@ -2,6 +2,8 @@
  * @file File for the the donation index page, which is accessible at /donations.
  * More info about the component can be seen in its own dcumentation.
  * @author Aritro Saha
+ * @cite “Docs,” Docs | Next.js, https://nextjs.org/docs. 
+ * @cite React, https://react.dev/. 
  */
 
 import { useEffect, useRef, useState } from "react";
