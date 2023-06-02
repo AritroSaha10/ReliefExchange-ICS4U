@@ -1,5 +1,10 @@
 package main
 
+//@file THis file contains the testing functions for the backend functions. For example, testing if the addDonation function works properly.
+//@cite "Package testing." Go Documentation. The Go Authors.
+// Available: https://pkg.go.dev/testing. Accessed on: Jun. 2, 2023.
+
+//@author Joshua
 import (
 	"log"
 	"math/rand"
