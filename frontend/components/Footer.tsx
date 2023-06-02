@@ -42,6 +42,10 @@ export default function Footer() {
     // State to remember the selected language
     const [selectedLanguage, setSelectedLanguage] = useState(languages[0].value)
 
+    // Remembers domain and cookie options used elsewhere
+    const rootDomain = typeof location !== "undefined" ? location.hostname.split(".").reverse().splice(0,2).reverse().join(".") : ""
+    const cookieOpts = { path: "", domain: `.${rootDomain}`}
+
     /**
      * Set up auto-translate functionality
      */
@@ -60,8 +64,8 @@ export default function Footer() {
                     'google_translate_element');
 
                 // Use the cookie value if the user wanted to translate it to another language before
-                if (hasCookie('googtrans')) {
-                    setSelectedLanguage(getCookie('googtrans').toString())
+                if (hasCookie('googtrans', cookieOpts)) {
+                    setSelectedLanguage(getCookie('googtrans', cookieOpts).toString())
                 }
                 else {
                     // Auto-translate to english on default
@@ -80,11 +84,10 @@ export default function Footer() {
      */
     const langChange = (lang) => {
         // Delete any cookies made by our applications or Google Translate
-        deleteCookie("googtrans", { path: "", domain: `.${location.hostname}`})
-        deleteCookie("googtrans", { path: "", domain: `${location.hostname}`})
+        deleteCookie("googtrans", cookieOpts)
 
         // Set new cookie and update state
-        setCookie('googtrans', lang)
+        setCookie('googtrans', lang, cookieOpts)
         setSelectedLanguage(lang)
 
         // Reload the page for the new language to show
