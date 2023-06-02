@@ -12,6 +12,15 @@ ReliefExchange is a platform where **Generosity meets Community**. This website 
 * Upload a donation item with descriptions, images, location, and tags 
 * Profile that tracks your donations, and users registration and sign-in date 
 
+# Video Demonstration 
+Our video demonstration can be seen at [this YouTube link](https://youtu.be/vHNYoDzi6TI).
+
+# User Manual
+Our user manual / quickstart guide is available in [this document](https://docs.google.com/document/d/1SwvbGomqzTCoZS3yOiGqkT-3oLW5rO9EociF8mV30MM/edit).
+
+# Navigating Github
+Our Github instructions can be seen in [this document](NAVIGATING_GITHUB.md).
+
 # Built With 
 - TypeScript
     - React
@@ -90,12 +99,6 @@ Our deployment runs this image as a singular Docker container on Oracle Cloud In
 
 # User Testing Results
 Our user testing results can be seen in [this document](USER_TESTING.md).
-
-# Navigating Github
-Our Github instructions can be seen in [this document](NAVIGATING_GITHUB.md).
-
-# Video Demonstration 
-Our video demonstration can be seen at [this YouTube link](https://youtu.be/vHNYoDzi6TI).
 
 # Authors
 This project was worked on by Aritro Saha, Joshua Chou, and Taha Khan as a part of our ICS4U0 (Computer Science) final project. 
