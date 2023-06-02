@@ -94,5 +94,8 @@ Our user testing results can be seen in [this document](USER_TESTING.md).
 # Navigating Github
 Our Github instructions can be seen in [this document](NAVIGATING_GITHUB.md)
 
+# Video Demonstration 
+Our video demonstration can be seen at https://youtu.be/vHNYoDzi6TI
+
 # Authors
 This project was worked on by Aritro Saha, Joshua Chou, and Taha Khan as a part of our ICS4U0 (Computer Science) final project. 
