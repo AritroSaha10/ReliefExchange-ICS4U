@@ -15,7 +15,7 @@
 
 
 import { useEffect, useState } from "react";
-import { getCookie, hasCookie, setCookie } from 'cookies-next';
+import { deleteCookie, getCookie, hasCookie, setCookie } from 'cookies-next';
 import Dropdown from "./Dropdown";
 
 // All the languages supported for auto-translation
@@ -79,18 +79,13 @@ export default function Footer() {
      * @param lang The language code to translate to
      */
     const langChange = (lang) => {
-        if (hasCookie('googtrans')) {
-            // Change the cookie if it already exists
-            // Make sure to decode the URI in case if it was encoded
-            // automatically by the browser from last time
-            setCookie('googtrans', decodeURI(lang))
-            setSelectedLanguage(lang)
-        }
-        else {
-            // Set a new cookie if it doesn't exist
-            setCookie('googtrans', lang)
-            setSelectedLanguage(lang)
-        }
+        // Delete any cookies made by our applications or Google Translate
+        deleteCookie("googtrans", { path: "", domain: `.${location.hostname}`})
+        deleteCookie("googtrans", { path: "", domain: `${location.hostname}`})
+
+        // Set new cookie and update state
+        setCookie('googtrans', lang)
+        setSelectedLanguage(lang)
 
         // Reload the page for the new language to show
         window.location.reload()
