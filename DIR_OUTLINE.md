@@ -1,6 +1,6 @@
 
 **backend**
-  - endpoints: Contians the endpoint functions for post and get. The get endpoints is where you send get requests to, and the post endpoint is where you send the post requests to. 
+  - endpoints: Endpoints are functions used to send information to the frontend, in other words they handle HTTP requests. This directory contains functions that the endpoint functions for post and get. The get endpoints is where you send get requests to, and the post endpoint is where you send the post requests to. 
   - globals: Contains the configurations for firebase
   - helpers:This contains all of the functions used in the backend, for example add_donation, to help the endpoint add a donation
   - types: contains the structs (similar to classes) of donation and user-data
@@ -16,11 +16,11 @@
 **frontend**
   - tests test for the frontend
   - components containsn the components in used, for example the DonationCard
-  - cypress
-  - lib
-  - media
+  - cypress: This directory contains end-to-end tests written with Cypress.
+  - lib: This directory contains library code / utility functions
+  - media: Contains media files like images or videos
   - pages contains the pages of our website, for example the donationList page, or the home page
-  - public
+  - public: static files that can be accessed directly by the browser.
   - styles contains the styling for our website
   - config files: Used to configure the frontend, for example configuring sentry for error logging
   - middleware.ts handles the middleware of the frontend. It's used to handle requests to paths that match the pattern '/__/auth/:path'
@@ -28,8 +28,8 @@
  **.gitignore**
   -Contains files that should be ignored in the project level, only one file is included - vercel
   **Licence**
-    -The Licence for our project, protecing us from copyright or plagiarism. We are using a GNU GPL v3
+    -The Licence for our project, protecing us from copyright or plagiarism. The project uses the GNU General Public License v3.
     
   **Markdown files (with md at the end)**
-    -This includes the project description (README.md) instructions for navigating github (NAVIGATING_GITHUB.md) and user_testing (USER_TESTING.md). user_testing.md includes includes feedback from our friends/classmates
+    -This includes the project description (README.md) instructions for navigating github (NAVIGATING_GITHUB.md) and user_testing (USER_TESTING.md). user_testing.md includes includes feedback from friends/classmates
   
