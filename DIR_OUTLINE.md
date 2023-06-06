@@ -1,3 +1,4 @@
+# Directory Outline
 **Backend**
   - `endpoints`: Endpoints are functions used to send information to the frontend, in other words they handle HTTP requests. This directory contains functions that the endpoint functions for `post` and `get`. The get endpoints is where you send get requests to, and the post endpoint is where you send the post requests to. 
   - `globals`: Contains the configurations for firebase
@@ -27,8 +28,10 @@
  
  `.gitignore`:
   - Contains files that should be ignored by git in the project level, only one file is included - vercel
-  `Licence`:
-    - The Licence for our project, protecing us from copyright or plagiarism. The project uses the GNU General Public License v3.
+
+ `Licence`:
+  - The Licence for our project, protecing us from copyright or plagiarism. The project uses the GNU General Public License v3.
     
- `*Markdown files (with md at the end)`:
-    - This includes the project description (README.md) instructions for navigating github (NAVIGATING_GITHUB.md) and user_testing (USER_TESTING.md). user_testing.md includes includes feedback from friends/classmates
+ Markdown files (with md at the end):
+  - This includes the project description `README.md` , instructions for navigating github `NAVIGATING_GITHUB.md` and user_testing `USER_TESTING.md` 
+    - User_testing.md includes includes feedback from friends/classmates
