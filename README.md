@@ -21,6 +21,9 @@ Our user manual / quickstart guide is available in [this document](https://docs.
 # Navigating Github
 Our Github instructions can be seen in [this document](NAVIGATING_GITHUB.md).
 
+# Directory Outline
+The description of each directory in our project can be seen in [this document](DIR_OUTLINE.md)
+
 # Built With 
 - TypeScript
     - React
@@ -99,9 +102,6 @@ Our deployment runs this image as a singular Docker container on Oracle Cloud In
 
 # User Testing Results
 Our user testing results can be seen in [this document](USER_TESTING.md).
-
-# Directory Outline
-The description of each directory in our project can be seen in [this document](DIR_OUTLINE.md)
 
 # Authors
 This project was worked on by Aritro Saha, Joshua Chou, and Taha Khan as a part of our ICS4U0 (Computer Science) final project. 
